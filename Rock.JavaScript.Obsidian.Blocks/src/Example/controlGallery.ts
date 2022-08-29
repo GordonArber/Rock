@@ -161,6 +161,9 @@ import TabbedContent from "@Obsidian/Controls/tabbedContent";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import PagePicker from "@Obsidian/Controls/pagePicker";
 import GroupPicker from "@Obsidian/Controls/groupPicker";
+import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker";
+import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
+import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker";
 
 // #region Gallery Support
 
@@ -5468,6 +5471,95 @@ const groupPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates merge template picker */
+const mergeTemplatePickerGallery = defineComponent({
+    name: "MergeTemplatePickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        MergeTemplatePicker
+    },
+    setup() {
+        const ownershipOptions = [
+            { text: "Global", value: MergeTemplateOwnership.Global },
+            { text: "Personal", value: MergeTemplateOwnership.Personal },
+            { text: "Both", value: MergeTemplateOwnership.PersonalAndGlobal },
+        ];
+
+        return {
+            ownershipOptions,
+            ownership: ref(MergeTemplateOwnership.Global),
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("mergeTemplatePicker"),
+            exampleCode: `<MergeTemplatePicker label="Merge Template" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <MergeTemplatePicker label="Merge Template"
+        v-model="value"
+        :multiple="multiple"
+        :mergeTemplateOwnership="ownership" />
+
+    <template #settings>
+
+    <div class="row">
+        <div class="col-md-4">
+            <CheckBox label="Multiple" v-model="multiple" />
+        </div>
+        <div class="col-md-4">
+            <DropDownList label="Ownership" v-model="ownership" :items="ownershipOptions" />
+        </div>
+    </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates metric category picker */
+const metricCategoryPickerGallery = defineComponent({
+    name: "MetricCategoryPickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        MetricCategoryPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("metricCategoryPicker"),
+            exampleCode: `<MetricCategoryPicker label="Metric Category" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <MetricCategoryPicker label="Metric Category"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5570,7 +5662,9 @@ const controlGalleryComponents: Record<string, Component> = [
     valueDetailListGallery,
     pagePickerGallery,
     connectionRequestPickerGallery,
-    groupPickerGallery
+    groupPickerGallery,
+    mergeTemplatePickerGallery,
+    metricCategoryPickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
