@@ -63,7 +63,7 @@ export default defineComponent({
             "imageId",
             "isActive",
             "isGeoPointLocked",
-            "locationTypeValueId",
+            "locationTypeValue",
             "name",
             "parentLocationId",
             "printerDeviceId",

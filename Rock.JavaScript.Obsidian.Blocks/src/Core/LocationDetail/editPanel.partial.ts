@@ -1,4 +1,3 @@
-/// <reference path="../../../../Rock.JavaScript.Obsidian/Framework/Controls/numberBox.ts" />
 // <copyright>
 // Copyright by the Spark Development Network
 //
@@ -23,6 +22,7 @@ import CheckBox from "@Obsidian/Controls/checkBox";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
+import LocationPicker from "@Obsidian/Controls/locationPicker";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import TextBox from "@Obsidian/Controls/textBox";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -54,6 +54,7 @@ export default defineComponent({
         DefinedValuePicker,
         DropDownList,
         ImageUploader,
+        LocationPicker,
         NumberBox,
         TextBox
     },
@@ -68,18 +69,25 @@ export default defineComponent({
 
         const attributes = ref(props.modelValue.attributes ?? {});
         const attributeValues = ref(props.modelValue.attributeValues ?? {});
-        const parentLocation = propertyRef(props.modelValue.parentLocation, "ParentLocation");
+        const parentLocation = propertyRef(props.modelValue.parentLocation ?? null, "ParentLocationId");
         const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
         const name = propertyRef(props.modelValue.name ?? "", "Name");
-        const locationTypeValue = propertyRef(props.modelValue.locationTypeValue, "LocationTypeValue");
-        const printerDeviceId = propertyRef(props.modelValue.printerDeviceId, "PrinterDeviceId");
+        const locationTypeValue = propertyRef(props.modelValue.locationTypeValue ?? null, "LocationTypeValueId");
+        const printerDeviceId = propertyRef(props.modelValue.printerDeviceId ?? null, "PrinterDeviceId");
         const isGeoPointLocked = propertyRef(props.modelValue.isGeoPointLocked ?? false, "IsGeoPointLocked");
-        const softRoomThreshold = propertyRef(props.modelValue.softRoomThreshold, "SoftRoomThreshold");
-        const firmRoomThreshold = propertyRef(props.modelValue.firmRoomThreshold, "FirmRoomThreshold");
+        const softRoomThreshold = propertyRef(props.modelValue.softRoomThreshold ?? null, "SoftRoomThreshold");
+        const firmRoomThreshold = propertyRef(props.modelValue.firmRoomThreshold ?? null, "FirmRoomThreshold");
 
         // The properties that are being edited. This should only contain
         // objects returned by propertyRef().
-        const propRefs = [isActive, name, parentLocation, locationTypeValue, printerDeviceId, isGeoPointLocked, softRoomThreshold, firmRoomThreshold];
+        const propRefs = [isActive,
+            name,
+            parentLocation,
+            locationTypeValue,
+            printerDeviceId,
+            isGeoPointLocked,
+            softRoomThreshold,
+            firmRoomThreshold];
 
         // #endregion
 
@@ -103,15 +111,15 @@ export default defineComponent({
         watch(() => props.modelValue, () => {
             updateRefValue(attributes, props.modelValue.attributes ?? {});
             updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-            updateRefValue(parentLocation, props.modelValue.parentLocation);
+            updateRefValue(parentLocation, props.modelValue.parentLocation ?? null);
             updateRefValue(isActive, props.modelValue.isActive ?? false);
             updateRefValue(name, props.modelValue.name ?? "");
-            updateRefValue(locationTypeValue, props.modelValue.locationTypeValue);
-            updateRefValue(printerDeviceId, props.modelValue.printerDeviceId);
+            updateRefValue(locationTypeValue, props.modelValue.locationTypeValue ?? null);
+            updateRefValue(printerDeviceId, props.modelValue.printerDeviceId ?? null);
 
             updateRefValue(isGeoPointLocked, props.modelValue.isGeoPointLocked ?? false);
-            updateRefValue(softRoomThreshold, props.modelValue.softRoomThreshold);
-            updateRefValue(firmRoomThreshold, props.modelValue.firmRoomThreshold);
+            updateRefValue(softRoomThreshold, props.modelValue.softRoomThreshold ?? null) ;
+            updateRefValue(firmRoomThreshold, props.modelValue.firmRoomThreshold ?? null);
         });
 
         // Determines which values we want to track changes on (defined in the
@@ -146,10 +154,10 @@ export default defineComponent({
             locationTypeDefinedTypeGuid: DefinedType.LocationType,
             parentLocation,
             printerDeviceId,
+            printerDeviceOptions,
             isGeoPointLocked,
             softRoomThreshold,
-            firmRoomThreshold,
-            printerDeviceOptions
+            firmRoomThreshold
         };
     },
 
@@ -158,9 +166,8 @@ export default defineComponent({
     <div class="row">
         <div class="col-md-6">
 
-            <LocationPicker v-model="location"
-                label="Parent Location"
-                rules="" />
+            <LocationPicker v-model="parentLocation"
+                label="Parent Location" />
 
             <TextBox v-model="name"
                 label="Name"
@@ -168,6 +175,7 @@ export default defineComponent({
 
             <DefinedValuePicker v-model="locationTypeValue"
                 label="Location Type"
+                showBlankItem
                 :definedTypeGuid="locationTypeDefinedTypeGuid" />
 
             <DropDownList v-model="printerDeviceId"
