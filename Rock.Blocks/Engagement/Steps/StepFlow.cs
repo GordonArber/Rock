@@ -77,8 +77,10 @@ namespace Rock.Blocks.Engagement.Steps
         Key = AttributeKey.FooterLavaTemplate,
         Description = "Format the labels for each legend item at the foot of the chart using Lava.",
         DefaultValue = "{% for stepItem in Steps %}\n" +
-            "    <span style=\"display:inline-block; width:1em; height:1em; background-color:{{stepItem.Color}}; transform:translateY(.15em);\"></span>\n" +
-            "    <span style=\"margin-right:1em\">{{forloop.index}}:&nbsp;{{stepItem.StepName}}</span>\n" +
+            "    <span style=\"margin-right:1em; white-space:nowrap;\">\n" +
+            "        <span style=\"display:inline-block; width:1em; height:1em; background-color:{{stepItem.Color}}; transform:translateY(.15em);\"></span>\n" +
+            "        {{forloop.index}}:&nbsp;{{stepItem.StepName}}\n" +
+            "    </span>\n" +
             "{% endfor %}",
         Order = 5 )]
 
