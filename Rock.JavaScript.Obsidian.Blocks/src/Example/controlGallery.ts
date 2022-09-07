@@ -167,6 +167,7 @@ import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOw
 import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker";
 import MetricItemPicker from "@Obsidian/Controls/metricItemPicker";
 import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
+import ReportPicker from "@Obsidian/Controls/reportPicker";
 
 // #region Gallery Support
 
@@ -5638,6 +5639,43 @@ const registrationTemplatePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates report picker */
+const reportPickerGallery = defineComponent({
+    name: "ReportPickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        ReportPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("reportPicker"),
+            exampleCode: `<ReportPicker label="Report" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ReportPicker label="Report"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5745,6 +5783,7 @@ const controlGalleryComponents: Record<string, Component> = [
     metricCategoryPickerGallery,
     metricItemPickerGallery,
     registrationTemplatePickerGallery,
+    reportPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
