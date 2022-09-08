@@ -66,5 +66,37 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// Gets or sets a threshold that will prevent checkin unless a manager overrides
         /// </summary>
         public int? SoftRoomThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets the city component of the Location's Street/Mailing Address.
+        /// </summary>
+        public string City { get; set; }
+
+        /// <summary>
+        /// Gets or sets the country component of the Location's Street/Mailing Address. 
+        /// </summary>
+        public string Country { get; set; }
+
+        /// <summary>
+        /// Gets or sets the county.
+        /// </summary>
+        public string County { get; set; }
+
+        /// <summary>
+        /// Gets or sets the State component of the Location's Street/Mailing Address.
+        /// </summary>
+        public string State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first line of the Location's Street/Mailing Address.
+        /// </summary>
+        public string Street1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the second line of the Location's Street/Mailing Address. 
+        /// </summary>
+        public string Street2 { get; set; }
+
+        public string PostalCode { get; set; }
     }
 }

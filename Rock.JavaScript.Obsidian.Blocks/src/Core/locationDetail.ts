@@ -65,7 +65,7 @@ export default defineComponent({
             "isGeoPointLocked",
             "locationTypeValue",
             "name",
-            "parentLocationId",
+            "parentLocation",
             "printerDeviceId",
             "softRoomThreshold"
         ];

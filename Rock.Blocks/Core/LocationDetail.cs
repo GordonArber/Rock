@@ -191,7 +191,14 @@ namespace Rock.Blocks.Core
                 Name = entity.Name,
                 ParentLocation = entity.ParentLocation.ToListItemBag(),
                 PrinterDeviceId = entity.PrinterDeviceId,
-                SoftRoomThreshold = entity.SoftRoomThreshold
+                SoftRoomThreshold = entity.SoftRoomThreshold,
+                Street1 = entity.Street1,
+                Street2 = entity.Street2,
+                City = entity.City,
+                County = entity.County,
+                Country = entity.Country,
+                State = entity.State,
+                PostalCode = entity.PostalCode,
             };
         }
 

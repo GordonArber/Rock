@@ -66,7 +66,7 @@ export default defineComponent({
 
     setup(props, { emit }) {
         // #region Values
-
+        debugger;
         const attributes = ref(props.modelValue.attributes ?? {});
         const attributeValues = ref(props.modelValue.attributeValues ?? {});
         const parentLocation = propertyRef(props.modelValue.parentLocation ?? null, "ParentLocationId");
@@ -77,6 +77,7 @@ export default defineComponent({
         const isGeoPointLocked = propertyRef(props.modelValue.isGeoPointLocked ?? false, "IsGeoPointLocked");
         const softRoomThreshold = propertyRef(props.modelValue.softRoomThreshold ?? null, "SoftRoomThreshold");
         const firmRoomThreshold = propertyRef(props.modelValue.firmRoomThreshold ?? null, "FirmRoomThreshold");
+        const addressFields = ref(props.modelValue ?? {});
 
         // The properties that are being edited. This should only contain
         // objects returned by propertyRef().
@@ -87,7 +88,8 @@ export default defineComponent({
             printerDeviceId,
             isGeoPointLocked,
             softRoomThreshold,
-            firmRoomThreshold];
+            firmRoomThreshold
+        ];
 
         // #endregion
 
@@ -109,6 +111,7 @@ export default defineComponent({
 
         // Watch for parental changes in our model value and update all our values.
         watch(() => props.modelValue, () => {
+            updateRefValue(addressFields, props.modelValue);
             updateRefValue(attributes, props.modelValue.attributes ?? {});
             updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
             updateRefValue(parentLocation, props.modelValue.parentLocation ?? null);
@@ -179,7 +182,7 @@ export default defineComponent({
                 :definedTypeGuid="locationTypeDefinedTypeGuid" />
 
             <DropDownList v-model="printerDeviceId"
-                label="Printer"
+                label="Printer #TODO#"
                 help="The printer that this location should use for printing."
                 :items="printerDeviceOptions" />
         </div>
@@ -187,6 +190,8 @@ export default defineComponent({
         <div class="col-md-6">
             <CheckBox v-model="isActive"
                 label="Active" />
+
+            <AddressControl label="" v-model="addressFields" />
         </div>
     </div>
 

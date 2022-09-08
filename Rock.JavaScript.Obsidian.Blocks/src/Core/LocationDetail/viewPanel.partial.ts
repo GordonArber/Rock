@@ -72,6 +72,14 @@ export default defineComponent({
                 return valueBuilder.build();
             }
 
+            if (props.modelValue.imageId) {
+                valueBuilder.addHtmlValue("", `<img src='/GetImage.ashx?id=${props.modelValue.imageId}&maxwidth=150&maxheight=150'>`);
+
+            }
+            else {
+                valueBuilder.addHtmlValue("", "<img src='/Assets/Images/no-picture.svg?' style='max-width:150px; max-height:150px;'>");
+            }
+
             return valueBuilder.build();
         });
 
@@ -81,6 +89,14 @@ export default defineComponent({
 
             if (!props.modelValue) {
                 return valueBuilder.build();
+            }
+
+            if (props.modelValue.locationTypeValue) {
+                valueBuilder.addTextValue("Location Type", props.modelValue.locationTypeValue.text ?? "");
+            }
+
+            if (props.modelValue.printerDeviceId) {
+                valueBuilder.addTextValue("Printer Id #TODO# ", props.modelValue.printerDeviceId.toString());
             }
 
             return valueBuilder.build();
@@ -111,12 +127,16 @@ export default defineComponent({
     <ValueDetailList :modelValue="topValues" />
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-3">
             <ValueDetailList :modelValue="leftSideValues" />
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4">
             <ValueDetailList :modelValue="rightSideValues" />
+        </div>
+
+        <div class="col-md-4 location-maps">
+            <ValueDetailList :modelValue="locationMaps" />
         </div>
     </div>
 
