@@ -34,6 +34,7 @@
     <Content Include="Build\.eslintrc.js" />
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\alert.vue" />
+    <Content Include="Framework\Controls\dayOfWeekPicker.vue" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Controls\workflowActionTypePicker.vue" />
     <Content Include="Framework\Core\tsconfig.json" />
