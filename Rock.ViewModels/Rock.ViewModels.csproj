@@ -79,6 +79,7 @@
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
+    <Compile Include="Blocks\Core\LocationDetail\AddressStandardizationResultBag.cs" />
     <Compile Include="Blocks\Core\LocationDetail\LocationBag.cs" />
     <Compile Include="Blocks\Core\LocationDetail\LocationDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeDetail\NoteTypeBag.cs" />

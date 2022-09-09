@@ -30,6 +30,7 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
 import { LocationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationDetailOptionsBag";
 
+
 export default defineComponent({
     name: "Core.LocationDetail",
 
@@ -67,7 +68,8 @@ export default defineComponent({
             "name",
             "parentLocation",
             "printerDeviceId",
-            "softRoomThreshold"
+            "softRoomThreshold",
+            "addressFields"
         ];
 
         const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(locationEditBag, validProperties, invokeBlockAction), undefined, true);

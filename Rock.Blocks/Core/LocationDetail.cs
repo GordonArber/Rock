@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.LocationDetail;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Core
@@ -192,13 +193,16 @@ namespace Rock.Blocks.Core
                 ParentLocation = entity.ParentLocation.ToListItemBag(),
                 PrinterDeviceId = entity.PrinterDeviceId,
                 SoftRoomThreshold = entity.SoftRoomThreshold,
-                Street1 = entity.Street1,
-                Street2 = entity.Street2,
-                City = entity.City,
-                County = entity.County,
-                Country = entity.Country,
-                State = entity.State,
-                PostalCode = entity.PostalCode,
+                AddressFields = new AddressControlBag
+                {
+                    Street1 = entity.Street1 ?? string.Empty,
+                    Street2 = entity.Street2 ?? string.Empty,
+                    City = entity.City ?? string.Empty,
+                    // County = entity.County,
+                    Country = entity.Country ?? string.Empty,
+                    State = entity.State ?? string.Empty,
+                    PostalCode = entity.PostalCode ?? string.Empty
+                }
             };
         }
 
@@ -267,19 +271,30 @@ namespace Rock.Blocks.Core
                 () => entity.IsGeoPointLocked = box.Entity.IsGeoPointLocked );
 
             box.IfValidProperty( nameof( box.Entity.LocationTypeValue ),
-                () => entity.LocationTypeValueId = box.Entity.LocationTypeValue.GetEntityId<DefinedValue>(rockContext) );
+                () => entity.LocationTypeValueId = box.Entity.LocationTypeValue.GetEntityId<DefinedValue>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
             box.IfValidProperty( nameof( box.Entity.ParentLocation ),
-                () => entity.ParentLocationId = box.Entity.ParentLocation.GetEntityId<Location>(rockContext) );
+                () => entity.ParentLocationId = box.Entity.ParentLocation.GetEntityId<Location>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.PrinterDeviceId ),
                 () => entity.PrinterDeviceId = box.Entity.PrinterDeviceId );
 
             box.IfValidProperty( nameof( box.Entity.SoftRoomThreshold ),
                 () => entity.SoftRoomThreshold = box.Entity.SoftRoomThreshold );
+
+            box.IfValidProperty( nameof( box.Entity.AddressFields ),
+                () =>
+                {
+                    entity.Street1 = box.Entity.AddressFields.Street1;
+                    entity.Street2 = box.Entity.AddressFields.Street2;
+                    entity.City=  box.Entity.AddressFields.City;
+                    entity.Country= box.Entity.AddressFields.Country;
+                    entity.PostalCode= box.Entity.AddressFields.PostalCode;
+                    entity.State = box.Entity.AddressFields.State;
+                } );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -390,6 +405,43 @@ namespace Rock.Blocks.Core
         #endregion
 
         #region Block Actions
+
+        [BlockAction]
+        public BlockActionResult StandardizeLocation( AddressControlBag addressFields )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var locationService = new LocationService( rockContext );
+                var location = new Location
+                {
+                    Street1 = addressFields.Street1,
+                    Street2 = addressFields.Street2,
+                    City = addressFields.City,
+                    State = addressFields.State,
+                    PostalCode = addressFields.PostalCode,
+                    Country = addressFields.Country,
+                };
+
+                locationService.Verify( location, true );
+
+                var result = new AddressStandardizationResultBag
+                {
+                    StandardizeAttemptedResult = location.StandardizeAttemptedResult,
+                    GeocodeAttemptedResult = location.GeocodeAttemptedResult,
+                    AddressFields = new AddressControlBag
+                    {
+                        Street1 = location.Street1,
+                        Street2 = location.Street2,
+                        City = location.City,
+                        State = location.State,
+                        PostalCode = location.PostalCode,
+                        Country = location.Country,
+                    }
+                };
+
+                return ActionOk( result );
+            }
+        }
 
         /// <summary>
         /// Gets the box that will contain all the information needed to begin

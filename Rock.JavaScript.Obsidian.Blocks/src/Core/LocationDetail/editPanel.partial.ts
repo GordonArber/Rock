@@ -18,19 +18,22 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import AddressControl from "@Obsidian/Controls/addressControl";
+import Alert from "@Obsidian/Controls/alert";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import NumberBox from "@Obsidian/Controls/numberBox";
+import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
-import { watchPropertyChanges } from "@Obsidian/Utility/block";
+import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
 import { LocationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationDetailOptionsBag";
 import { DefinedType } from "../../../../Rock.JavaScript.Obsidian/Framework/SystemGuids";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { AddressStandardizationResultBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/addressStandardizationResultBag";
 
 export default defineComponent({
     name: "Core.LocationDetail.EditPanel",
@@ -50,12 +53,14 @@ export default defineComponent({
     components: {
         AddressControl,
         AttributeValuesContainer,
+        Alert,
         CheckBox,
         DefinedValuePicker,
         DropDownList,
         ImageUploader,
         LocationPicker,
         NumberBox,
+        RockButton,
         TextBox
     },
 
@@ -66,7 +71,8 @@ export default defineComponent({
 
     setup(props, { emit }) {
         // #region Values
-        debugger;
+        const invokeBlockAction = useInvokeBlockAction();
+
         const attributes = ref(props.modelValue.attributes ?? {});
         const attributeValues = ref(props.modelValue.attributeValues ?? {});
         const parentLocation = propertyRef(props.modelValue.parentLocation ?? null, "ParentLocationId");
@@ -77,7 +83,9 @@ export default defineComponent({
         const isGeoPointLocked = propertyRef(props.modelValue.isGeoPointLocked ?? false, "IsGeoPointLocked");
         const softRoomThreshold = propertyRef(props.modelValue.softRoomThreshold ?? null, "SoftRoomThreshold");
         const firmRoomThreshold = propertyRef(props.modelValue.firmRoomThreshold ?? null, "FirmRoomThreshold");
-        const addressFields = ref(props.modelValue ?? {});
+        const addressFields = ref(props.modelValue.addressFields ?? {});
+        const standardizeAttemptedResult = ref("");
+        const geocodeAttemptedResult = ref("");
 
         // The properties that are being edited. This should only contain
         // objects returned by propertyRef().
@@ -99,6 +107,17 @@ export default defineComponent({
             return props.options.printerDeviceOptions ?? [];
         });
 
+        const standardizationResults = computed((): string => {
+            if (standardizeAttemptedResult.value || geocodeAttemptedResult.value) {
+                return "Standardization Result: " + standardizeAttemptedResult.value
+                    + "<br>"
+                    + "Geocoding Result:" +  geocodeAttemptedResult.value;
+            }
+            else {
+                return "";
+            }
+        });
+
         // #endregion
 
         // #region Functions
@@ -111,7 +130,7 @@ export default defineComponent({
 
         // Watch for parental changes in our model value and update all our values.
         watch(() => props.modelValue, () => {
-            updateRefValue(addressFields, props.modelValue);
+            updateRefValue(addressFields, props.modelValue.addressFields ?? {});
             updateRefValue(attributes, props.modelValue.attributes ?? {});
             updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
             updateRefValue(parentLocation, props.modelValue.parentLocation ?? null);
@@ -127,9 +146,10 @@ export default defineComponent({
 
         // Determines which values we want to track changes on (defined in the
         // array) and then emit a new object defined as newValue.
-        watch([attributeValues, ...propRefs], () => {
+        watch([attributeValues, addressFields, ...propRefs], () => {
             const newValue: LocationBag = {
                 ...props.modelValue,
+                addressFields: addressFields.value,
                 attributeValues: attributeValues.value,
                 isActive: isActive.value,
                 name: name.value,
@@ -138,7 +158,7 @@ export default defineComponent({
                 printerDeviceId: printerDeviceId.value,
                 isGeoPointLocked: isGeoPointLocked.value,
                 softRoomThreshold: softRoomThreshold.value,
-                firmRoomThreshold: firmRoomThreshold.value
+                firmRoomThreshold: firmRoomThreshold.value,
             };
 
             emit("update:modelValue", newValue);
@@ -148,7 +168,21 @@ export default defineComponent({
         // automatically emit which property changed.
         watchPropertyChanges(propRefs, emit);
 
+        /**
+         * Event handler for when the individual clicks the Standardize/VerifyLocation button.
+         */
+        const onStandardizeClick = async (): Promise<void> => {
+            const result = await invokeBlockAction<AddressStandardizationResultBag>("StandardizeLocation", { addressFields: addressFields.value });
+
+            if (result.isSuccess && result.data) {
+                updateRefValue(addressFields, result.data.addressFields ?? {});
+                standardizeAttemptedResult.value = result.data.standardizeAttemptedResult ?? "";
+                geocodeAttemptedResult.value = result.data.geocodeAttemptedResult ?? "";
+            }
+        };
+
         return {
+            addressFields,
             attributes,
             attributeValues,
             isActive,
@@ -160,7 +194,11 @@ export default defineComponent({
             printerDeviceOptions,
             isGeoPointLocked,
             softRoomThreshold,
-            firmRoomThreshold
+            firmRoomThreshold,
+            onStandardizeClick,
+            standardizeAttemptedResult,
+            geocodeAttemptedResult,
+            standardizationResults
         };
     },
 
@@ -192,6 +230,19 @@ export default defineComponent({
                 label="Active" />
 
             <AddressControl label="" v-model="addressFields" />
+
+            <Alert v-if="standardizationResults" alertType="info" v-html="standardizationResults" />
+
+            <RockButton
+                btnSize="sm"
+                btnType="action"
+                @click="onStandardizeClick"
+                :isLoading="isLoading"
+                :autoLoading="autoLoading"
+                :autoDisable="autoDisable"
+                :loadingText="loadingText">
+                Verify Address
+            </RockButton>
         </div>
     </div>
 

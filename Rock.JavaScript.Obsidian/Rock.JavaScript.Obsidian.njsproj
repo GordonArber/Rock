@@ -461,6 +461,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\LocationDetail\addressStandardizationResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\LocationDetail\locationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\LocationDetail\locationDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\noteTypeBag.d.ts" />

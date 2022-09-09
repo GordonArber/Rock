@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -55,23 +56,7 @@ export type LocationBag = {
     /** Gets or sets a threshold that will prevent checkin unless a manager overrides */
     softRoomThreshold?: number | null;
 
-    /** Gets or sets the city component of the Location's Street/Mailing Address. */
-    city?: string | null;
-
-    /** Gets or sets the country component of the Location's Street/Mailing Address.  */
-    country?: string | null;
-
-    /** Gets or sets the county. */
-    county?: string | null;
-
-    /** Gets or sets the State component of the Location's Street/Mailing Address. */
-    state?: string | null;
-
-    /** Gets or sets the first line of the Location's Street/Mailing Address. */
-    street1?: string | null;
-
-    /** Gets or sets the second line of the Location's Street/Mailing Address.  */
-    street2?: string | null;
+    addressFields?: AddressControlBag | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
