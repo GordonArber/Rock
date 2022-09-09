@@ -22,17 +22,20 @@ using System.Runtime.Serialization;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.ExceptionHandling;
-using System.Web.Http.OData.Builder;
-using System.Web.Http.OData.Extensions;
-using System.Web.Http.OData.Routing;
-using System.Web.Http.OData.Routing.Conventions;
 using System.Web.Http.ValueProviders;
 using System.Web.Routing;
 
 using Rock;
 using Rock.Rest.Utility;
 using Rock.Rest.Utility.ValueProviders;
-using Rock.Tasks;
+using System.Collections.Generic;
+using Microsoft.OData;
+using Microsoft.OData.Edm;
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Routing.Conventions;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Routing;
+using Microsoft.AspNet.OData.Routing.Template;
 
 namespace Rock.Rest
 {
@@ -41,6 +44,11 @@ namespace Rock.Rest
     /// </summary>
     public static class WebApiConfig
     {
+        /// <summary>
+        /// Compiled Model that is used to create the OData Routes and Process Queries (see RockEnableQueryAttribute)
+        /// </summary>
+        public static IEdmModel EdmModel = null;
+
         /// <summary>
         /// Maps ODataService Route and registers routes for any controller actions that use a [Route] attribute
         /// </summary>
@@ -312,7 +320,16 @@ namespace Rock.Rest
 
             foreach ( var entityType in entityTypeList )
             {
-                var entityTypeConfig = builder.AddEntity( entityType );
+                var entityTypeName = entityType.Name;
+                var entityTypeConfig = builder.AddEntityType( entityType );
+
+                // OData 4 convention is to treat all IDictionary<string, object> properties as special "Open Types", we don't want OData to do that!
+                // See https://docs.microsoft.com/en-us/aspnet/web-api/overview/odata-support-in-aspnet-web-api/odata-v4/use-open-types-in-odata-v4
+                var odataDynamicProperties = entityType.GetProperties().Where( p => typeof( IDictionary<string, object> ).IsAssignableFrom( p.PropertyType ) );
+                foreach ( var odataDynamicProperty in odataDynamicProperties )
+                {
+                    entityTypeConfig.RemoveProperty( odataDynamicProperty );
+                }
 
                 var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
                 string name;
@@ -332,10 +349,40 @@ namespace Rock.Rest
             // Disable the api/$metadata route
             var conventions = defaultConventions.Except( defaultConventions.OfType<MetadataRoutingConvention>() );
 
-            config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel(), pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
+            WebApiConfig.EdmModel = builder.GetEdmModel();
+
+            config.MapODataServiceRoute( "api", "api", WebApiConfig.EdmModel, pathHandler: new RockDefaultODataPathHandler(), routingConventions: conventions );
+            config.EnableDependencyInjection();
+            config.Count().Filter().OrderBy().Expand().Select().MaxTop( null );
+
+            //config.MapODataServiceRoute( "api", "api", WebApiConfig.EdmModel );
+            /*
+            config.MapODataServiceRoute( "api", "api", containerBuilder =>
+                containerBuilder
+                    .AddService( Microsoft.OData.ServiceLifetime.Singleton, sp => WebApiConfig.EdmModel )
+                    .AddService( ServiceLifetime.Singleton, sp => conventions )
+            );*/
 
 
             new Rock.Transactions.RegisterControllersTransaction().Enqueue();
+        }
+
+        public class RockDefaultODataPathHandler : DefaultODataPathHandler
+        {
+            public override string Link( ODataPath path )
+            {
+                return base.Link( path );
+            }
+
+            public override ODataPath Parse( string serviceRoot, string odataPath, IServiceProvider requestContainer )
+            {
+                return base.Parse( serviceRoot, odataPath, requestContainer );
+            }
+
+            public override ODataPathTemplate ParseTemplate( string odataPathTemplate, IServiceProvider requestContainer )
+            {
+                return base.ParseTemplate( odataPathTemplate, requestContainer );
+            }
         }
     }
 }
