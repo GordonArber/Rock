@@ -16,7 +16,7 @@
 //
 import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
-import { DayOfWeek } from "./dayOfWeekField.partial";
+import { DayOfWeek } from "@Obsidian/Enums/Controls/dayOfWeek";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

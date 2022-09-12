@@ -237,6 +237,7 @@
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationStatus.d.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\dayOfWeek.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.d.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\timeUnitType.d.ts" />

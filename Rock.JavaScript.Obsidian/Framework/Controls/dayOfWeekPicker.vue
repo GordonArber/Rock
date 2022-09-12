@@ -1,29 +1,27 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <DropDownList v-model="internalValue" :items="options" />
+    <CheckBoxList v-if="multiple" v-model="(internalValue as string[])" :items="options" />
+    <DropDownList v-else v-model="internalValue" :items="options" />
 </template>
 
 <script setup lang="ts">
-    import { PropType } from 'vue';
+    import { PropType, ref, watch } from 'vue';
+    import { DayOfWeek } from '@Obsidian/Enums/Controls/dayOfWeek';
     import { ListItemBag } from '@Obsidian/ViewModels/Utility/listItemBag';
     import { useVModelPassthrough } from '@Obsidian/Utility/component';
+    import { toNumber } from '@Obsidian/Utility/numberUtils';
     import DropDownList from './dropDownList';
-
-    enum DayOfWeek {
-        Sunday = 0,
-        Monday = 1,
-        Tuesday = 2,
-        Wednesday = 3,
-        Thursday = 4,
-        Friday = 5,
-        Saturday = 6
-    }
+    import CheckBoxList from './checkBoxList';
 
     const props = defineProps({
         modelValue: {
-            type: String as PropType<string>,
-            required: true
+            type: String as PropType<string | string[] | null>,
+            default: null
         },
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -31,6 +29,8 @@
     }>();
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+
 
     const options: ListItemBag[] = [
         { text: "Sunday", value: DayOfWeek.Sunday.toString() },
