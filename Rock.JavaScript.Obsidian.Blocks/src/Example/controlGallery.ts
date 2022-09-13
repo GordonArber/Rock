@@ -5760,12 +5760,14 @@ const dayOfWeekPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
+        NumberUpDown,
         DayOfWeekPicker
     },
     setup() {
         return {
             showBlankItem: ref(false),
             multiple: ref(false),
+            columns: ref(1),
             value: ref(null),
             importCode: getControlImportPath("dayOfWeekPicker"),
             exampleCode: `<DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="false" :multiple="false" />`
@@ -5777,12 +5779,13 @@ const dayOfWeekPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" />
+    <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
 
     <template #settings>
         <div class="row">
             <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
             <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+            <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
         </div>
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>

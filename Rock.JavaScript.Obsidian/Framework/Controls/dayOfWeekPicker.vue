@@ -1,22 +1,21 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <CheckBoxList v-if="multiple" v-model="(internalValue as string[])" :items="options" />
-    <DropDownList v-else v-model="internalValue" :items="options" />
+    <CheckBoxList v-if="multiple" v-model="(internalValue as string[])" :items="options" horizontal />
+    <DropDownList v-else v-model="dropDownValue" :items="options" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from 'vue';
+    import { PropType, ref, watch, computed } from 'vue';
     import { DayOfWeek } from '@Obsidian/Enums/Controls/dayOfWeek';
     import { ListItemBag } from '@Obsidian/ViewModels/Utility/listItemBag';
     import { useVModelPassthrough } from '@Obsidian/Utility/component';
-    import { toNumber } from '@Obsidian/Utility/numberUtils';
     import DropDownList from './dropDownList';
     import CheckBoxList from './checkBoxList';
 
     const props = defineProps({
         modelValue: {
             type: String as PropType<string | string[] | null>,
-            default: null
+            default: ""
         },
         multiple: {
             type: Boolean as PropType<boolean>,
@@ -30,7 +29,20 @@
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-
+    // dropDown cannot use null values, but for consistency between pickers, DayOfWeekPicker does
+    // so we need to convert nulls to string or string[]
+    const dropDownValue = computed<string | string[]>({
+        get() {
+            if (props.multiple) {
+                return internalValue.value ?? []
+            } else {
+                return internalValue.value ?? ""
+            }
+        },
+        set(newVal) {
+            internalValue.value = newVal
+        }
+    })
 
     const options: ListItemBag[] = [
         { text: "Sunday", value: DayOfWeek.Sunday.toString() },
