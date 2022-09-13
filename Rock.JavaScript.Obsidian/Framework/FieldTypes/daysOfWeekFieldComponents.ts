@@ -16,13 +16,11 @@
 //
 import { defineComponent, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
 
 export const EditComponent = defineComponent({
     name: "DaysOfWeekField.Edit",
     components: {
-        CheckBoxList,
         DayOfWeekPicker
     },
     props: getFieldEditorProps(),
