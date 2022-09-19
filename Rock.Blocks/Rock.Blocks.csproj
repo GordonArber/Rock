@@ -59,6 +59,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
     <Compile Include="Cms\LayoutDetail.cs" />
@@ -71,7 +72,7 @@
     <Compile Include="Core\AssetStorageProviderDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
-    <Compile Include="Core\LocationDetail.cs" />
+    <Compile Include="Core\CategoryDetail.cs" />
     <Compile Include="Core\NoteTypeDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="IHasCustomActions.cs" />
+    <Compile Include="Reporting\MergeTemplateDetail.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

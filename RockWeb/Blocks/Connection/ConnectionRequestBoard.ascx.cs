@@ -602,6 +602,8 @@ namespace RockWeb.Blocks.Connection
             BlockUpdated += Block_BlockUpdated;
             AddConfigurationUpdateTrigger( upnlRoot );
 
+            // Hide default bulk update and replace with custom action.
+            gRequests.Actions.ShowBulkUpdate = false;
             // Add a custom button with an EventHandler for bulk updates
             var customActionConfigEventButton = new CustomActionConfigEvent
             {
@@ -1874,10 +1876,14 @@ namespace RockWeb.Blocks.Connection
             ddlRequestModalAddEditModePlacementStatus.Visible = ddlRequestModalAddEditModePlacementStatus.Items.Count > 1;
 
             CheckRequestModalAddEditModeGroupRequirements();
-            avcRequestModalAddEditModeGroupMember.Visible = request.ConnectionState != ConnectionState.Connected;
-            if ( request.ConnectionState != ConnectionState.Connected )
+
+            if ( request != null )
             {
-                BuildRequestModalAddEditModeGroupMemberAttributes( groupId, roleId, ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+                avcRequestModalAddEditModeGroupMember.Visible = request.ConnectionState != ConnectionState.Connected;
+                if ( request.ConnectionState != ConnectionState.Connected )
+                {
+                    BuildRequestModalAddEditModeGroupMemberAttributes( groupId, roleId, ddlRequestModalAddEditModePlacementStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+                }
             }
         }
 
@@ -2260,6 +2266,7 @@ namespace RockWeb.Blocks.Connection
 
             gRequests.EntityIdField = "Id";
             gRequests.EntityTypeId = connectionRequestEntityId;
+            gRequests.PersonIdField = "PersonAlias.PersonId";
             gRequests.RowItemText = "Connection Request";
             gRequests.DataKeyNames = new string[] { "Id" };
 

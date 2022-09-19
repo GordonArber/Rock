@@ -21,8 +21,8 @@ using Rock.Enums.Controls;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetDataViews API action of
-    /// the DataViewPicker control.
+    /// The options that can be passed to the GetMergeTemplates API action of
+    /// the MergeTemplatePicker control.
     /// </summary>
     public class MergeTemplatePickerGetMergeTemplatesOptionsBag
     {

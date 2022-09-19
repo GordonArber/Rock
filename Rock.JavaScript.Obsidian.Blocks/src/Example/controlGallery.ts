@@ -44,6 +44,7 @@
  */
 
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
+import { ObjectUtils } from "@Obsidian/Utility";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -139,7 +140,8 @@ import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
 import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
-import Alert, { AlertType } from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
+import { AlertType } from "@Obsidian/Types/Controls/alert";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import BadgePicker from "@Obsidian/Controls/badgePicker";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
@@ -164,6 +166,10 @@ import GroupPicker from "@Obsidian/Controls/groupPicker";
 import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 import MetricCategoryPicker from "@Obsidian/Controls/metricCategoryPicker";
+import MetricItemPicker from "@Obsidian/Controls/metricItemPicker";
+import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker";
+import ReportPicker from "@Obsidian/Controls/reportPicker";
+import SchedulePicker from "@Obsidian/Controls/schedulePicker";
 
 // #region Gallery Support
 
@@ -290,7 +296,8 @@ export const GalleryAndResult = defineComponent({
                 return JSON.stringify(props.value, null, 4);
             }
             else {
-                return Object.fromEntries(
+                // Convert each property's value to a JSON string.
+                return ObjectUtils.fromEntries(
                     Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
                         return [
                             key,
@@ -4474,7 +4481,7 @@ const alertGallery = defineComponent({
         CheckBox
     },
     setup() {
-        const options: ListItemBag[] = Object.keys(AlertType).map(key => ({ text: key, value: AlertType[key] }));
+        const options: ListItemBag[] = ["default", "success", "info", "danger", "warning", "primary", "validation"].map(key => ({ text: key, value: key }));
         return {
             isDismissible: ref(false),
             onDismiss: () => alert('"dismiss" event fired.'),
@@ -5560,6 +5567,154 @@ const metricCategoryPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates metric item picker */
+const metricItemPickerGallery = defineComponent({
+    name: "MetricItemPickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        MetricItemPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("metricItemPicker"),
+            exampleCode: `<MetricItemPicker label="Metric Item" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <MetricItemPicker label="Metric Item"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates registration template picker */
+const registrationTemplatePickerGallery = defineComponent({
+    name: "RegistrationTemplatePickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        RegistrationTemplatePicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("registrationTemplatePicker"),
+            exampleCode: `<RegistrationTemplatePicker label="Registration Template" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RegistrationTemplatePicker label="Registration Template"
+        v-model="value"
+        :multiple="multiple"
+        :mergeTemplateOwnership="ownership" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates report picker */
+const reportPickerGallery = defineComponent({
+    name: "ReportPickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        ReportPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("reportPicker"),
+            exampleCode: `<ReportPicker label="Report" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ReportPicker label="Report"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates schedule picker */
+const schedulePickerGallery = defineComponent({
+    name: "SchedulePickerGallery",
+    components: {
+        GalleryAndResult,
+        DropDownList,
+        CheckBox,
+        SchedulePicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("schedulePicker"),
+            exampleCode: `<SchedulePicker label="Schedule" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <SchedulePicker label="Schedule"
+        v-model="value"
+        :multiple="multiple" />
+
+    <template #settings>
+
+        <CheckBox label="Multiple" v-model="multiple" />
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5664,7 +5819,11 @@ const controlGalleryComponents: Record<string, Component> = [
     connectionRequestPickerGallery,
     groupPickerGallery,
     mergeTemplatePickerGallery,
-    metricCategoryPickerGallery
+    metricCategoryPickerGallery,
+    metricItemPickerGallery,
+    registrationTemplatePickerGallery,
+    reportPickerGallery,
+    schedulePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

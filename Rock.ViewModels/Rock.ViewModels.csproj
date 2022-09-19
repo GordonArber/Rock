@@ -45,6 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blocks\BlockBox.cs" />
+    <Compile Include="Blocks\Cms\BlockTypeDetail\BlockTypeBag.cs" />
+    <Compile Include="Blocks\Cms\BlockTypeDetail\BlockTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\AttributeFilterBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\AvailableContentSourceBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\ContentCollectionBag.cs" />
@@ -79,9 +81,10 @@
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
-    <Compile Include="Blocks\Core\LocationDetail\AddressStandardizationResultBag.cs" />
-    <Compile Include="Blocks\Core\LocationDetail\LocationBag.cs" />
-    <Compile Include="Blocks\Core\LocationDetail\LocationDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CategoryBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CategoryDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CustomSettingsBag.cs" />
+    <Compile Include="Blocks\Core\CategoryDetail\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeDetail\NoteTypeBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeDetail\NoteTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeBag.cs" />
@@ -104,6 +107,8 @@
     <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\IValidPropertiesBox.cs" />
+    <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateBag.cs" />
+    <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionType.cs" />
@@ -267,6 +272,11 @@
     <Compile Include="Entities\InteractionDeviceTypeBag.cs" />
     <Compile Include="Entities\InteractionSessionBag.cs" />
     <Compile Include="Entities\InteractionSessionLocationBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceActionBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceAnswerBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceScheduleBag.cs" />
+    <Compile Include="Entities\InteractiveExperienceScheduleCampusBag.cs" />
     <Compile Include="Entities\LavaShortcodeBag.cs" />
     <Compile Include="Entities\LayoutBag.cs" />
     <Compile Include="Entities\LocationBag.cs" />
@@ -372,10 +382,14 @@
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\SchedulePickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReportPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\RegistrationTemplatePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\MergeTemplatePickerGetMergeTemplatesOptionsBag.cs" />
     <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MetricItemPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\MetricCategoryPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PagePickerGetPageRoutesOptionsBag.cs" />
     <Compile Include="Rest\Controls\PageRouteValueBag.cs" />

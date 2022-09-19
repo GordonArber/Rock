@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import AddressControl from "@Obsidian/Controls/addressControl";
-import Alert from "@Obsidian/Controls/alert";
+import Alert from "@Obsidian/Controls/alert.vue";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import DropDownList from "@Obsidian/Controls/dropDownList";

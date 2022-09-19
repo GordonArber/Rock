@@ -30,6 +30,10 @@ import { GroupPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Cont
 import { MergeTemplatePickerGetMergeTemplatesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeTemplatePickerGetMergeTemplatesOptionsBag";
 import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 import { MetricCategoryPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricCategoryPickerGetChildrenOptionsBag";
+import { MetricItemPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/metricItemPickerGetChildrenOptionsBag";
+import { RegistrationTemplatePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/registrationTemplatePickerGetChildrenOptionsBag";
+import { ReportPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reportPickerGetChildrenOptionsBag";
+import { SchedulePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/schedulePickerGetChildrenOptionsBag";
 import { flatten } from "./arrayUtils";
 
 /**
@@ -622,6 +626,213 @@ export class MetricCategoryTreeItemProvider implements ITreeItemProvider {
             securityGrantToken: this.securityGrantToken
         };
         const url = "/api/v2/Controls/MetricCategoryPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving merge templates from the server and displaying
+ * them inside a tree list.
+ */
+export class MetricItemTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** A list of category GUIDs to filter the results */
+    public includeCategoryGuids: Guid[] | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<MetricItemPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            includeCategoryGuids: this.includeCategoryGuids,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/MetricItemPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving registration templates from the server and displaying
+ * them inside a tree list.
+ */
+export class RegistrationTemplateTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<RegistrationTemplatePickerGetChildrenOptionsBag> = {
+            parentGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/RegistrationTemplatePickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving reports from the server and displaying
+ * them inside a tree list.
+ */
+export class ReportTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** A list of category GUIDs to filter the results. */
+    public includeCategoryGuids: Guid[] | null = null;
+
+    /** Guid of an Entity Type to filter results by the reports that relate to this entity type. */
+    public entityTypeGuid: Guid | null = null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<ReportPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            includeCategoryGuids: this.includeCategoryGuids,
+            entityTypeGuid: this.entityTypeGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/ReportPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for retrieving reports from the server and displaying
+ * them inside a tree list.
+ */
+export class ScheduleTreeItemProvider implements ITreeItemProvider {
+    /** The security grant token that will be used to request additional access to the group list. */
+    public securityGrantToken: string | null = null;
+
+    /** Whether to include inactive schedules in the results. */
+    public includeInactive: boolean = false;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid: Guid | null = null): Promise<TreeItemBag[]> {
+        const options: Partial<SchedulePickerGetChildrenOptionsBag> = {
+            parentGuid,
+            includeInactiveItems: this.includeInactive,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/SchedulePickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {

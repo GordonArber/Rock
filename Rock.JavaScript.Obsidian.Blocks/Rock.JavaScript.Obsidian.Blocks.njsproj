@@ -34,12 +34,20 @@
     <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
+    <Content Include="src\Core\categoryDetail.vue" />
+    <Content Include="src\Core\categoryDetailCustomSettings.vue" />
+    <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
+    <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
+    <Content Include="src\Reporting\mergeTemplateDetail.vue" />
+    <Content Include="src\Reporting\MergeTemplateDetail\editPanel.partial.vue" />
+    <Content Include="src\Reporting\MergeTemplateDetail\viewPanel.partial.vue" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="build\" />
     <Folder Include="src\" />
     <Folder Include="src\Cms\" />
+    <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LayoutDetail\" />
@@ -52,7 +60,7 @@
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
-    <Folder Include="src\Core\LocationDetail\" />
+    <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
@@ -65,6 +73,8 @@
     <Folder Include="src\Example\" />
     <Folder Include="src\Finance\" />
     <Folder Include="src\Groups\" />
+    <Folder Include="src\Reporting\" />
+    <Folder Include="src\Reporting\MergeTemplateDetail\" />
     <Folder Include="src\Security\" />
     <Folder Include="src\Utility\" />
     <Folder Include="src\WorkFlow\" />
@@ -74,6 +84,10 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\Cms\blockTypeDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\BlockTypeDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\BlockTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\contentCollectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\attributeSearchFilter.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\contentSources.partial.ts" />
@@ -125,10 +139,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
-    <TypeScriptCompile Include="src\Core\locationDetail.ts" />
-    <TypeScriptCompile Include="src\Core\LocationDetail\editPanel.partial.ts" />
-    <TypeScriptCompile Include="src\Core\LocationDetail\types.d.ts" />
-    <TypeScriptCompile Include="src\Core\LocationDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Core\CategoryDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\noteTypeDetail.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteTypeDetail\types.d.ts" />
@@ -168,7 +179,11 @@
     <TypeScriptCompile Include="src\Example\personSecondary.ts" />
     <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
     <TypeScriptCompile Include="src\Groups\groupMemberList.ts" />
+    <TypeScriptCompile Include="src\Reporting\MergeTemplateDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Security\login.ts" />
+    <TypeScriptCompile Include="src\shims-vue.d.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\Utility\starkDetail.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\formBuilderDetail.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\communicationsTab.partial.ts" />
