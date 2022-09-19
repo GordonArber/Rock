@@ -91,15 +91,51 @@ export default defineComponent({
                 return valueBuilder.build();
             }
 
+            if (props.modelValue.parentLocation) {
+                valueBuilder.addTextValue("Parent Location", props.modelValue.parentLocation.text ?? "");
+            }
+
             if (props.modelValue.locationTypeValue) {
                 valueBuilder.addTextValue("Location Type", props.modelValue.locationTypeValue.text ?? "");
             }
 
-            if (props.modelValue.printerDeviceId) {
-                valueBuilder.addTextValue("Printer Id #TODO# ", props.modelValue.printerDeviceId.toString());
+            if (props.modelValue.printerDevice) {
+                valueBuilder.addTextValue("Printer", props.modelValue.printerDevice.text ?? "");
+            }
+
+            if (props.modelValue.softRoomThreshold) {
+                valueBuilder.addTextValue("Threshold", props.modelValue.softRoomThreshold?.toString() ?? "");
+            }
+
+            if (props.modelValue.firmRoomThreshold) {
+                valueBuilder.addTextValue("Threshold (Absolute)", props.modelValue.firmRoomThreshold?.toString() ?? "");
+            }
+
+            if (props.modelValue.formattedHtmlAddress) {
+                valueBuilder.addHtmlValue("Address", props.modelValue.formattedHtmlAddress ?? "");
             }
 
             return valueBuilder.build();
+        });
+
+        const locationMapsHtml = computed((): string => {
+
+            let mapsHtml = "";
+
+            if (!props.modelValue) {
+                return mapsHtml;
+            }
+
+            if (props.modelValue.geoPointImageHtml) {
+                mapsHtml += props.modelValue.geoPointImageHtml;
+            }
+
+            if (props.modelValue.geoFenceImageHtml) {
+                mapsHtml += props.modelValue.geoFenceImageHtml;
+            }
+
+            return mapsHtml;
+
         });
 
         // #endregion
@@ -117,6 +153,7 @@ export default defineComponent({
             attributeValues,
             leftSideValues,
             rightSideValues,
+            locationMapsHtml,
             topValues
         };
     },
@@ -131,12 +168,12 @@ export default defineComponent({
             <ValueDetailList :modelValue="leftSideValues" />
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-5">
             <ValueDetailList :modelValue="rightSideValues" />
         </div>
 
         <div class="col-md-4 location-maps">
-            <ValueDetailList :modelValue="locationMaps" />
+            <span v-html="locationMapsHtml"></span>
         </div>
     </div>
 

@@ -67,7 +67,7 @@ export default defineComponent({
             "locationTypeValue",
             "name",
             "parentLocation",
-            "printerDeviceId",
+            "printerDevice",
             "softRoomThreshold",
             "addressFields"
         ];
@@ -114,6 +114,14 @@ export default defineComponent({
                     iconCssClass: "far fa-lightbulb",
                     title: "Inactive",
                     type: "danger"
+                });
+            }
+
+            if (locationViewBag.value?.locationTypeValue) {
+                labels.push({
+                    iconCssClass: "",
+                    title: locationViewBag.value?.locationTypeValue?.text ?? "",
+                    type: "default"
                 });
             }
 

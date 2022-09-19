@@ -51,12 +51,26 @@ export type LocationBag = {
     parentLocation?: ListItemBag | null;
 
     /** Gets or sets the Rock.Model.Device Id of the printer (if any) associated with the location. */
-    printerDeviceId?: number | null;
+    printerDevice?: ListItemBag | null;
 
     /** Gets or sets a threshold that will prevent checkin unless a manager overrides */
     softRoomThreshold?: number | null;
 
+    /** Gets or sets the address fields. */
     addressFields?: AddressControlBag | null;
+
+    /** Gets or sets the formatted HTML address. */
+    formattedHtmlAddress?: string | null;
+
+    /** Gets or sets the GeoFence image HTML. */
+    geoFenceImageHtml?: string | null;
+
+    /** Gets or sets the GeoPoint image HTML. */
+    geoPointImageHtml?: string | null;
+
+    geoPoint_WellKnownText?: string | null;
+
+    geoFence_WellKnownText?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

@@ -79,11 +79,13 @@ export default defineComponent({
         const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
         const name = propertyRef(props.modelValue.name ?? "", "Name");
         const locationTypeValue = propertyRef(props.modelValue.locationTypeValue ?? null, "LocationTypeValueId");
-        const printerDeviceId = propertyRef(props.modelValue.printerDeviceId ?? null, "PrinterDeviceId");
+        const printerDevice = propertyRef(props.modelValue.printerDevice?.value ?? "", "PrinterDeviceId");
         const isGeoPointLocked = propertyRef(props.modelValue.isGeoPointLocked ?? false, "IsGeoPointLocked");
         const softRoomThreshold = propertyRef(props.modelValue.softRoomThreshold ?? null, "SoftRoomThreshold");
         const firmRoomThreshold = propertyRef(props.modelValue.firmRoomThreshold ?? null, "FirmRoomThreshold");
         const addressFields = ref(props.modelValue.addressFields ?? {});
+        const geoPointWellKnownText = propertyRef(props.modelValue.geoPoint_WellKnownText ?? "", "GeoPoint");
+        const geoFenceWellKnownText = propertyRef(props.modelValue.geoFence_WellKnownText ?? "", "GeoFence");
         const standardizeAttemptedResult = ref("");
         const geocodeAttemptedResult = ref("");
 
@@ -93,16 +95,17 @@ export default defineComponent({
             name,
             parentLocation,
             locationTypeValue,
-            printerDeviceId,
+            printerDevice,
             isGeoPointLocked,
             softRoomThreshold,
-            firmRoomThreshold
+            firmRoomThreshold,
+            geoPointWellKnownText,
+            geoFenceWellKnownText
         ];
 
         // #endregion
 
         // #region Computed Values
-
         const printerDeviceOptions = computed((): ListItemBag[] => {
             return props.options.printerDeviceOptions ?? [];
         });
@@ -137,11 +140,15 @@ export default defineComponent({
             updateRefValue(isActive, props.modelValue.isActive ?? false);
             updateRefValue(name, props.modelValue.name ?? "");
             updateRefValue(locationTypeValue, props.modelValue.locationTypeValue ?? null);
-            updateRefValue(printerDeviceId, props.modelValue.printerDeviceId ?? null);
+            updateRefValue(printerDevice, props.modelValue.printerDevice?.value ?? "");
 
             updateRefValue(isGeoPointLocked, props.modelValue.isGeoPointLocked ?? false);
             updateRefValue(softRoomThreshold, props.modelValue.softRoomThreshold ?? null) ;
             updateRefValue(firmRoomThreshold, props.modelValue.firmRoomThreshold ?? null);
+
+            // TODO, temporary code until we have a GeoPicker
+            updateRefValue(geoPointWellKnownText, props.modelValue.geoPoint_WellKnownText ?? "");
+            updateRefValue(geoFenceWellKnownText, props.modelValue.geoFence_WellKnownText ?? "");
         });
 
         // Determines which values we want to track changes on (defined in the
@@ -155,10 +162,12 @@ export default defineComponent({
                 name: name.value,
                 locationTypeValue: locationTypeValue.value,
                 parentLocation: parentLocation.value,
-                printerDeviceId: printerDeviceId.value,
+                printerDevice: { value: printerDevice.value },
                 isGeoPointLocked: isGeoPointLocked.value,
                 softRoomThreshold: softRoomThreshold.value,
                 firmRoomThreshold: firmRoomThreshold.value,
+                geoPoint_WellKnownText: geoPointWellKnownText.value,
+                geoFence_WellKnownText: geoFenceWellKnownText.value,
             };
 
             emit("update:modelValue", newValue);
@@ -190,7 +199,7 @@ export default defineComponent({
             locationTypeValue,
             locationTypeDefinedTypeGuid: DefinedType.LocationType,
             parentLocation,
-            printerDeviceId,
+            printerDevice,
             printerDeviceOptions,
             isGeoPointLocked,
             softRoomThreshold,
@@ -198,7 +207,9 @@ export default defineComponent({
             onStandardizeClick,
             standardizeAttemptedResult,
             geocodeAttemptedResult,
-            standardizationResults
+            standardizationResults,
+            geoPointWellKnownText,
+            geoFenceWellKnownText
         };
     },
 
@@ -216,13 +227,18 @@ export default defineComponent({
 
             <DefinedValuePicker v-model="locationTypeValue"
                 label="Location Type"
-                showBlankItem
+                :showBlankItem="true"
                 :definedTypeGuid="locationTypeDefinedTypeGuid" />
 
-            <DropDownList v-model="printerDeviceId"
-                label="Printer #TODO#"
+            <DropDownList label="Printer" 
+                v-model="printerDevice"
+                :items="printerDeviceOptions"
                 help="The printer that this location should use for printing."
-                :items="printerDeviceOptions" />
+                :showBlankItem="true"
+                :enhanceForLongLists="false"
+                :grouped="false"
+                :multiple="false"
+                 />
         </div>
 
         <div class="col-md-6">
@@ -243,6 +259,23 @@ export default defineComponent({
                 :loadingText="loadingText">
                 Verify Address
             </RockButton>
+
+            <CheckBox v-model="isGeoPointLocked"
+                label="Location Locked"
+                help="Locks the location to prevent verification services (standardization/geocoding) from updating the address or point."
+            />
+
+            <div class="row">
+                <div class="col-sm-7">
+                    <TextBox label="Point" v-model="geoPointWellKnownText" readonly />
+                    <TextBox label="Geo-Fence" v-model="geoFenceWellKnownText" readonly />
+                </div>
+                <div class="col-sm-5">
+                    <NumberBox label="Threshold" v-model="softRoomThreshold" help="The maximum number of people that room allows before a check-in will require a manager override."/>
+                    <NumberBox label="Threshold (Absolute)" v-model="firmRoomThreshold" help="The absolute maximum number of people that room allows. Check-in will not allow check-in after this number of people have checked in." />
+                </div>
+            </div>
+            
         </div>
     </div>
 

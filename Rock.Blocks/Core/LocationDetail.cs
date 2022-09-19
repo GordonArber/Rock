@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -27,7 +26,8 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.LocationDetail;
 using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Core
 {
@@ -43,6 +43,27 @@ namespace Rock.Blocks.Core
 
     #region Block Attributes
 
+    [CodeEditorField( "Map HTML",
+        Description = "The HTML to use for displaying group location maps. Lava syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        DefaultValue = @"{% if point or polygon %}
+    <div class='group-location-map'>
+        <img class='img-thumbnail' src='//maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% if point %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endif %}{% if polygon %}&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}{% endif %}&visual_refresh=true'/>
+    </div>
+{% endif %}",
+        Key = AttributeKey.MapHtml )]
+
+    [DefinedValueField( "Map Style",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MAP_STYLES,
+        Description = "The map theme that should be used for styling the GeoPicker map.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK,
+        Key = AttributeKey.MapStyle )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "862067b0-8764-452e-9b4f-dc3e0cf5f876" )]
@@ -50,6 +71,12 @@ namespace Rock.Blocks.Core
     public class LocationDetail : RockObsidianDetailBlockType
     {
         #region Keys
+
+        public static class AttributeKey
+        {
+            public const string MapStyle = "MapStyle";
+            public const string MapHtml = "MapHTML";
+        }
 
         private static class PageParameterKey
         {
@@ -94,11 +121,7 @@ namespace Rock.Blocks.Core
             var options = new LocationDetailOptionsBag();
             var deviceItems = new Rock.Model.DeviceService( rockContext )
                 .GetByDeviceTypeGuid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid() )
-                .OrderBy( d => d.Name ).ToList().Select( d => new ListItemBag
-                {
-                    Value = d.Id.ToString(),
-                    Text = d.Name
-                } ).ToList();
+                .OrderBy( d => d.Name ).ToListItemBagList();
 
             options.PrinterDeviceOptions = deviceItems;
 
@@ -181,6 +204,8 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
+            var geoPointAndGeoFenceImageHtml = GetGeoPointAndGeoFenceImageHtml( entity );
+
             return new LocationBag
             {
                 IdKey = entity.IdKey,
@@ -191,7 +216,7 @@ namespace Rock.Blocks.Core
                 LocationTypeValue = entity.LocationTypeValue.ToListItemBag(),
                 Name = entity.Name,
                 ParentLocation = entity.ParentLocation.ToListItemBag(),
-                PrinterDeviceId = entity.PrinterDeviceId,
+                PrinterDevice = entity.PrinterDevice.ToListItemBag(),
                 SoftRoomThreshold = entity.SoftRoomThreshold,
                 AddressFields = new AddressControlBag
                 {
@@ -202,8 +227,58 @@ namespace Rock.Blocks.Core
                     Country = entity.Country ?? string.Empty,
                     State = entity.State ?? string.Empty,
                     PostalCode = entity.PostalCode ?? string.Empty
-                }
+                },
+
+                FormattedHtmlAddress = entity.FormattedHtmlAddress,
+                GeoPointImageHtml = geoPointAndGeoFenceImageHtml.GeoPointImageHtml,
+                GeoFenceImageHtml = geoPointAndGeoFenceImageHtml.GeoFenceImageHtml,
+
+                // Temporary code until GeoPicker is ready
+                GeoPoint_WellKnownText = entity.GeoPoint?.AsText(),
+                GeoFence_WellKnownText = entity.GeoFence?.AsText()
             };
+        }
+
+        private (string GeoPointImageHtml, string GeoFenceImageHtml) GetGeoPointAndGeoFenceImageHtml( Location location )
+        {
+            var mapStyleValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ) );
+            var googleAPIKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
+
+            if ( mapStyleValue == null )
+            {
+                mapStyleValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
+            }
+
+            string geoPointImageHtml = string.Empty;
+            string geoFenceImageHtml = string.Empty;
+
+            if ( mapStyleValue != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
+            {
+                string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
+
+                if ( !string.IsNullOrWhiteSpace( mapStyle ) )
+                {
+                    if ( location.GeoPoint != null )
+                    {
+                        string markerPoints = string.Format( "{0},{1}", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                        string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
+                        mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
+                        mapLink += "&sensor=false&size=350x200&zoom=13&format=png&key=" + googleAPIKey;
+                        geoPointImageHtml = string.Format( "<div class='group-location-map'><img class='img-thumbnail' src='{0}'/></div>", mapLink );
+                    }
+
+                    if ( location.GeoFence != null )
+                    {
+                        string polygonPoints = "enc:" + location.EncodeGooglePolygon();
+                        string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
+                        mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
+                        mapLink += "&sensor=false&size=350x200&format=png&key=" + googleAPIKey;
+                        geoFenceImageHtml = string.Format( "<div class='group-location-map'><img class='img-thumbnail' src='{0}'/></div>", mapLink );
+                    }
+                }
+            }
+
+            return (geoPointImageHtml, geoFenceImageHtml);
         }
 
         /// <summary>
@@ -279,8 +354,8 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.ParentLocation ),
                 () => entity.ParentLocationId = box.Entity.ParentLocation.GetEntityId<Location>( rockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.PrinterDeviceId ),
-                () => entity.PrinterDeviceId = box.Entity.PrinterDeviceId );
+            box.IfValidProperty( nameof( box.Entity.PrinterDevice ),
+                () => entity.PrinterDeviceId = box.Entity.PrinterDevice.GetEntityId<Device>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.SoftRoomThreshold ),
                 () => entity.SoftRoomThreshold = box.Entity.SoftRoomThreshold );
@@ -290,9 +365,9 @@ namespace Rock.Blocks.Core
                 {
                     entity.Street1 = box.Entity.AddressFields.Street1;
                     entity.Street2 = box.Entity.AddressFields.Street2;
-                    entity.City=  box.Entity.AddressFields.City;
-                    entity.Country= box.Entity.AddressFields.Country;
-                    entity.PostalCode= box.Entity.AddressFields.PostalCode;
+                    entity.City = box.Entity.AddressFields.City;
+                    entity.Country = box.Entity.AddressFields.Country;
+                    entity.PostalCode = box.Entity.AddressFields.PostalCode;
                     entity.State = box.Entity.AddressFields.State;
                 } );
 

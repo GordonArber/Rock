@@ -61,13 +61,42 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// <summary>
         /// Gets or sets the Rock.Model.Device Id of the printer (if any) associated with the location.
         /// </summary>
-        public int? PrinterDeviceId { get; set; }
+        public ListItemBag PrinterDevice { get; set; }
 
         /// <summary>
         /// Gets or sets a threshold that will prevent checkin unless a manager overrides
         /// </summary>
         public int? SoftRoomThreshold { get; set; }
 
+        /// <summary>
+        /// Gets or sets the address fields.
+        /// </summary>
+        /// <value>The address fields.</value>
         public AddressControlBag AddressFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the formatted HTML address.
+        /// </summary>
+        /// <value>The formatted HTML address.</value>
+        public string FormattedHtmlAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GeoFence image HTML.
+        /// </summary>
+        /// <value>The GeoFence image HTML.</value>
+        public string GeoFenceImageHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GeoPoint image HTML.
+        /// </summary>
+        /// <value>The GeoPoint image HTML.</value>
+        public string GeoPointImageHtml { get; set; }
+
+        /* Update these to whatever they need to be when the GeoPicker is ready */
+
+        public string GeoPoint_WellKnownText { get; set; }
+
+        public string GeoFence_WellKnownText { get; set; }
+        
     }
 }
