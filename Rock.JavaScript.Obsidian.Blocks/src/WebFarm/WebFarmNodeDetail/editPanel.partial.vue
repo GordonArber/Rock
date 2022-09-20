@@ -71,7 +71,6 @@
         const newValue: WebFarmNodeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
-            isActive: isActive.value,
         };
 
         emit("update:modelValue", newValue);

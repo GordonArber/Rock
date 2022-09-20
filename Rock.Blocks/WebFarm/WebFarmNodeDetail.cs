@@ -202,7 +202,6 @@ namespace Rock.Blocks.WebFarm
             const int unresponsiveMinutes = 10;
             var unresponsiveDateTime = RockDateTime.Now.AddMinutes( 0 - unresponsiveMinutes );
             bag.IsUnresponsive = entity.IsActive && !entity.StoppedDateTime.HasValue && entity.LastSeenDateTime < unresponsiveDateTime;
-            bag.WebFarmNodeMetrics = entity.WebFarmNodeMetrics.Select( wfnm => new WebFarmMetricBag { MetricValue = wfnm.MetricValue, MetricValueDateTime = wfnm.MetricValueDateTime } ).ToList();
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
