@@ -902,6 +902,27 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="RealTime\Engine.cs" />
+    <Compile Include="RealTime\AspNet\AspNetEngine.cs" />
+    <Compile Include="RealTime\IRockHubClientProxy.cs" />
+    <Compile Include="RealTime\Topics\ITestTopicClient.cs" />
+    <Compile Include="RealTime\ITopic.cs" />
+    <Compile Include="RealTime\ITopicCallerClients.cs" />
+    <Compile Include="RealTime\AspNet\TopicChannelManager.cs" />
+    <Compile Include="RealTime\AspNet\TopicCallerClients.cs" />
+    <Compile Include="RealTime\AspNet\TopicClients.cs" />
+    <Compile Include="RealTime\ITopicContext.cs" />
+    <Compile Include="RealTime\RealTimeHelper.cs" />
+    <Compile Include="RealTime\RockHubContext.cs" />
+    <Compile Include="RealTime\Topics\TestTopic.cs" />
+    <Compile Include="RealTime\Topic.cs" />
+    <Compile Include="RealTime\TopicConfiguration.cs" />
+    <Compile Include="RealTime\AspNet\TopicConfigurationAspNet.cs" />
+    <Compile Include="RealTime\TopicProxyBuilder.cs" />
+    <Compile Include="RealTime\ITopicChannelManager.cs" />
+    <Compile Include="RealTime\ITopicClients.cs" />
+    <Compile Include="RealTime\AspNet\RockHub.cs" />
+    <Compile Include="RealTime\TopicProxyFactory.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
@@ -4103,6 +4124,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Pbx\Provider\" />
+    <Folder Include="RealTime\AspNetCore\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
   <ItemGroup>

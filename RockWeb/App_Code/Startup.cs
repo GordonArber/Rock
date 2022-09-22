@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin;
 
@@ -42,15 +43,7 @@ namespace RockWeb
         /// <param name="app">The application.</param>
         public void Configuration( IAppBuilder app )
         {
-            app.MapSignalR();
-
-            /* 02/18/2022 MDP
-             By default, Signal R will use reflection to find classes that inherit from Microsoft.AspNet.SignalR.
-             It looks in *all* DLLs in RockWeb/bin. It does this on the first page that includes <script src="/SignalR/hubs"></script>.
-             This initial hit can take 30-60 seconds, so we'll register our own assembly locator to only look in Rock and Rock Plugins.
-             RockWeb.RockMessageHub will be the only Hub. So it doesn't make sense to look in all DLL for any more.
-            */
-            Microsoft.AspNet.SignalR.GlobalHost.DependencyResolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
+            ConfigureSignalR( app );
 
             try
             {
@@ -88,6 +81,46 @@ namespace RockWeb
         }
 
         /// <summary>
+        /// Configure SignalR for use by the application.
+        /// </summary>
+        /// <param name="app">The application builder to be configured.</param>
+        private void ConfigureSignalR( IAppBuilder app )
+        {
+            var legacyHubConfiguration = new HubConfiguration
+            {
+                Resolver = new DefaultDependencyResolver()
+            };
+
+            app.MapSignalR( legacyHubConfiguration );
+
+            /* 02/18/2022 MDP
+             By default, Signal R will use reflection to find classes that inherit from Microsoft.AspNet.SignalR.
+             It looks in *all* DLLs in RockWeb/bin. It does this on the first page that includes <script src="/SignalR/hubs"></script>.
+             This initial hit can take 30-60 seconds, so we'll register our own assembly locator to only look in Rock and Rock Plugins.
+             RockWeb.RockMessageHub will be the only Hub. So it doesn't make sense to look in all DLL for any more.
+
+             09/22/2022 DSH
+             This must be done _after_ the call to MapSignalR otherwise our
+             out custom locator will be replaced.
+            */
+            legacyHubConfiguration.Resolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
+
+            bool useAzureSignalR = false;
+
+            if ( !useAzureSignalR )
+            {
+                var rtHubConfiguration = new HubConfiguration
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+                rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
+                app.MapSignalR( "/signalr-rt", rtHubConfiguration );
+
+                Rock.WebStartup.RockApplicationStartupHelper.InitializeRockRealTime( rtHubConfiguration );
+            }
+        }
+
+        /// <summary>
         /// Class RockHubAssemblyLocator.
         /// Implements the <see cref="Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator" />
         /// </summary>
@@ -101,6 +134,51 @@ namespace RockWeb
             public IList<Assembly> GetAssemblies()
             {
                 return Rock.Reflection.GetRockAndPluginAssemblies();
+            }
+        }
+
+        /// <summary>
+        /// This is a custom implementation for the "signalr-rt" endpoint to
+        /// ensure that the only hub that shows up is the RealTime hub.
+        /// </summary>
+        private class RealTimeHubDescriptorProvider : IHubDescriptorProvider
+        {
+            /// <summary>
+            /// Lazy loaded dictionary of hubs to provide to the resolver.
+            /// </summary>
+            private readonly Lazy<IDictionary<string, HubDescriptor>> _hubs = new Lazy<IDictionary<string, HubDescriptor>>( BuildHubsCache );
+
+            /// <inheritdoc/>
+            public IList<HubDescriptor> GetHubs()
+            {
+                return _hubs.Value.Select( kv => kv.Value ).Distinct().ToList();
+            }
+
+            /// <inheritdoc/>
+            public bool TryGetHub( string hubName, out HubDescriptor descriptor )
+            {
+                return _hubs.Value.TryGetValue( hubName, out descriptor );
+            }
+
+            /// <summary>
+            /// Build the collection of known hubs, in this case just our RealTime hub.
+            /// </summary>
+            /// <returns>A dictionary of hub names for keys and hub descriptors for values.</returns>
+            protected static IDictionary<string, HubDescriptor> BuildHubsCache()
+            {
+                var type = typeof( Rock.RealTime.AspNet.RockHub );
+
+                var descriptor = new HubDescriptor
+                {
+                    NameSpecified = true,
+                    Name = "RealTime",
+                    HubType = type
+                };
+
+                return new Dictionary<string, HubDescriptor>( StringComparer.OrdinalIgnoreCase )
+                {
+                    [descriptor.Name] = descriptor
+                };
             }
         }
     }
