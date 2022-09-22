@@ -166,12 +166,12 @@ namespace RockWeb
             /// <returns>A dictionary of hub names for keys and hub descriptors for values.</returns>
             protected static IDictionary<string, HubDescriptor> BuildHubsCache()
             {
-                var type = typeof( Rock.RealTime.AspNet.RockHub );
+                var type = typeof( Rock.RealTime.AspNet.RealTimeHub );
 
                 var descriptor = new HubDescriptor
                 {
                     NameSpecified = true,
-                    Name = "RealTime",
+                    Name = "realTime",
                     HubType = type
                 };
 

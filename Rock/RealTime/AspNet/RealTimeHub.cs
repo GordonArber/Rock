@@ -36,9 +36,9 @@ namespace Rock.RealTime.AspNet
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [HubName( "RealTime" )]
+    [HubName( "realTime" )]
     [RockInternal]
-    public sealed class RockHub : Hub<IRockHubClientProxy>
+    public sealed class RealTimeHub : Hub<IRockHubClientProxy>
     {
         public async Task<object> PostMessage( string hubIdentifier, string messageName, object[] parameters )
         {

@@ -921,7 +921,7 @@
     <Compile Include="RealTime\TopicProxyBuilder.cs" />
     <Compile Include="RealTime\ITopicChannelManager.cs" />
     <Compile Include="RealTime\ITopicClients.cs" />
-    <Compile Include="RealTime\AspNet\RockHub.cs" />
+    <Compile Include="RealTime\AspNet\RealTimeHub.cs" />
     <Compile Include="RealTime\TopicProxyFactory.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />

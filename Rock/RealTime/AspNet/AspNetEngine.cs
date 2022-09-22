@@ -61,7 +61,7 @@ namespace Rock.RealTime
 
             var connectionManager = configuration.Resolver.Resolve<IConnectionManager>();
 
-            _rockHubContext = connectionManager.GetHubContext<RockHub, IRockHubClientProxy>();
+            _rockHubContext = connectionManager.GetHubContext<RealTimeHub, IRockHubClientProxy>();
             _proxyFactory = new Lazy<TopicProxyFactory<IClientProxy>>( () => new TopicProxyFactory<IClientProxy>( RegisteredTopics ) );
         }
 
@@ -78,7 +78,7 @@ namespace Rock.RealTime
         /// <inheritdoc/>
         protected override void ConfigureTopicInstance( object realTimeHub, TopicConfiguration topicConfiguration, object topicInstance )
         {
-            if ( !( realTimeHub is RockHub hub ) )
+            if ( !( realTimeHub is RealTimeHub hub ) )
             {
                 throw new ArgumentException( "Invalid hub object.", nameof( realTimeHub ) );
             }
