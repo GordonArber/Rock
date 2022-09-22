@@ -475,7 +475,7 @@ export function getControlImportPath(fileName: string): string {
 }
 
 /**
- * Generate a string of an import statement that imports the control will the given file name.
+ * Generate a string of an import statement that imports the SFC control will the given file name.
  * The control's name will be based off the filename
  *
  * @param fileName Name of the control's file
@@ -5762,7 +5762,7 @@ const workflowActionTypePickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("workflowActionTypePicker"),
+            importCode: getSfcControlImportPath("workflowActionTypePicker"),
             exampleCode: `<WorkflowActionTypePicker label="Workflow Action Type" v-model="value" :multiple="false" />`
         };
     },
@@ -5801,7 +5801,7 @@ const dayOfWeekPickerGallery = defineComponent({
             multiple: ref(false),
             columns: ref(1),
             value: ref(null),
-            importCode: getControlImportPath("dayOfWeekPicker"),
+            importCode: getSfcControlImportPath("dayOfWeekPicker"),
             exampleCode: `<DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="false" :multiple="false" />`
         };
     },
@@ -5838,7 +5838,7 @@ const monthDayPickerGallery = defineComponent({
     setup() {
         return {
             value: ref({ month: 0, day: 0 }),
-            importCode: getControlImportPath("monthDayPicker"),
+            importCode: getSfcControlImportPath("monthDayPicker"),
             exampleCode: `<MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="false" :multiple="false" />`
         };
     },
@@ -5869,7 +5869,7 @@ const monthYearPickerGallery = defineComponent({
     setup() {
         return {
             value: ref({ month: 0, year: 0 }),
-            importCode: getControlImportPath("monthYearPicker"),
+            importCode: getSfcControlImportPath("monthYearPicker"),
             exampleCode: `<MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="false" :multiple="false" />`
         };
     },
@@ -5900,7 +5900,7 @@ const cacheabilityPickerGallery = defineComponent({
     setup() {
         return {
             value: ref<RockCacheability | null>(null),
-            importCode: getControlImportPath("cacheabilityPicker.vue"),
+            importCode: getSfcControlImportPath("cacheabilityPicker"),
             exampleCode: `<CacheabilityPicker v-model="value" :showBlankItem="false" :multiple="false" />`
         };
     },
@@ -5961,7 +5961,7 @@ const buttonGroupGallery = defineComponent({
             sbtnType: ref(BtnType.Primary),
             ubtnType: ref(BtnType.Default),
             value: ref("1"),
-            importCode: getControlImportPath("buttonGroup.vue"),
+            importCode: getSfcControlImportPath("buttonGroup"),
             exampleCode: `<ButtonGroup :btnSize="BtnSize.Default" :btnType="BtnType.Default" :items="items" />`
         };
     },
@@ -6010,8 +6010,8 @@ const intervalPickerGallery = defineComponent({
             sbtnType: ref(BtnType.Primary),
             ubtnType: ref(BtnType.Default),
             value: ref(null),
-            importCode: `import IntervalPicker, { BtnType, BtnSize } from "@Obsidian/Controls/intervalPicker.vue";`,
-            exampleCode: `<IntervalPicker :btnSize="BtnSize.Default" :btnType="BtnType.Default" :items="items" />`
+            importCode: getSfcControlImportPath("intervalPicker"),
+            exampleCode: `<IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />`
         };
     },
     template: `
