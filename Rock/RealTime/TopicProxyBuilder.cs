@@ -22,7 +22,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 
-/**
+/*
  * 9/21/2022 - DSH
  * 
  * This logic was mostly taken from the MIT licensed SignalR project.
