@@ -66,7 +66,7 @@ namespace Rock.RealTime
         }
 
         /// <summary>
-        /// Get an instance of the hub specified by its identifier. Each time
+        /// Get an instance of the topic specified by its identifier. Each time
         /// an incoming message from a connection is handled a new instance
         /// is created to respond to the message. This is the same way as the
         /// base SignalR works.
@@ -74,14 +74,14 @@ namespace Rock.RealTime
         /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
         /// <param name="topicIdentifier">The identifier of the topic that should be created.</param>
         /// <returns>A new instance of the topic class that will handle the request.</returns>
-        internal static object GetHubInstance( object realTimeHub, string topicIdentifier )
+        internal static object GetTopicInstance( object realTimeHub, string topicIdentifier )
         {
             if ( Engine == null )
             {
                 throw new Exception( $"{nameof( RealTimeHelper )} has not been initialized properly." );
             }
 
-            return Engine.GetHubInstance( realTimeHub, topicIdentifier );
+            return Engine.GetTopicInstance( realTimeHub, topicIdentifier );
         }
 
         /// <summary>

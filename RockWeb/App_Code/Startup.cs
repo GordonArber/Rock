@@ -26,6 +26,7 @@ using Microsoft.Owin;
 using Owin;
 
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 
@@ -86,12 +87,14 @@ namespace RockWeb
         /// <param name="app">The application builder to be configured.</param>
         private void ConfigureSignalR( IAppBuilder app )
         {
-            var legacyHubConfiguration = new HubConfiguration
-            {
-                Resolver = new DefaultDependencyResolver()
-            };
+            bool useAzure = false;
 
-            app.MapSignalR( legacyHubConfiguration );
+            using ( var rockContext = new RockContext() )
+            {
+                var x = new AttributeValueService( rockContext ).GetGlobalAttributeValue( "OrganizationName" );
+            }
+
+            app.MapSignalR();
 
             /* 02/18/2022 MDP
              By default, Signal R will use reflection to find classes that inherit from Microsoft.AspNet.SignalR.
@@ -103,21 +106,26 @@ namespace RockWeb
              This must be done _after_ the call to MapSignalR otherwise our
              out custom locator will be replaced.
             */
-            legacyHubConfiguration.Resolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
+            GlobalHost.DependencyResolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
+            GlobalHost.DependencyResolver.Register( typeof( IHubDescriptorProvider ), () => new LegacyHubDescriptorProvider( GlobalHost.DependencyResolver ) );
 
-            bool useAzureSignalR = false;
-
-            if ( !useAzureSignalR )
+            // Initialize the Rock RealTime system.
+            var rtHubConfiguration = new HubConfiguration
             {
-                var rtHubConfiguration = new HubConfiguration
-                {
-                    Resolver = new DefaultDependencyResolver()
-                };
-                rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
-                app.MapSignalR( "/signalr-rt", rtHubConfiguration );
+                Resolver = new DefaultDependencyResolver()
+            };
+            rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
 
-                Rock.WebStartup.RockApplicationStartupHelper.InitializeRockRealTime( rtHubConfiguration );
+            if ( !useAzure )
+            {
+                app.MapSignalR( "/rock-rt", rtHubConfiguration );
             }
+            else
+            {
+                app.MapAzureSignalR( "/rock-rt", "Rock", rtHubConfiguration );
+            }
+
+            Rock.WebStartup.RockApplicationStartupHelper.InitializeRockRealTime( rtHubConfiguration );
         }
 
         /// <summary>
@@ -138,7 +146,42 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// This is a custom implementation for the "signalr-rt" endpoint to
+        /// Locates hubs for the legacy SignalR system. This will filter out any
+        /// hubs that have a period in the name since that is not allowed by SignalR.
+        /// </summary>
+        private class LegacyHubDescriptorProvider : IHubDescriptorProvider
+        {
+            private readonly Lazy<IHubDescriptorProvider> _baseProvider;
+
+            /// <summary>
+            /// Creates a new instance of <see cref="LegacyHubDescriptorProvider"/>
+            /// that will be used to find all registered hubs for legacy SignalR.
+            /// </summary>
+            /// <param name="resolver">The resolver to find dependencies at runtime.</param>
+            public LegacyHubDescriptorProvider( IDependencyResolver resolver )
+            {
+                _baseProvider = new Lazy<IHubDescriptorProvider>( () => new ReflectedHubDescriptorProvider( resolver ) );
+            }
+
+            /// <inheritdoc/>
+            public IList<HubDescriptor> GetHubs()
+            {
+                var hubs = _baseProvider.Value.GetHubs();
+
+                // Filter out hubs from plugins which might have a "." in the
+                // name since that will cause a startup failure.
+                return hubs.Where( h => !h.Name.Contains( "." ) ).ToList();
+            }
+
+            /// <inheritdoc/>
+            public bool TryGetHub( string hubName, out HubDescriptor descriptor )
+            {
+                return _baseProvider.Value.TryGetHub( hubName, out descriptor );
+            }
+        }
+
+        /// <summary>
+        /// This is a custom implementation for the "rock-rt" endpoint to
         /// ensure that the only hub that shows up is the RealTime hub.
         /// </summary>
         private class RealTimeHubDescriptorProvider : IHubDescriptorProvider

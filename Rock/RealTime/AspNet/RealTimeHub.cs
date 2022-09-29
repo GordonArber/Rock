@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,13 +42,34 @@ namespace Rock.RealTime.AspNet
     [RockInternal]
     public sealed class RealTimeHub : Hub<IRockHubClientProxy>
     {
-        public async Task<object> PostMessage( string hubIdentifier, string messageName, object[] parameters )
+        public async Task<object> PostMessage( string topicIdentifier, string messageName, object[] parameters )
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            var hubInstance = RealTimeHelper.GetHubInstance( this, hubIdentifier );
-            sw.Stop();
+            object topicInstance;
 
-            var mi = hubInstance.GetType().GetMethod( messageName );
+            try
+            {
+                topicInstance = RealTimeHelper.GetTopicInstance( this, topicIdentifier );
+            }
+            catch
+            {
+                throw new HubException( "RealTime topic was not found." );
+            }
+
+            var matchingMethods = topicInstance.GetType()
+                .GetMethods( System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance )
+                .Where( m => m.Name.Equals( messageName, StringComparison.OrdinalIgnoreCase ) )
+                .ToList();
+
+            if ( matchingMethods.Count <= 0 )
+            {
+                throw new HubException( $"Message '{messageName}' was not found on topic '{topicIdentifier}'." );
+            }
+            else if ( matchingMethods.Count > 1 )
+            {
+                throw new HubException( $"Message '{messageName}' matched multiple methods on topic '{topicIdentifier}'." );
+            }
+
+            var mi = matchingMethods[0];
             var methodParameters = mi.GetParameters();
             var parms = new object[methodParameters.Length];
 
@@ -66,7 +89,7 @@ namespace Rock.RealTime.AspNet
                 }
             }
 
-            var result = mi.Invoke( hubInstance, parms );
+            var result = mi.Invoke( topicInstance, parms );
 
             if ( result is Task resultTask )
             {

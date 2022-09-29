@@ -119,7 +119,7 @@ namespace Rock.RealTime
         /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
         /// <param name="topicIdentifier">The identifier of the topic that should be created.</param>
         /// <returns>A new instance of the topic class that will handle the request.</returns>
-        public object GetHubInstance( object realTimeHub, string topicIdentifier )
+        public object GetTopicInstance( object realTimeHub, string topicIdentifier )
         {
             var topicConfiguration = RegisteredTopics
                 .FirstOrDefault( tc => tc.TopicIdentifier == topicIdentifier );
