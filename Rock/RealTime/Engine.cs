@@ -119,7 +119,7 @@ namespace Rock.RealTime
         /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
         /// <param name="topicIdentifier">The identifier of the topic that should be created.</param>
         /// <returns>A new instance of the topic class that will handle the request.</returns>
-        public object GetTopicInstance( object realTimeHub, string topicIdentifier )
+        public ITopicInternal GetTopicInstance( object realTimeHub, string topicIdentifier )
         {
             var topicConfiguration = RegisteredTopics
                 .FirstOrDefault( tc => tc.TopicIdentifier == topicIdentifier );
@@ -129,7 +129,7 @@ namespace Rock.RealTime
                 throw new Exception( $"Topic '{topicIdentifier}' was not found." );
             }
 
-            var hubInstance = Activator.CreateInstance( topicConfiguration.TopicType );
+            var hubInstance = ( ITopicInternal ) Activator.CreateInstance( topicConfiguration.TopicType );
 
             ConfigureTopicInstance( realTimeHub, topicConfiguration, hubInstance );
 
@@ -150,7 +150,7 @@ namespace Rock.RealTime
         /// <param name="realTimeHub">The real hub used to communicate with clients.</param>
         /// <param name="topicConfiguration">The configuration of the topic being setup.</param>
         /// <param name="topicInstance">The instance object that will handle incoming topic messages.</param>
-        protected abstract void ConfigureTopicInstance( object realTimeHub, TopicConfiguration topicConfiguration, object topicInstance );
+        protected abstract void ConfigureTopicInstance( object realTimeHub, TopicConfiguration topicConfiguration, ITopicInternal topicInstance );
 
         /// <summary>
         /// Sends a message to the specified clients scoped to the topic.

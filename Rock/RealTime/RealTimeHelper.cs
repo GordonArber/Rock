@@ -74,7 +74,7 @@ namespace Rock.RealTime
         /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
         /// <param name="topicIdentifier">The identifier of the topic that should be created.</param>
         /// <returns>A new instance of the topic class that will handle the request.</returns>
-        internal static object GetTopicInstance( object realTimeHub, string topicIdentifier )
+        internal static ITopicInternal GetTopicInstance( object realTimeHub, string topicIdentifier )
         {
             if ( Engine == null )
             {

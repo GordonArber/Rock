@@ -102,6 +102,9 @@ module.exports = {
         "@typescript-eslint/brace-style": ["warn", "stroustrup"],
 
         // Make unwanted white-space inside parenthesis an error.
-        "space-in-parens": ["error", "never"]
+        "space-in-parens": ["error", "never"],
+
+        // Allow non-null assertion. Use with wisdom.
+        "@typescript-eslint/no-non-null-assertion": "off"
     }
 };

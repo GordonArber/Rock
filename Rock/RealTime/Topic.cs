@@ -28,16 +28,44 @@ namespace Rock.RealTime
     /// An interface that describes the methods that will be recognized by the
     /// clients connected to the topic.
     /// </typeparam>
-    public abstract class Topic<T> : ITopic<T>
+    public abstract class Topic<T> : ITopicInternal, ITopic<T>
         where T : class
     {
         #region Properties
 
         /// <inheritdoc/>
-        public ITopicChannelManager Channels { get; internal set; }
+        public ITopicChannelManager Channels { get; private set; }
 
         /// <inheritdoc/>
-        public ITopicCallerClients<T> Clients { get; internal set; }
+        public ITopicCallerClients<T> Clients { get; private set; }
+
+        /// <inheritdoc/>
+        public IContext Context { get; private set; }
+
+        #endregion
+
+        #region ITopicInternal
+
+        /// <inheritdoc/>
+        ITopicChannelManager ITopicInternal.Channels
+        {
+            get => Channels;
+            set => Channels = value;
+        }
+
+        /// <inheritdoc/>
+        object ITopicInternal.Clients
+        {
+            get => Clients;
+            set => Clients = ( ITopicCallerClients<T> ) value;
+        }
+
+        /// <inheritdoc/>
+        IContext ITopicInternal.Context
+        {
+            get => Context;
+            set => Context = value;
+        }
 
         #endregion
     }

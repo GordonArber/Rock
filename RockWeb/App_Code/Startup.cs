@@ -87,13 +87,6 @@ namespace RockWeb
         /// <param name="app">The application builder to be configured.</param>
         private void ConfigureSignalR( IAppBuilder app )
         {
-            bool useAzure = false;
-
-            using ( var rockContext = new RockContext() )
-            {
-                var x = new AttributeValueService( rockContext ).GetGlobalAttributeValue( "OrganizationName" );
-            }
-
             app.MapSignalR();
 
             /* 02/18/2022 MDP
@@ -108,6 +101,8 @@ namespace RockWeb
             */
             GlobalHost.DependencyResolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
             GlobalHost.DependencyResolver.Register( typeof( IHubDescriptorProvider ), () => new LegacyHubDescriptorProvider( GlobalHost.DependencyResolver ) );
+
+            bool useAzure = true;
 
             // Initialize the Rock RealTime system.
             var rtHubConfiguration = new HubConfiguration

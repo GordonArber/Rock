@@ -76,28 +76,16 @@ namespace Rock.RealTime
         }
 
         /// <inheritdoc/>
-        protected override void ConfigureTopicInstance( object realTimeHub, TopicConfiguration topicConfiguration, object topicInstance )
+        protected override void ConfigureTopicInstance( object realTimeHub, TopicConfiguration topicConfiguration, ITopicInternal topicInstance )
         {
             if ( !( realTimeHub is RealTimeHub hub ) )
             {
                 throw new ArgumentException( "Invalid hub object.", nameof( realTimeHub ) );
             }
 
-            // Configure the "Channels" property. Because this is an unknown
-            // generic types we have to use reflection.
-            var piChannels = topicInstance.GetType().GetProperty( "Channels" );
-            piChannels?.SetValue( topicInstance, new TopicChannelManager( hub.Groups ) );
-
-            // Configure the "Clients" property. Because this is an unknown
-            // generic types we have to use reflection.
-            var piClients = topicInstance.GetType().GetProperty( "Clients" );
-
-            if ( piClients != null )
-            {
-                var clientsValue = Activator.CreateInstance( topicConfiguration.CallerClientsType, hub.Clients, topicConfiguration.TopicIdentifier, _proxyFactory );
-
-                piClients.SetValue( topicInstance, clientsValue );
-            }
+            topicInstance.Channels = new TopicChannelManager( hub.Groups );
+            topicInstance.Clients = Activator.CreateInstance( topicConfiguration.CallerClientsType, hub.Clients, topicConfiguration.TopicIdentifier, _proxyFactory );
+            topicInstance.Context = new Context( hub.Context.ConnectionId, hub.Context.User?.Identity?.Name );
         }
 
         /// <inheritdoc/>

@@ -43,8 +43,12 @@
     <Folder Include="src\realtime\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\realtime\aspNetEngine.ts" />
+    <TypeScriptCompile Include="src\realtime\engine.ts" />
     <TypeScriptCompile Include="src\realtime\index.ts" />
-    <TypeScriptCompile Include="src\realtime\utility.ts" />
+    <TypeScriptCompile Include="src\realtime\netCoreEngine.ts" />
+    <TypeScriptCompile Include="src\realtime\topic.ts" />
+    <TypeScriptCompile Include="src\realtime\types.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean">

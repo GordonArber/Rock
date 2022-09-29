@@ -949,9 +949,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
     <Compile Include="RealTime\AspNet\AspNetEngine.cs" />
     <Compile Include="RealTime\IRockHubClientProxy.cs" />
+    <Compile Include="RealTime\IContext.cs" />
+    <Compile Include="RealTime\ITopicInternal.cs" />
     <Compile Include="RealTime\Topics\ITestTopicClient.cs" />
     <Compile Include="RealTime\ITopic.cs" />
     <Compile Include="RealTime\ITopicCallerClients.cs" />

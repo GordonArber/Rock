@@ -29,10 +29,7 @@ namespace Rock.RealTime.Topics
             {
                 var caller = Clients.Current;
 
-                var result = caller.Pong( value, CancellationToken.None );
-
-                await result;
-
+                await caller.Pong( value, CancellationToken.None );
                 await Clients.Channel( "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789" ).Pong( value + 1, CancellationToken.None );
                 await Clients.Channel( "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-" ).Pong( value + 2, CancellationToken.None );
 

@@ -109,6 +109,11 @@ namespace Rock.RealTime.AspNet
             return result;
         }
 
+        public Task ConnectToTopic( string topicIdentifier )
+        {
+            return Task.CompletedTask;
+        }
+
         public override Task OnConnected()
         {
             Groups.Add( Context.ConnectionId, "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-" );

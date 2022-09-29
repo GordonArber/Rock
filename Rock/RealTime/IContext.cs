@@ -20,13 +20,8 @@ using Rock.Attribute;
 namespace Rock.RealTime
 {
     /// <summary>
-    /// Defines the structure of a RealTime topic area that will facilitate
-    /// communication between the server and remote devices.
+    /// Provides the context about an incoming request to a topic handler.
     /// </summary>
-    /// <typeparam name="T">
-    /// An interface that describes the methods that will be recognized by the
-    /// clients connected to the topic.
-    /// </typeparam>
     /// <remarks>
     ///     <para>
     ///         <strong>This is an internal API</strong> that supports the Rock
@@ -36,25 +31,18 @@ namespace Rock.RealTime
     ///     </para>
     /// </remarks>
     [RockInternal]
-    public interface ITopic<T>
-        where T : class
+    public interface IContext
     {
         /// <summary>
-        /// Gets the channel manager that will provide functionality to add and
-        /// remove client connections from various channels.
+        /// Gets the unique connection identifier for the current request.
         /// </summary>
-        ITopicChannelManager Channels { get; }
+        /// <value>The unique connection identifier for the current request.</value>
+        string ConnectionId { get; }
 
         /// <summary>
-        /// Gets a helper object to access client connections by various
-        /// filtering options.
+        /// Gets the login name of the user, this maps to a <see cref="Rock.Model.UserLogin.UserName"/>.
         /// </summary>
-        ITopicCallerClients<T> Clients { get; }
-
-        /// <summary>
-        /// Gets the context that describes the current request.
-        /// </summary>
-        /// <value>The context that describes the current request.</value>
-        IContext Context { get; }
+        /// <value>The login name of the user.</value>
+        string UserName { get; }
     }
 }
