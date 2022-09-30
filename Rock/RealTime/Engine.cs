@@ -18,8 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rock.RealTime
 {
@@ -35,6 +35,16 @@ namespace Rock.RealTime
         /// The lazy-initialized list of registered topics.
         /// </summary>
         private readonly Lazy<List<TopicConfiguration>> _registeredTopics;
+
+        /// <summary>
+        /// The topics that each client connection has connected to.
+        /// </summary>
+        private readonly Dictionary<string, HashSet<string>> _clientTopics = new Dictionary<string, HashSet<string>>();
+
+        /// <summary>
+        /// The lock object for <see cref="_clientTopics"/>.
+        /// </summary>
+        private readonly object _clientTopicsLock = new object();
 
         #endregion
 
@@ -126,14 +136,103 @@ namespace Rock.RealTime
 
             if ( topicConfiguration == null )
             {
-                throw new Exception( $"Topic '{topicIdentifier}' was not found." );
+                return null;
             }
 
-            var hubInstance = ( ITopicInternal ) Activator.CreateInstance( topicConfiguration.TopicType );
+            var topicInstance = ( ITopicInternal ) Activator.CreateInstance( topicConfiguration.TopicType );
 
-            ConfigureTopicInstance( realTimeHub, topicConfiguration, hubInstance );
+            ConfigureTopicInstance( realTimeHub, topicConfiguration, topicInstance );
 
-            return hubInstance;
+            return topicInstance;
+        }
+
+        /// <summary>
+        /// Handles a request for a client connection to connect to a specific
+        /// topic. This will track the connection and then call the topic's
+        /// <see cref="Topic{T}.OnConnectedAsync"/> method.
+        /// </summary>
+        /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
+        /// <param name="topicIdentifier">The topic identifier that should be connected to.</param>
+        /// <param name="connectionIdentifier">The identifier of the connection that should be connected to the topic.</param>
+        /// <returns><c>true</c> if the topic was found and connected, <c>false</c> otherwise.</returns>
+        public async Task<bool> ConnectToTopic( object realTimeHub, string topicIdentifier, string connectionIdentifier )
+        {
+            bool isNewConnect = false;
+            var topicInstance = GetTopicInstance( realTimeHub, topicIdentifier );
+
+            if ( topicInstance == null )
+            {
+                return false;
+            }
+
+            // Testing shows that on average this operation, including the lock,
+            // takes about 0.005ms so it is safe to use lock in this case.
+            // A concurrent dictionary does not work because we have a mutable
+            // value which is not thread-safe.
+            lock ( _clientTopicsLock )
+            {
+                if ( _clientTopics.TryGetValue( connectionIdentifier, out var topicIdentifiers ) )
+                {
+                    isNewConnect = topicIdentifiers.Add( topicIdentifier );
+                }
+                else
+                {
+                    _clientTopics.Add( connectionIdentifier, new HashSet<string> { topicIdentifier } );
+                    isNewConnect = true;
+                }
+            }
+
+            if ( isNewConnect )
+            {
+                await topicInstance.OnConnectedAsync();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Notifies the engine that a client connection has disconnected. Handles
+        /// cleanup such as calling the <see cref="Topic{T}.OnDisconnectedAsync"/>
+        /// method on each topic the client has connected to.
+        /// </summary>
+        /// <param name="realTimeHub">The hub object that is currently processing the real request.</param>
+        /// <param name="connectionIdentifier">The identifier of the connection that has disconnected.</param>
+        public async Task ClientDisconnected( object realTimeHub, string connectionIdentifier )
+        {
+            HashSet<string> topicIdentifiers;
+            var exceptions = new List<Exception>();
+
+            lock ( _clientTopicsLock )
+            {
+                if ( !_clientTopics.TryGetValue( connectionIdentifier, out topicIdentifiers ) )
+                {
+                    return;
+                }
+
+                _clientTopics.Remove( connectionIdentifier );
+            }
+
+            foreach ( var topicIdentifier in topicIdentifiers )
+            {
+                try
+                {
+                    var topicInstance = GetTopicInstance( realTimeHub, topicIdentifier );
+
+                    if ( topicInstance != null )
+                    {
+                        await topicInstance.OnDisconnectedAsync();
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    exceptions.Add( ex );
+                }
+            }
+
+            if ( exceptions.Any() )
+            {
+                throw new AggregateException( "One or more topics threw exceptions while disconnecting.", exceptions );
+            }
         }
 
         /// <summary>

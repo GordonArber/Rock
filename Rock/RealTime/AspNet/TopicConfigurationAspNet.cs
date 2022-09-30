@@ -46,7 +46,7 @@ namespace Rock.RealTime.AspNet
 
             TopicContext.GetType()
                 .GetProperty( "Channels" )
-                ?.SetValue( TopicContext, new TopicChannelManager( rockHubContext.Groups ) );
+                ?.SetValue( TopicContext, new TopicChannelManager( rockHubContext.Groups, TopicIdentifier ) );
 
             TopicContext.GetType()
                 .GetProperty( "Clients" )

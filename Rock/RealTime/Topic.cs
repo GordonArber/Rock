@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Threading.Tasks;
+
 namespace Rock.RealTime
 {
     /// <summary>
@@ -65,6 +67,22 @@ namespace Rock.RealTime
         {
             get => Context;
             set => Context = value;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
+        public virtual Task OnConnectedAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public virtual Task OnDisconnectedAsync()
+        {
+            return Task.CompletedTask;
         }
 
         #endregion

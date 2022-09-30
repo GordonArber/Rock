@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Threading.Tasks;
+
 namespace Rock.RealTime
 {
     /// <summary>
@@ -42,5 +44,17 @@ namespace Rock.RealTime
         /// </summary>
         /// <value>The context that describes the current request.</value>
         IContext Context { get; set; }
+
+        /// <summary>
+        /// Called when a new connection is established with the topic.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous connect.</returns>
+        Task OnConnectedAsync();
+
+        /// <summary>
+        /// Called when a connection with the topic is terminated.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous disconnect.</returns>
+        Task OnDisconnectedAsync();
     }
 }

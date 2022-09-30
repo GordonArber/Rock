@@ -34,6 +34,11 @@ namespace Rock.RealTime.AspNet
         /// </summary>
         private readonly IGroupManager _groupManager;
 
+        /// <summary>
+        /// The topic identifier to use when prefixing channel names.
+        /// </summary>
+        private readonly string _topicIdentifier;
+
         #endregion
 
         #region Constructors
@@ -43,9 +48,11 @@ namespace Rock.RealTime.AspNet
         /// to work with the ASP.Net environment.
         /// </summary>
         /// <param name="groupManager">The SignalR group manager.</param>
-        public TopicChannelManager( IGroupManager groupManager )
+        /// <param name="topicIdentifier">The topic identifier to use when prefixing channel names.</param>
+        public TopicChannelManager( IGroupManager groupManager, string topicIdentifier )
         {
             _groupManager = groupManager;
+            _topicIdentifier = topicIdentifier;
         }
 
         #endregion
@@ -55,13 +62,13 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public Task AddToChannelAsync( string connectionId, string channelName, CancellationToken cancellationToken = default )
         {
-            return _groupManager.Add( connectionId, channelName );
+            return _groupManager.Add( connectionId, $"{_topicIdentifier}-{channelName}" );
         }
 
         /// <inheritdoc/>
         public Task RemoveFromChannelAsync( string connectionId, string channelName, CancellationToken cancellationToken = default )
         {
-            return _groupManager.Remove( connectionId, channelName );
+            return _groupManager.Remove( connectionId, $"{_topicIdentifier}-{channelName}" );
         }
 
         #endregion

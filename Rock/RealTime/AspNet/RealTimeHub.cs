@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,17 +43,22 @@ namespace Rock.RealTime.AspNet
     [RockInternal]
     public sealed class RealTimeHub : Hub<IRockHubClientProxy>
     {
+        /// <summary>
+        /// Posts a message to the specified topic.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic.</param>
+        /// <param name="messageName">The name of the message.</param>
+        /// <param name="parameters">The parameters to be passed to the message handler.</param>
+        /// <returns>The value returned by the message handler.</returns>
         public async Task<object> PostMessage( string topicIdentifier, string messageName, object[] parameters )
         {
             object topicInstance;
 
-            try
+            topicInstance = RealTimeHelper.GetTopicInstance( this, topicIdentifier );
+
+            if ( topicInstance == null )
             {
-                topicInstance = RealTimeHelper.GetTopicInstance( this, topicIdentifier );
-            }
-            catch
-            {
-                throw new HubException( "RealTime topic was not found." );
+                throw new HubException( $"RealTime topic '{topicIdentifier}' was not found." );
             }
 
             var matchingMethods = topicInstance.GetType()
@@ -109,16 +115,27 @@ namespace Rock.RealTime.AspNet
             return result;
         }
 
-        public Task ConnectToTopic( string topicIdentifier )
+        /// <summary>
+        /// Requests that the client be connected to the specified topic.
+        /// </summary>
+        /// <param name="topicIdentifier">The identifier of the topic to be connected to.</param>
+        public async Task ConnectToTopic( string topicIdentifier )
         {
-            return Task.CompletedTask;
+            await RealTimeHelper.Engine.ConnectToTopic( this, topicIdentifier, Context.ConnectionId );
         }
 
+        /// <inheritdoc/>
         public override Task OnConnected()
         {
             Groups.Add( Context.ConnectionId, "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-" );
             System.Console.WriteLine( $"New connection on server {/*Startup.Url*/ "unknown"}" );
             return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public override async Task OnDisconnected( bool stopCalled )
+        {
+            await RealTimeHelper.Engine.ClientDisconnected( this, Context.ConnectionId );
         }
     }
 }
