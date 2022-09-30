@@ -328,6 +328,7 @@ namespace RockWeb.Blocks.Communication
                .ToList();
 
             var categoryGuids = this.GetAttributeValue( AttributeKey.CommunicationListCategories ).SplitDelimitedValues().AsGuidList();
+            var categoryService = new CategoryService( rockContext );
             var viewableCommunicationLists = new List<Group>();
 
             foreach ( var communicationList in communicationLists )
@@ -344,7 +345,11 @@ namespace RockWeb.Blocks.Communication
                 else
                 {
                     Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
-                    if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
+                    Category category = categoryService
+                        .Queryable()
+                        .Where( c => c.Guid == categoryGuid )
+                        .FirstOrDefault();
+                    if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) && category.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                     {
                         viewableCommunicationLists.Add( communicationList );
                     }
