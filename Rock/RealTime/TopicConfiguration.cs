@@ -46,10 +46,10 @@ namespace Rock.RealTime
         public Type ClientInterfaceType { get; protected set; }
 
         /// <summary>
-        /// Gets the default implementation of the <see cref="RockHubContext{T}"/>
+        /// Gets the default implementation of the <see cref="DefaultTopicContext{T}"/>
         /// for the <see cref="ClientInterfaceType"/>.
         /// </summary>
-        public object TopicContext { get; protected set; }
+        public ITopicContextInternal TopicContext { get; protected set; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> that implements the <see cref="ITopicCallerClients{T}"/>
@@ -85,8 +85,8 @@ namespace Rock.RealTime
             TopicType = topicType;
             ClientInterfaceType = clientInterfaceType;
 
-            var hubContextType = typeof( RockHubContext<> ).MakeGenericType( ClientInterfaceType );
-            TopicContext = Activator.CreateInstance( hubContextType );
+            var topicContextType = typeof( DefaultTopicContext<> ).MakeGenericType( ClientInterfaceType );
+            TopicContext = ( ITopicContextInternal ) Activator.CreateInstance( topicContextType );
         }
 
         #endregion

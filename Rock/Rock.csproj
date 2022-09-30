@@ -954,6 +954,7 @@
     <Compile Include="RealTime\AspNet\AspNetEngine.cs" />
     <Compile Include="RealTime\IRockHubClientProxy.cs" />
     <Compile Include="RealTime\IContext.cs" />
+    <Compile Include="RealTime\ITopicContextInternal.cs" />
     <Compile Include="RealTime\ITopicInternal.cs" />
     <Compile Include="RealTime\Topics\ITestTopicClient.cs" />
     <Compile Include="RealTime\ITopic.cs" />
@@ -963,7 +964,7 @@
     <Compile Include="RealTime\AspNet\TopicClients.cs" />
     <Compile Include="RealTime\ITopicContext.cs" />
     <Compile Include="RealTime\RealTimeHelper.cs" />
-    <Compile Include="RealTime\RockHubContext.cs" />
+    <Compile Include="RealTime\DefaultTopicContext.cs" />
     <Compile Include="RealTime\Topics\TestTopic.cs" />
     <Compile Include="RealTime\Topic.cs" />
     <Compile Include="RealTime\TopicConfiguration.cs" />

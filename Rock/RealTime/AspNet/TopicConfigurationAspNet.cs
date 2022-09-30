@@ -43,14 +43,8 @@ namespace Rock.RealTime.AspNet
             var clientsType = typeof( TopicClients<> ).MakeGenericType( ClientInterfaceType );
 
             CallerClientsType = typeof( TopicCallerClients<> ).MakeGenericType( ClientInterfaceType );
-
-            TopicContext.GetType()
-                .GetProperty( "Channels" )
-                ?.SetValue( TopicContext, new TopicChannelManager( rockHubContext.Groups, TopicIdentifier ) );
-
-            TopicContext.GetType()
-                .GetProperty( "Clients" )
-                ?.SetValue( TopicContext, Activator.CreateInstance( clientsType, rockHubContext.Clients, hubIdentifier, proxyFactory ) );
+            TopicContext.Channels = new TopicChannelManager( rockHubContext.Groups, TopicIdentifier );
+            TopicContext.Clients = Activator.CreateInstance( clientsType, rockHubContext.Clients, hubIdentifier, proxyFactory );
         }
 
         #endregion
