@@ -52,6 +52,7 @@ namespace Rock.RealTime
         /// Creates a new instance of <see cref="AspNetEngine"/> and
         /// sets the values to default.
         /// </summary>
+        /// <param name="hubConfiguration">The <see cref="HubConfiguration"/> that describes the ASP.Net hub.</param>
         public AspNetEngine( object hubConfiguration )
         {
             if ( !( hubConfiguration is HubConfiguration configuration ) )

@@ -49,7 +49,7 @@ namespace Rock.RealTime
 
         /// <summary>
         /// Gets a <typeparamref name="T"/> that can be used to invoke methods
-        /// on all clients connected to the hub excluding the specified client
+        /// on all clients connected to the topic excluding the specified client
         /// connections.
         /// </summary>
         /// <param name="excludedConnectionIds">A collection of connection identifiers to exclude.</param>

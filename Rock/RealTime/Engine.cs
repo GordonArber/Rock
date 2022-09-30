@@ -121,7 +121,7 @@ namespace Rock.RealTime
         }
 
         /// <summary>
-        /// Get an instance of the hub specified by its identifier. Each time
+        /// Get an instance of the topic specified by its identifier. Each time
         /// an incoming message from a connection is handled a new instance
         /// is created to respond to the message. This is the same way as the
         /// base SignalR works.

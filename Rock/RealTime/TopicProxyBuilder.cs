@@ -58,7 +58,7 @@ namespace Rock.RealTime
 
             var factoryMethod = clientType.GetMethod( "Build", BindingFlags.Public | BindingFlags.Static );
 
-            return ( TProxy client, string hubIdentifier ) => ( T ) factoryMethod.Invoke( null, new object[] { client, hubIdentifier } );
+            return ( TProxy client, string topicIdentifier ) => ( T ) factoryMethod.Invoke( null, new object[] { client, topicIdentifier } );
         }
 
         /// <summary>
@@ -74,15 +74,15 @@ namespace Rock.RealTime
             var type = moduleBuilder.DefineType( name, TypeAttributes.Public, typeof( object ), new[] { typeof( T ) } );
 
             var clientField = type.DefineField( "_client", typeof( TProxy ), FieldAttributes.Private | FieldAttributes.InitOnly );
-            var hubIdentifierField = type.DefineField( "_hubIdentifier", typeof( string ), FieldAttributes.Private | FieldAttributes.InitOnly );
+            var topicIdentifierField = type.DefineField( "_topicIdentifier", typeof( string ), FieldAttributes.Private | FieldAttributes.InitOnly );
 
-            var ctor = BuildConstructor( type, clientField, hubIdentifierField );
+            var ctor = BuildConstructor( type, clientField, topicIdentifierField );
 
             BuildFactoryMethod( type, ctor );
 
             foreach ( var method in GetAllInterfaceMethods( typeof( T ) ) )
             {
-                BuildMethod( type, method, clientField, hubIdentifierField );
+                BuildMethod( type, method, clientField, topicIdentifierField );
             }
 
             return type.CreateTypeInfo();
@@ -95,19 +95,19 @@ namespace Rock.RealTime
         /// <remarks>
         /// Emitted code is equivalent to:
         /// <code>
-        /// public ctor( IClientProxy client, string hubIdentifier )
+        /// public ctor( IClientProxy client, string topicIdentifier )
         ///     : base()
         /// {
         ///     this._client = client;
-        ///     this._hubIdentifier = hubIdentifier;
+        ///     this._topicIdentifier = topicIdentifier;
         /// }
         /// </code>
         /// </remarks>
         /// <param name="type">The builder that will be used to generate the type at runtime.</param>
         /// <param name="clientField">The field definition that represents the <c>_client</c> private field.</param>
-        /// <param name="hubIdentifierField">The field definition that represents the <c>_hubIdentifier</c> private field.</param>
+        /// <param name="topicIdentifierField">The field definition that represents the <c>_topicIdentifier</c> private field.</param>
         /// <returns>The definition to that will emit the constructor at runtime.</returns>
-        private static ConstructorInfo BuildConstructor( TypeBuilder type, FieldInfo clientField, FieldInfo hubIdentifierField )
+        private static ConstructorInfo BuildConstructor( TypeBuilder type, FieldInfo clientField, FieldInfo topicIdentifierField )
         {
             var ctor = type.DefineConstructor( MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof( TProxy ), typeof( string ) } );
 
@@ -122,10 +122,10 @@ namespace Rock.RealTime
             generator.Emit( OpCodes.Ldarg_1 ); // First constructor parameter.
             generator.Emit( OpCodes.Stfld, clientField ); // this._client = client
 
-            // this._hubIdentifier = hubIdentifier
+            // this._topicIdentifier = topicIdentifier
             generator.Emit( OpCodes.Ldarg_0 ); // "this"
             generator.Emit( OpCodes.Ldarg_2 ); // Second constructor parameter.
-            generator.Emit( OpCodes.Stfld, hubIdentifierField ); // this._hubIdentifier = hubIdentifier
+            generator.Emit( OpCodes.Stfld, topicIdentifierField ); // this._topicdentifier = topicIdentifier
 
             generator.Emit( OpCodes.Ret );
 
@@ -139,9 +139,9 @@ namespace Rock.RealTime
         /// <remarks>
         /// Emitted code is equivalent to:
         /// <code>
-        /// public static DynamicType Build( IClientProxy client, string hubIdentifier )
+        /// public static DynamicType Build( IClientProxy client, string topicIdentifier )
         /// {
-        ///     return new DynamicType( client, hubIdentifier );
+        ///     return new DynamicType( client, topicIdentifier );
         /// }
         /// </code>
         /// </remarks>
@@ -154,14 +154,14 @@ namespace Rock.RealTime
             var generator = method.GetILGenerator();
 
             generator.Emit( OpCodes.Ldarg_0 ); // Load the client argument onto the stack
-            generator.Emit( OpCodes.Ldarg_1 ); // Load the hubIdentifier argument onto the stack
+            generator.Emit( OpCodes.Ldarg_1 ); // Load the topicIdentifier argument onto the stack
             generator.Emit( OpCodes.Newobj, ctor ); // Call the generated constructor with the proxy
             generator.Emit( OpCodes.Ret ); // Return the typed client
         }
 
         /// <summary>
         /// Creates a dynamic method on the dynamic type that will proxy
-        /// the call to the client proxy using the proper hub identifier.
+        /// the call to the client proxy using the proper topic identifier.
         /// </summary>
         /// <remarks>
         /// Emitted code is roughly equivalent to:
@@ -175,15 +175,15 @@ namespace Rock.RealTime
         ///     messageArguments[1] = argument2;
         ///     messageArguments[N-1] = argumentN;
         ///
-        ///     return RockHubHelper.SendMessageAsync( this._client, this._hubIdentifier, [methodName], messageArguments, optionalCancellationToken ?? CancellationToken.None );
+        ///     return RockHubHelper.SendMessageAsync( this._client, this._topicIdentifier, [methodName], messageArguments, optionalCancellationToken ?? CancellationToken.None );
         /// }
         /// </code>
         /// </remarks>
         /// <param name="type">The builder that will be used to generate the method at runtime.</param>
         /// <param name="interfaceMethodInfo">The definition of the method to be implemented.</param>
         /// <param name="clientField">The field definition that represents the <c>_client</c> private field.</param>
-        /// <param name="hubIdentifierField">The field definition that represents the <c>_hubIdentifier</c> private field.</param>
-        private static void BuildMethod( TypeBuilder type, MethodInfo interfaceMethodInfo, FieldInfo clientField, FieldInfo hubIdentifierField )
+        /// <param name="topicIdentifierField">The field definition that represents the <c>_topicIdentifier</c> private field.</param>
+        private static void BuildMethod( TypeBuilder type, MethodInfo interfaceMethodInfo, FieldInfo clientField, FieldInfo topicIdentifierField )
         {
             // Find the RockHubHelper.SendMessageAsync method that will be
             // invoked by the proxy method.
@@ -241,9 +241,9 @@ namespace Rock.RealTime
 
             var isTypeLabel = generator.DefineLabel();
 
-            // The second argument to RockHubHelper.SendMessageAsync() is the hub identifier.
+            // The second argument to RockHubHelper.SendMessageAsync() is the topic identifier.
             generator.Emit( OpCodes.Ldarg_0 );
-            generator.Emit( OpCodes.Ldfld, hubIdentifierField );
+            generator.Emit( OpCodes.Ldfld, topicIdentifierField );
 
             // The third argument to RockHubHelper.SendMessageAsync() is the method name.
             generator.Emit( OpCodes.Ldstr, methodName );
@@ -282,7 +282,7 @@ namespace Rock.RealTime
                 generator.Emit( OpCodes.Call, typeof( CancellationToken ).GetProperty( "None", BindingFlags.Public | BindingFlags.Static ).GetMethod );
             }
 
-            // RockHubHelper.SendMessageAsync( this._client, this._hubIdentifier, methodName, methodArguments, optionalCancellationToken ?? CancellationToken.None );
+            // RockHubHelper.SendMessageAsync( this._client, this._topicIdentifier, methodName, methodArguments, optionalCancellationToken ?? CancellationToken.None );
             generator.Emit( OpCodes.Call, invokeMethod );
 
             // Return the Task returned by the call to SendMessageAsync().

@@ -39,12 +39,12 @@ namespace Rock.RealTime.AspNet
         public TopicConfigurationAspNet( IHubContext<IRockHubClientProxy> rockHubContext, Type topicType, Lazy<TopicProxyFactory<IClientProxy>> proxyFactory )
             : base( topicType )
         {
-            var hubIdentifier = topicType.FullName;
+            var topicIdentifier = topicType.FullName;
             var clientsType = typeof( TopicClients<> ).MakeGenericType( ClientInterfaceType );
 
             CallerClientsType = typeof( TopicCallerClients<> ).MakeGenericType( ClientInterfaceType );
             TopicContext.Channels = new TopicChannelManager( rockHubContext.Groups, TopicIdentifier );
-            TopicContext.Clients = Activator.CreateInstance( clientsType, rockHubContext.Clients, hubIdentifier, proxyFactory );
+            TopicContext.Clients = Activator.CreateInstance( clientsType, rockHubContext.Clients, topicIdentifier, proxyFactory );
         }
 
         #endregion
