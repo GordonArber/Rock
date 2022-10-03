@@ -23,15 +23,15 @@ namespace Rock.RealTime.Topics
 {
     public class TestTopic : Topic<ITestTopicClient>
     {
-        public async Task<int> Ping( string text, int value )
+        public async Task<int> Ping( string text, int value, CancellationToken cancellationToken )
         {
             try
             {
                 var caller = Clients.Current;
 
-                await caller.Pong( value, CancellationToken.None );
-                await Clients.Channel( "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789" ).Pong( value + 1, CancellationToken.None );
-                await Clients.Channel( "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-" ).Pong( value + 2, CancellationToken.None );
+                await caller.Pong( value, cancellationToken );
+                await Clients.Person( 1 ).Pong( value + 1, cancellationToken );
+                await Clients.Visitor( 1070 ).Pong( value + 2, cancellationToken );
 
                 return value;
             }

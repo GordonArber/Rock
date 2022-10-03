@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
@@ -26,7 +28,6 @@ using Microsoft.Owin;
 using Owin;
 
 using Rock;
-using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 
@@ -94,10 +95,6 @@ namespace RockWeb
              It looks in *all* DLLs in RockWeb/bin. It does this on the first page that includes <script src="/SignalR/hubs"></script>.
              This initial hit can take 30-60 seconds, so we'll register our own assembly locator to only look in Rock and Rock Plugins.
              RockWeb.RockMessageHub will be the only Hub. So it doesn't make sense to look in all DLL for any more.
-
-             09/22/2022 DSH
-             This must be done _after_ the call to MapSignalR otherwise our
-             out custom locator will be replaced.
             */
             GlobalHost.DependencyResolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
             GlobalHost.DependencyResolver.Register( typeof( IHubDescriptorProvider ), () => new LegacyHubDescriptorProvider( GlobalHost.DependencyResolver ) );
@@ -113,14 +110,68 @@ namespace RockWeb
 
             if ( !useAzure )
             {
-                app.MapSignalR( "/rock-rt", rtHubConfiguration );
+                app.Map( "/rock-rt", subApp =>
+                {
+                    // Register some logic to handle adding a claim for the anonymous
+                    // person identifier if we have one.
+                    subApp.Use( RegisterSignalRClaims );
+                    subApp.RunSignalR( rtHubConfiguration );
+                } );
             }
             else
             {
-                app.MapAzureSignalR( "/rock-rt", "Rock", rtHubConfiguration );
+                app.Map( "/rock-rt", subApp =>
+                {
+                    // Register some logic to handle adding a claim for the anonymous
+                    // person identifier if we have one.
+                    subApp.Use( RegisterSignalRClaims );
+                    subApp.RunAzureSignalR( "Rock", rtHubConfiguration );
+                } );
             }
 
             Rock.WebStartup.RockApplicationStartupHelper.InitializeRockRealTime( rtHubConfiguration );
+        }
+
+        #region SignalR Support
+
+        /// <summary>
+        /// Register any additional claims required by SignalR for a SignalR request.
+        /// </summary>
+        /// <param name="context">The context that identifies the request.</param>
+        /// <param name="nextHandler">The next handler to be called after this one.</param>
+        /// <returns>A Task that indicates when this process has completed.</returns>
+        private static Task RegisterSignalRClaims( IOwinContext context, Func<Task> nextHandler )
+        {
+            if ( !( context.Request.User is ClaimsPrincipal claimsPrincipal ) )
+            {
+                return nextHandler();
+            }
+
+            // Check if we have a logged in person, if so don't check for visitor.
+            if ( claimsPrincipal.Identity?.Name.IsNotNullOrWhiteSpace() == true )
+            {
+                var user = UserLoginService.GetCurrentUser();
+
+                if ( user != null )
+                {
+                    var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:person", user.PersonId.Value.ToString() ) } );
+
+                    claimsPrincipal.AddIdentity( identity );
+
+                    return nextHandler();
+                }
+            }
+
+            var visitorKeyCookie = context.Request.Cookies[Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY];
+
+            if ( visitorKeyCookie.IsNotNullOrWhiteSpace() )
+            {
+                var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:visitor", visitorKeyCookie ) } );
+
+                claimsPrincipal.AddIdentity( identity );
+            }
+
+            return nextHandler();
         }
 
         /// <summary>
@@ -219,5 +270,7 @@ namespace RockWeb
                 };
             }
         }
+
+        #endregion
     }
 }

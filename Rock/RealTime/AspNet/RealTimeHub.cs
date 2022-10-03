@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,7 +51,7 @@ namespace Rock.RealTime.AspNet
         /// <param name="messageName">The name of the message.</param>
         /// <param name="parameters">The parameters to be passed to the message handler.</param>
         /// <returns>The value returned by the message handler.</returns>
-        public async Task<object> PostMessage( string topicIdentifier, string messageName, object[] parameters )
+        public async Task<object> PostMessage( string topicIdentifier, string messageName, Newtonsoft.Json.Linq.JToken[] parameters )
         {
             object topicInstance;
 
@@ -79,20 +80,23 @@ namespace Rock.RealTime.AspNet
             var methodParameters = mi.GetParameters();
             var parms = new object[methodParameters.Length];
 
-            for ( int i = 0; i < methodParameters.Length; i++ )
+            try
             {
-                if ( methodParameters[i].ParameterType == typeof( int ) )
+                for ( int i = 0; i < methodParameters.Length; i++ )
                 {
-                    parms[i] = ( int ) ( long ) parameters[i];
+                    if ( methodParameters[i].ParameterType == typeof( CancellationToken ) )
+                    {
+                        parms[i] = CancellationToken.None;
+                    }
+                    else
+                    {
+                        parms[i] = parameters[i].ToObject( methodParameters[i].ParameterType );
+                    }
                 }
-                else if ( methodParameters[i].ParameterType == typeof( string ) )
-                {
-                    parms[i] = ( string ) parameters[i];
-                }
-                else if ( methodParameters[i].ParameterType == typeof( CancellationToken ) )
-                {
-                    parms[i] = CancellationToken.None;
-                }
+            }
+            catch
+            {
+                throw new HubException( $"Incorrect parameters passed to message '{messageName}'." );
             }
 
             var result = mi.Invoke( topicInstance, parms );
@@ -127,8 +131,37 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public override Task OnConnected()
         {
-            Groups.Add( Context.ConnectionId, "123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-" );
-            System.Console.WriteLine( $"New connection on server {/*Startup.Url*/ "unknown"}" );
+            if ( Context.User is ClaimsPrincipal claimsPrincipal )
+            {
+                var personClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:person" );
+
+                // If we have a claim that specifies the logged in PersonId then
+                // add this connection to a special group to track people by their Id.
+                if ( personClaim != null )
+                {
+                    var personId = personClaim.Value.AsIntegerOrNull();
+
+                    if ( personId.HasValue )
+                    {
+                        Groups.Add( Context.ConnectionId, $"rock:person:{personId}" );
+                    }
+                }
+
+                var visitorClaim = claimsPrincipal.Claims.FirstOrDefault( c => c.Type == "rock:visitor" );
+
+                // If we have a claim that specifies a known visitor then add
+                // this connection to a special group to track visitors by their Id.
+                if ( visitorClaim != null )
+                {
+                    var visitorId = Rock.Utility.IdHasher.Instance.GetId( visitorClaim.Value );
+
+                    if ( visitorId.HasValue )
+                    {
+                        Groups.Add( Context.ConnectionId, $"rock:visitor:{visitorId}" );
+                    }
+                }
+            }
+
             return Task.CompletedTask;
         }
 

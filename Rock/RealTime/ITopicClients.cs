@@ -102,16 +102,24 @@ namespace Rock.RealTime
         /// Gets a <typeparamref name="T"/> that can be used to invoke methods
         /// on all connections associated with the specified person.
         /// </summary>
-        /// <param name="identifier">The special identifier to target all connections belonging to this person.</param>
+        /// <param name="personId">The identifier of the person to target.</param>
         /// <returns>A proxy of <typeparamref name="T"/> that can be used to invoke methods.</returns>
-        T AllForPerson( string identifier );
+        T Person( int personId );
 
         /// <summary>
         /// Gets a <typeparamref name="T"/> that can be used to invoke methods
         /// on all connections associated with all of the specified people.
         /// </summary>
-        /// <param name="identifiers">A collection of special identifiers to target all connections belonging to these people.</param>
+        /// <param name="personIds">A collection of person identifiers to target all connections belonging to these people.</param>
         /// <returns>A proxy of <typeparamref name="T"/> that can be used to invoke methods.</returns>
-        T AllForPeople( IReadOnlyList<string> identifiers );
+        T People( IReadOnlyList<int> personIds );
+
+        /// <summary>
+        /// Gets a <typeparamref name="T"/> that can be used to invoke methods
+        /// on all connections associated with the specified person.
+        /// </summary>
+        /// <param name="visitorAliasId">The identifier of the visitor person alias to target.</param>
+        /// <returns>A proxy of <typeparamref name="T"/> that can be used to invoke methods.</returns>
+        T Visitor( int visitorAliasId );
     }
 }

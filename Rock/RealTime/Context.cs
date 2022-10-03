@@ -15,6 +15,12 @@
 // </copyright>
 //
 
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
+
+using Rock.Utility;
+
 namespace Rock.RealTime
 {
     /// <summary>
@@ -28,7 +34,10 @@ namespace Rock.RealTime
         public string ConnectionId { get; set; }
 
         /// <inheritdoc/>
-        public string UserName { get; set; }
+        public int? CurrentPersonId { get; set; }
+
+        /// <inheritdoc/>
+        public int? VisitorAliasId { get; set; }
 
         #endregion
 
@@ -38,11 +47,27 @@ namespace Rock.RealTime
         /// Initializes a new instance of the <see cref="Context"/> class.
         /// </summary>
         /// <param name="connectionId">The connection identifier.</param>
-        /// <param name="userName">Name of the user that is logged in.</param>
-        internal Context( string connectionId, string userName )
+        /// <param name="userPrincipal">The principal that identifies the current in person for the request.</param>
+        internal Context( string connectionId, IPrincipal userPrincipal )
         {
             ConnectionId = connectionId;
-            UserName = userName;
+
+            if ( userPrincipal is ClaimsPrincipal claimsPrincipal )
+            {
+                CurrentPersonId = claimsPrincipal.Claims
+                    .FirstOrDefault( c => c.Type == "rock:person" )
+                    ?.Value
+                    .AsIntegerOrNull();
+
+                var visitorAliasIdKey = claimsPrincipal.Claims
+                    .FirstOrDefault( c => c.Type == "rock:visitor" )
+                    ?.Value;
+
+                if ( visitorAliasIdKey.IsNotNullOrWhiteSpace() )
+                {
+                    VisitorAliasId = IdHasher.Instance.GetId( visitorAliasIdKey );
+                }
+            }
         }
 
         #endregion

@@ -146,15 +146,21 @@ namespace Rock.RealTime.AspNet
         }
 
         /// <inheritdoc/>
-        public T AllForPerson( string identifier )
+        public T Person( int personId )
         {
-            return GetProxy( _context.User( identifier ) );
+            return GetProxy( _context.Group( $"rock:person:{personId}" ) );
         }
 
         /// <inheritdoc/>
-        public T AllForPeople( IReadOnlyList<string> identifiers )
+        public T People( IReadOnlyList<int> personIds )
         {
-            return GetProxy( _context.Users( identifiers.ToArray() ) );
+            return GetProxy( _context.Groups( personIds.Select( id => $"rock:person:{id}" ).ToArray() ) );
+        }
+
+        /// <inheritdoc/>
+        public T Visitor( int visitorAliasId )
+        {
+            return GetProxy( _context.Group( $"rock:visitor:{visitorAliasId}" ) );
         }
 
         #endregion

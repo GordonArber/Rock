@@ -40,9 +40,17 @@ namespace Rock.RealTime
         string ConnectionId { get; }
 
         /// <summary>
-        /// Gets the login name of the user, this maps to a <see cref="Rock.Model.UserLogin.UserName"/>.
+        /// Gets the identifier of the logged in person.
         /// </summary>
-        /// <value>The login name of the user.</value>
-        string UserName { get; }
+        /// <value>The identifier of the logged in person.</value>
+        int? CurrentPersonId { get; }
+
+        /// <summary>
+        /// Gets the visitor person alias identifier. If this has a value then
+        /// the person is being tracked as a vistor to the site. This value
+        /// will be the same across all connections from the same browser.
+        /// </summary>
+        /// <value>The visitor person alias identifier.</value>
+        int? VisitorAliasId { get; }
     }
 }

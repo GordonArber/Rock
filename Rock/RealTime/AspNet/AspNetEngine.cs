@@ -86,7 +86,7 @@ namespace Rock.RealTime
 
             topicInstance.Channels = new TopicChannelManager( hub.Groups, topicConfiguration.TopicIdentifier );
             topicInstance.Clients = Activator.CreateInstance( topicConfiguration.CallerClientsType, hub.Clients, topicConfiguration.TopicIdentifier, _proxyFactory );
-            topicInstance.Context = new Context( hub.Context.ConnectionId, hub.Context.User?.Identity?.Name );
+            topicInstance.Context = new Context( hub.Context.ConnectionId, hub.Context.User );
         }
 
         /// <inheritdoc/>
