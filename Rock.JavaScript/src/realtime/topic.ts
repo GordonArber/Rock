@@ -38,6 +38,14 @@ export class Topic<TServer extends ServerFunctions<TServer> = GenericServerFunct
     }
 
     /**
+     * Gets the connection identifier for this topic. This will be the same for
+     * all topics, but that should not be relied on staying that way in the future.
+     */
+    public get connectionId(): string | null {
+        return this.engine.connectionId;
+    }
+
+    /**
      * Connects to the topic so that the backend knows of our presense.
      */
     public async connect(): Promise<void> {

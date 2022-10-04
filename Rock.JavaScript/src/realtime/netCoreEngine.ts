@@ -15,6 +15,11 @@ export class NetCoreEngine extends Engine {
     }
 
     /** @inheritdoc */
+    public override get connectionId(): string | null {
+        return this.connection?.connectionId || null;
+    }
+
+    /** @inheritdoc */
     protected async startConnection(): Promise<void> {
         const connection = new HubConnectionBuilder()
             .withUrl("/rock-rt")

@@ -15,6 +15,11 @@ export class AspNetEngine extends Engine {
     }
 
     /** @inheritdoc */
+    public override get connectionId(): string | null {
+        return this.hub?.connection.id || null;
+    }
+
+    /** @inheritdoc */
     protected startConnection(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const connection = hubConnection("/rock-rt", { useDefaultPath: false });

@@ -20,6 +20,12 @@ export abstract class Engine {
     }
 
     /**
+     * Get the identifier that uniquely identifiers our connection to the server.
+     * Returns null is not yet connected.
+     */
+    public abstract get connectionId(): string | null;
+
+    /**
      * Start the connection to the RealTime backend. This will only ever be
      * called once.
      */
@@ -76,6 +82,6 @@ export abstract class Engine {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- It's going to be up to caller to ensure they use the right handler arguments.
     public on(topicIdentifier: string, messageName: string, handler: (...args: any[]) => void): void {
-        this.emitter.on(`${topicIdentifier}-${messageName}`, handler);
+        this.emitter.on(`${topicIdentifier}-${messageName}`, (eventArgs: unknown[]) => handler(...eventArgs));
     }
 }

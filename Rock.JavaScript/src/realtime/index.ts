@@ -14,15 +14,4 @@ async function getTopic<TServer extends ServerFunctions<TServer> = GenericServer
     return topic;
 }
 
-interface IServer {
-    ping(text: string, value: number): Promise<void>;
-}
-
-(async function () {
-    const topic = await getTopic<IServer>("Rock.RealTime.Topics.TestTopic");
-
-    topic.on("Pong", (value: number) => console.log("Received pong", value));
-    topic.server.ping("This is some test", 100);
-})();
-
 export { getTopic };
