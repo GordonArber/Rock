@@ -958,6 +958,7 @@
     <Compile Include="RealTime\IContext.cs" />
     <Compile Include="RealTime\ITopicContextInternal.cs" />
     <Compile Include="RealTime\ITopicInternal.cs" />
+    <Compile Include="RealTime\RealTimeTopicAttribute.cs" />
     <Compile Include="RealTime\Topics\ITestTopicClient.cs" />
     <Compile Include="RealTime\ITopic.cs" />
     <Compile Include="RealTime\ITopicCallerClients.cs" />

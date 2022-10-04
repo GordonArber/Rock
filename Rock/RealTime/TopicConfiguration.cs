@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Reflection;
 
 namespace Rock.RealTime
 {
@@ -81,7 +82,24 @@ namespace Rock.RealTime
                 throw new Exception( $"Invalid topic type '{topicType.FullName}'. Must provide interface when subclassing {typeof( Topic<> ).FullName}." );
             }
 
-            TopicIdentifier = topicType.FullName;
+            var identifierAttribute = topicType.GetCustomAttribute<RealTimeTopicAttribute>();
+
+            if ( identifierAttribute == null )
+            {
+                throw new Exception( $"Topic '{topicType.FullName}' does not specify an identifier attribute." );
+            }
+
+            // Use either the identifier specified on the attribute or the full
+            // namespace + class name.
+            if ( identifierAttribute.Identifier.IsNotNullOrWhiteSpace() )
+            {
+                TopicIdentifier = identifierAttribute.Identifier;
+            }
+            else
+            {
+                TopicIdentifier = topicType.FullName;
+            }
+
             TopicType = topicType;
             ClientInterfaceType = clientInterfaceType;
 

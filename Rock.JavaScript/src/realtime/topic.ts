@@ -34,7 +34,6 @@ export class Topic<TServer extends ServerFunctions<TServer> = GenericServerFunct
                 };
             }
         });
-
     }
 
     /**
