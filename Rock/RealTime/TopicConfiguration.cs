@@ -17,6 +17,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Rock.RealTime
 {
@@ -89,6 +90,8 @@ namespace Rock.RealTime
                 throw new Exception( $"Topic '{topicType.FullName}' does not specify an identifier attribute." );
             }
 
+            VerifyInterface( clientInterfaceType );
+
             // Use either the identifier specified on the attribute or the full
             // namespace + class name.
             if ( identifierAttribute.Identifier.IsNotNullOrWhiteSpace() )
@@ -105,6 +108,69 @@ namespace Rock.RealTime
 
             var topicContextType = typeof( DefaultTopicContext<> ).MakeGenericType( ClientInterfaceType );
             TopicContext = ( ITopicContextInternal ) Activator.CreateInstance( topicContextType );
+        }
+
+        #endregion
+
+        #region Methods
+
+
+        /// <summary>
+        /// Verifies the interface is valid for building a proxy.
+        /// </summary>
+        /// <param name="interfaceType">Type of the interface.</param>
+        private static void VerifyInterface( Type interfaceType )
+        {
+            if ( !interfaceType.IsInterface )
+            {
+                throw new InvalidOperationException( "Type must be an interface." );
+            }
+
+            if ( interfaceType.GetProperties().Length != 0 )
+            {
+                throw new InvalidOperationException( "Type must not contain properties." );
+            }
+
+            if ( interfaceType.GetEvents().Length != 0 )
+            {
+                throw new InvalidOperationException( "Type must not contain events." );
+            }
+
+            foreach ( var method in interfaceType.GetMethods() )
+            {
+                VerifyMethod( interfaceType, method );
+            }
+
+            foreach ( var parent in interfaceType.GetInterfaces() )
+            {
+                VerifyInterface( parent );
+            }
+        }
+
+        /// <summary>
+        /// Verifies the method is valid for building a proxy.
+        /// </summary>
+        /// <param name="interfaceType">Type of the interface.</param>
+        /// <param name="interfaceMethod">The interface method.</param>
+        private static void VerifyMethod( Type interfaceType, MethodInfo interfaceMethod )
+        {
+            if ( !typeof( Task ).IsAssignableFrom( interfaceMethod.ReturnType ) )
+            {
+                throw new InvalidOperationException( $"Cannot generate proxy implementation for '{interfaceType.FullName}.{interfaceMethod.Name}'. All client proxy methods must return '{typeof( Task ).FullName}' or '{typeof( Task ).FullName}<T>'." );
+            }
+
+            foreach ( var parameter in interfaceMethod.GetParameters() )
+            {
+                if ( parameter.IsOut )
+                {
+                    throw new InvalidOperationException( $"Cannot generate proxy implementation for '{interfaceType.FullName}.{interfaceMethod.Name}'. Client proxy methods must not have 'out' parameters." );
+                }
+
+                if ( parameter.ParameterType.IsByRef )
+                {
+                    throw new InvalidOperationException( $"Cannot generate proxy implementation for '{interfaceType.FullName}.{interfaceMethod.Name}'. Client proxy methods must not have 'ref' parameters." );
+                }
+            }
         }
 
         #endregion
