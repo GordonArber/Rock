@@ -960,7 +960,6 @@
     <Compile Include="RealTime\ITopicInternal.cs" />
     <Compile Include="RealTime\RealTimeTopicAttribute.cs" />
     <Compile Include="RealTime\Topics\ITaskActivityProgress.cs" />
-    <Compile Include="RealTime\Topics\ITestTopicClient.cs" />
     <Compile Include="RealTime\ITopic.cs" />
     <Compile Include="RealTime\ITopicCallerClients.cs" />
     <Compile Include="RealTime\AspNet\TopicChannelManager.cs" />
@@ -970,7 +969,6 @@
     <Compile Include="RealTime\RealTimeHelper.cs" />
     <Compile Include="RealTime\DefaultTopicContext.cs" />
     <Compile Include="RealTime\Topics\TaskActivityProgressTopic.cs" />
-    <Compile Include="RealTime\Topics\TestTopic.cs" />
     <Compile Include="RealTime\Topic.cs" />
     <Compile Include="RealTime\TopicConfiguration.cs" />
     <Compile Include="RealTime\AspNet\TopicConfigurationAspNet.cs" />

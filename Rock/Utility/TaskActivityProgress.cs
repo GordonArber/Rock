@@ -143,10 +143,6 @@ namespace Rock.Utility
             TaskName = taskName ?? "Task";
         }
 
-        ~TaskActivityProgress()
-        {
-        }
-
         #endregion
 
         #region Methods
