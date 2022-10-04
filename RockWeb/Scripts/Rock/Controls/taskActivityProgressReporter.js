@@ -32,9 +32,9 @@
         TaskActivityProgressReporter.prototype.connect = async function () {
             this.topic = await Rock.RealTime.getTopic("Rock.RealTime.Topics.TaskActivityProgressTopic");
 
-            this.topic.on("TaskStarted", this.onTaskStarted.bind(this));
-            this.topic.on("TaskCompleted", this.onTaskCompleted.bind(this));
-            this.topic.on("UpdateTaskProgress", this.onUpdateTaskProgress.bind(this));
+            this.topic.on("taskStarted", this.onTaskStarted.bind(this));
+            this.topic.on("taskCompleted", this.onTaskCompleted.bind(this));
+            this.topic.on("updateTaskProgress", this.onUpdateTaskProgress.bind(this));
 
             const $connectionId = $(`#${this.controlId} [id$='_hfConnectionId']`);
 
@@ -48,7 +48,7 @@
         TaskActivityProgressReporter.prototype.onTaskCompleted = function (status) {
             const taskId = this.getTaskId();
 
-            if (status.TaskId !== taskId) {
+            if (status.taskId !== taskId) {
                 return;
             }
 
@@ -58,17 +58,17 @@
 
             $results.removeClass("alert-danger").removeClass("alert-warning").removeClass("alert-success");
 
-            if (status.Errors && this.errors.length > 0) {
+            if (status.errors && this.errors.length > 0) {
                 $results.addClass("alert-danger");
             }
-            else if (status.Warnings && this.warnings.length > 0) {
+            else if (status.warnings && this.warnings.length > 0) {
                 $results.addClass("alert-warning");
             }
             else {
                 $results.addClass("alert-success");
             }
 
-            $results.text(status.Message).slideDown();
+            $results.text(status.message).slideDown();
             $preparing.slideUp();
             $progress.slideUp();
         };
@@ -76,7 +76,7 @@
         TaskActivityProgressReporter.prototype.onUpdateTaskProgress = function (progress) {
             const taskId = this.getTaskId();
 
-            if (progress.TaskId !== taskId) {
+            if (progress.taskId !== taskId) {
                 return;
             }
 
@@ -84,15 +84,15 @@
             const $progress = $(`#${this.controlId} .js-progress-div`);
             const $bar = $(`#${this.controlId} .js-progress-bar`);
 
-            $bar.prop("aria-valuenow", progress.CompletionPercentage);
+            $bar.prop("aria-valuenow", progress.completionPercentage);
             $bar.prop("aria-valuemax", "100");
-            $bar.css("width", `${progress.CompletionPercentage}%`);
+            $bar.css("width", `${progress.completionPercentage}%`);
 
-            if (progress.Message) {
-                $bar.text(progress.Message);
+            if (progress.message) {
+                $bar.text(progress.message);
             }
             else {
-                $bar.text(`${progress.CompletionPercentage}%`);
+                $bar.text(`${progress.completionPercentage}%`);
             }
 
             $progress.slideDown();

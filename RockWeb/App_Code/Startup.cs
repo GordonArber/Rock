@@ -25,6 +25,9 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
 using Owin;
 
 using Rock;
@@ -107,7 +110,7 @@ namespace RockWeb
                 Resolver = new DefaultDependencyResolver()
             };
             rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
-
+            rtHubConfiguration.Resolver.Register( typeof( JsonSerializer ), () => CreateRealTimeSerializer() );
             if ( !useAzure )
             {
                 app.Map( "/rock-rt", subApp =>
@@ -172,6 +175,23 @@ namespace RockWeb
             }
 
             return nextHandler();
+        }
+
+        /// <summary>
+        /// Creates the real time serializer used to format data.
+        /// </summary>
+        /// <returns>A <see cref="JsonSerializer"/> configured for use with RealTime engine.</returns>
+        private static JsonSerializer CreateRealTimeSerializer()
+        {
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                }
+            };
+
+            return JsonSerializer.Create( settings );
         }
 
         /// <summary>

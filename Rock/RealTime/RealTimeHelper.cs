@@ -108,7 +108,9 @@ namespace Rock.RealTime
                 throw new Exception( $"{nameof( RealTimeHelper )} has not been initialized properly." );
             }
 
-            return Engine.SendMessageAsync( proxy, topicIdentifier, messageName, parameters, cancellationToken );
+            var camelMessageName = messageName.Substring( 0, 1 ).ToLower() + messageName.Substring( 1 );
+
+            return Engine.SendMessageAsync( proxy, topicIdentifier, camelMessageName, parameters, cancellationToken );
         }
 
         #endregion
