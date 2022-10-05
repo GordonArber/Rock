@@ -344,79 +344,34 @@ namespace RockWeb.Blocks.Security
         {
             var script = @"
                 $(function () {
-                    $('.js-code-1').focus();
+                    const inputElements = [...document.querySelectorAll('input.js-verification-code')];
 
-                    var codeInputs = $('.js-verification-code');
+                    inputElements.forEach((ele, index) => {
+                        ele.addEventListener('keydown', (e) => {
+                            // if the keycode is backspace & the current field is empty
+                            // focus the input before the current. Then the event happens
+                            // which will clear the 'before' input box.
+                            if (e.keyCode === 8 && e.target.value === '') inputElements[Math.max(0, index - 1)].focus()
+                        });
+                        ele.addEventListener('input', (e) => {
+                            // take the first character of the input
+                            const [first, ...rest] = e.target.value
+                            e.target.value = first ?? '' // first will be undefined when backspace was entered, so set the input to ""
+                            const lastInputBox = index === inputElements.length - 1
+                            const didInsertContent = first !== undefined
+                            if (didInsertContent && !lastInputBox) {
+                                // continue to input the rest of the string
+                                inputElements[index + 1].focus()
+                                inputElements[index + 1].value = rest.join('') // set the rest of the values as the value for the next input and trigger the input event so the cycle is repeated
+                                inputElements[index + 1].dispatchEvent(new Event('input'))
+                            }
 
-                    codeInputs.on('paste', function () {
-                        var self = $(this);
-                        var originalValue = self.val();
-
-                        self.val('');
-
-                        self.one('input', function () {
-                            var intRegex = /^\d+$/;
-                            $currentInputBox = $(this);
-
-                            var pastedValue = $currentInputBox.val();
-
-                            if (pastedValue.length == 6 && intRegex.test(pastedValue)) {
-                                pasteValues(pastedValue);
+                            if(lastInputBox){
                                 $('.js-verify-button').focus();
-                            } else {
-                                self.val(originalValue);
                             }
                         });
                     });
-
-                    codeInputs.on('keydown', function (event) {
-                        var self = $(this);
-                        var value = self.val();
-                        var key = event.keyCode || event.charCode;
-
-                        if ((key === 8 || key === 46) && value.length >= 1) {
-                            return;
-                        }
-
-                        if (key === 8) {
-                            var boxNumber = parseInt(self.attr('data-box-number'));
-                            if (boxNumber && boxNumber > 1 && boxNumber <= 6) {
-                                var prevBox = $('.js-code-' + (boxNumber - 1));
-                                prevBox.val('');
-                                prevBox.focus();
-                            }
-                            event.preventDefault();
-                            return;
-                        }
-
-                        if (value.length >= 1 && !event.ctrlKey) {
-                            event.preventDefault();
-                            return;
-                        }
-
-                        if (!event.ctrlKey) {
-                            self.one('input', function () {
-                                var self = $(this);
-                                var boxNumber = parseInt(self.attr('data-box-number'));
-                                if (boxNumber && boxNumber < 6) {
-                                    $('.js-code-' + (boxNumber + 1)).focus();
-                                }
-                                if (boxNumber === 6) {
-                                    $('.js-verify-button').focus();
-                                }
-                            });
-                        }
-                    });
                 });
-
-                function pasteValues(element) {
-                    var values = element.split('');
-
-                    $(values).each(function (index) {
-                        var $inputBox = $('.js-code-' + (index + 1));
-                        $inputBox.val(values[index])
-                    });
-                }
             ";
             ScriptManager.RegisterStartupScript( pnlVerificationCodeEntry, pnlVerificationCodeEntry.GetType(), "verificationCode", script, true );
         }
