@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-list"></i>Experiences
+                    <i class="fa fa-list"></i> Experiences
                 </h1>
             </div>
 
@@ -26,13 +26,7 @@
                             <Rock:RockBoundField DataField="ActionCount" HeaderText="Actions" SortExpression="ActionCount" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
-                            <Rock:LinkButtonField>
-                                <ItemTemplate>
-                                    <a class="btn btn-default btn-sm" href="#">
-                                        <i class="fa fa-desktop"></i>
-                                    </a>
-                                </ItemTemplate>
-                            </Rock:LinkButtonField>
+                            <Rock:LinkButtonField CssClass="btn btn-default btn-sm" Text="&lt;i class=&quot;fa fa-desktop&quot;&gt;&lt;/i&gt;" />
                             <Rock:DeleteField OnClick="gExperienceList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>
