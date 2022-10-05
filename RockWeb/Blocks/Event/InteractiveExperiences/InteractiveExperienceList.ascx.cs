@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Event.InteractiveExperience
+namespace RockWeb.Blocks.Event.InteractiveExperiences
 {
     [DisplayName( "Interactive Experience List" )]
     [Category( "Event" )]
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Event.InteractiveExperience
             gExperienceList.IsDeleteEnabled = canAddEditDelete;
             gExperienceList.Actions.AddClick += gExperienceList_AddClick;
             gExperienceList.GridRebind += gExperienceList_GridRebind;
-            gExperienceList.EntityTypeId = EntityTypeCache.Get<Rock.Model.InteractiveExperience>().Id;
+            gExperienceList.EntityTypeId = EntityTypeCache.Get<InteractiveExperience>().Id;
 
             gfExperiences.ApplyFilterClick += gfExperiences_ApplyFilterClick;
             gfExperiences.DisplayFilterValue += gfExperiences_DisplayFilterValue;
@@ -319,12 +319,12 @@ namespace RockWeb.Blocks.Event.InteractiveExperience
                 experiences = experiences.OrderBy( a => a.Name );
             }
 
-            gExperienceList.EntityTypeId = EntityTypeCache.GetId<Rock.Model.InteractiveExperience>();
+            gExperienceList.EntityTypeId = EntityTypeCache.GetId<InteractiveExperience>();
             gExperienceList.DataSource = experiences.ToList();
             gExperienceList.DataBind();
         }
 
-        private static DateTime? GetNextStartDateTime( Rock.Model.InteractiveExperience ie )
+        private static DateTime? GetNextStartDateTime( InteractiveExperience ie )
         {
             return ie.InteractiveExperienceSchedules
                 .Select( ies => ies.Schedule.GetNextStartDateTime( RockDateTime.Now ) )
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Event.InteractiveExperience
                 .FirstOrDefault();
         }
 
-        private static string GetCampusText( Rock.Model.InteractiveExperience ie )
+        private static string GetCampusText( InteractiveExperience ie )
         {
             var campusIds = ie.InteractiveExperienceSchedules
                 .SelectMany( ies => ies.InteractiveExperienceScheduleCampuses )
