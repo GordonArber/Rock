@@ -346,43 +346,18 @@ namespace Rock.Rest
             }
 
             var defaultConventions = ODataRoutingConventions.CreateDefault();
+
             // Disable the api/$metadata route
             var conventions = defaultConventions.Except( defaultConventions.OfType<MetadataRoutingConvention>() );
 
             WebApiConfig.EdmModel = builder.GetEdmModel();
 
-            config.MapODataServiceRoute( "api", "api", WebApiConfig.EdmModel, pathHandler: new RockDefaultODataPathHandler(), routingConventions: conventions );
+            config.MapODataServiceRoute( "api", "api", WebApiConfig.EdmModel, pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
             config.EnableDependencyInjection();
             config.Count().Filter().OrderBy().Expand().Select().MaxTop( null );
-
-            //config.MapODataServiceRoute( "api", "api", WebApiConfig.EdmModel );
-            /*
-            config.MapODataServiceRoute( "api", "api", containerBuilder =>
-                containerBuilder
-                    .AddService( Microsoft.OData.ServiceLifetime.Singleton, sp => WebApiConfig.EdmModel )
-                    .AddService( ServiceLifetime.Singleton, sp => conventions )
-            );*/
-
 
             new Rock.Transactions.RegisterControllersTransaction().Enqueue();
         }
 
-        public class RockDefaultODataPathHandler : DefaultODataPathHandler
-        {
-            public override string Link( ODataPath path )
-            {
-                return base.Link( path );
-            }
-
-            public override ODataPath Parse( string serviceRoot, string odataPath, IServiceProvider requestContainer )
-            {
-                return base.Parse( serviceRoot, odataPath, requestContainer );
-            }
-
-            public override ODataPathTemplate ParseTemplate( string odataPathTemplate, IServiceProvider requestContainer )
-            {
-                return base.ParseTemplate( odataPathTemplate, requestContainer );
-            }
-        }
     }
 }

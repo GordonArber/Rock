@@ -40,7 +40,6 @@ namespace Rock.Rest
         public override Microsoft.OData.Edm.IEdmModel GetModel( Type elementClrType, System.Net.Http.HttpRequestMessage request, System.Web.Http.Controllers.HttpActionDescriptor actionDescriptor )
         {
             // use the EdmModel that we already created in WebApiConfig (so that we don't have problems with OData4 Open Types)
-            var baseModel = base.GetModel( elementClrType, request, actionDescriptor );
             var ourModel = WebApiConfig.EdmModel;
             return ourModel;
         }
