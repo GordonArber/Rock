@@ -50,25 +50,27 @@ namespace Rock.Tests.UnitTests.Rest
         [DataRow( 100, 11, true )]
         [DataRow( 1000, 11, true )]
 
-        [DataRow( 1000, 110, true )]
+        [DataRow( 1000, 22, true )]
 
         public void PerformanceTest( int urlCount, int filterCount, bool useEscapeUriString )
         {
             string baseUrl = $"https://localhost:44329/api/People?$filter=";
-            StringBuilder filterExpression = new StringBuilder();
-            if ( filterCount > 0 )
+            List<string> filterExpressionList = new List<string>();
+
+
+            for ( int i = 0; i < filterCount; i++ )
             {
-                filterExpression.Append( $"ModifiedDateTime eq datetime'{RockDateTime.Now.ToISO8601DateString()}'" );
-                for ( int i = 0; i < filterCount; i++ )
+                if ( i % 2 == 0 )
                 {
-                    filterExpression.Append( " and " );
-                    filterExpression.Append( $"Guid eq guid'{Guid.NewGuid():D}'" );
-                    filterExpression.Append( " and " );
-                    filterExpression.Append( $"ModifiedDateTime eq datetime'{RockDateTime.Now.ToISO8601DateString()}'" );
+                    filterExpressionList.Add( $"Guid eq guid'{Guid.NewGuid():D}'" );
+                }
+                else
+                {
+                    filterExpressionList.Add( $"ModifiedDateTime eq datetime'{RockDateTime.Now.ToISO8601DateString()}'" );
                 }
             }
 
-            var filterExpressionFilter = filterExpression.ToString();
+            var filterExpressionFilter = filterExpressionList.AsDelimited( " and " );
             string originalUrl;
             if ( useEscapeUriString )
             {
@@ -92,7 +94,8 @@ namespace Rock.Tests.UnitTests.Rest
             }
 
             var averageMS = elaspedMS.Average();
-            const double maxExpectedMS = 0.2;
+            
+            const double maxExpectedMS = 0.25;
 
             Debug.WriteLine( $"[{averageMS} ms], urlCount={urlCount}, filterCount={filterCount}" );
             Assert.IsTrue( averageMS < maxExpectedMS );

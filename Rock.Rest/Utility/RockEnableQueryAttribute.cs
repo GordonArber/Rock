@@ -165,38 +165,40 @@ namespace Rock.Rest
 
             foreach ( Match match in dateTimeMatches )
             {
-                if ( match.Groups.Count == 2 )
-                {
-                    var v3Filter = match.Groups[0].Value;
-                    var capture = match.Groups[1].Value;
-
-                    var replace = Uri.EscapeDataString( v3Filter );
-                    var replaceWith = Uri.EscapeDataString( capture );
-
-                    // if the original is Encoded
-                    updatedUrl = updatedUrl.Replace( replace, replaceWith );
-
-                    // if the original is not Encoded
-                    updatedUrl = updatedUrl.Replace( v3Filter, capture );
-                }
+                updatedUrl = ParseMatch( updatedUrl, match );
             }
 
             foreach ( Match match in guidMatches )
             {
-                if ( match.Groups.Count == 2 )
-                {
-                    var v3Filter = match.Groups[0].Value;
-                    var capture = match.Groups[1].Value;
+                updatedUrl = ParseMatch( updatedUrl, match );
+            }
 
-                    var replace = Uri.EscapeDataString( v3Filter );
-                    var replaceWith = Uri.EscapeDataString( capture );
+            return updatedUrl;
+        }
 
-                    // if the original is Encoded
-                    updatedUrl = updatedUrl.Replace( replace, replaceWith );
+        private static string ParseMatch( string updatedUrl, Match match )
+        {
+            if ( match.Groups.Count < 2 )
+            {
+                return updatedUrl;
+            }
 
-                    // if the original is not Encoded
-                    updatedUrl = updatedUrl.Replace( v3Filter, capture );
-                }
+            var v3Filter = match.Groups[0].Value;
+            var capture = match.Groups[1].Value;
+
+            var replace = Uri.EscapeDataString( v3Filter );
+            var replaceWith = Uri.EscapeDataString( capture );
+
+            if ( updatedUrl.Contains( replace ) )
+            {
+                // if the original is Encoded
+                updatedUrl = updatedUrl.Replace( replace, replaceWith );
+            }
+
+            if ( updatedUrl.Contains( v3Filter ) )
+            {
+                // if the original is not Encoded
+                updatedUrl = updatedUrl.Replace( v3Filter, capture );
             }
 
             return updatedUrl;

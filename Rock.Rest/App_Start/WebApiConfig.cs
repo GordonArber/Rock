@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
@@ -25,17 +26,15 @@ using System.Web.Http.ExceptionHandling;
 using System.Web.Http.ValueProviders;
 using System.Web.Routing;
 
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Routing;
+using Microsoft.AspNet.OData.Routing.Conventions;
+using Microsoft.OData.Edm;
+
 using Rock;
 using Rock.Rest.Utility;
 using Rock.Rest.Utility.ValueProviders;
-using System.Collections.Generic;
-using Microsoft.OData;
-using Microsoft.OData.Edm;
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Routing.Conventions;
-using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Routing;
-using Microsoft.AspNet.OData.Routing.Template;
 
 namespace Rock.Rest
 {
