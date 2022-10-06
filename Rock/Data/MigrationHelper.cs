@@ -7075,7 +7075,7 @@ END
         public void UpdateWorkflowActionForm( string header, string footer, string actions, string systemCommunicationGuid,
             bool includeActionsInNotification, string actionAttributeGuid, string guid )
         {
-            Migration.Sql( string.Format(@"
+            Migration.Sql( string.Format( @"
 
                 DECLARE @SystemEmailId int = (SELECT [Id] FROM [SystemEmail] WHERE [Guid] = '{3}')
                 DECLARE @SystemCommunicationId int = (SELECT [Id] FROM [SystemCommunication] WHERE [Guid] = '{3}')
