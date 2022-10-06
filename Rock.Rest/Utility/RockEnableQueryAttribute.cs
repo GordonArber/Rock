@@ -172,7 +172,12 @@ namespace Rock.Rest
 
                     var replace = Uri.EscapeDataString( v3Filter );
                     var replaceWith = Uri.EscapeDataString( capture );
+
+                    // if the original is Encoded
                     updatedUrl = updatedUrl.Replace( replace, replaceWith );
+
+                    // if the original is not Encoded
+                    updatedUrl = updatedUrl.Replace( v3Filter, capture );
                 }
             }
 
@@ -185,7 +190,12 @@ namespace Rock.Rest
 
                     var replace = Uri.EscapeDataString( v3Filter );
                     var replaceWith = Uri.EscapeDataString( capture );
+
+                    // if the original is Encoded
                     updatedUrl = updatedUrl.Replace( replace, replaceWith );
+
+                    // if the original is not Encoded
+                    updatedUrl = updatedUrl.Replace( v3Filter, capture );
                 }
             }
 

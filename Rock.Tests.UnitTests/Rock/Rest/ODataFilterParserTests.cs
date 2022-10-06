@@ -8,31 +8,51 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Rest;
 
-namespace Rock.Tests.UnitTests.Rock
+namespace Rock.Tests.UnitTests.Rest
 {
     [TestClass]
     public class ODataFilterParserTests
     {
         [TestMethod]
-        [DataRow( 10, 0 )]
-        [DataRow( 100, 0 )]
-        [DataRow( 1000, 0 )]
+        [DataRow( 10, 0, false )]
+        [DataRow( 100, 0, false )]
+        [DataRow( 1000, 0, false )]
 
-        [DataRow( 10, 1 )]
-        [DataRow( 100, 1 )]
-        [DataRow( 1000, 1 )]
-        [DataRow( 10000, 1 )]
+        [DataRow( 10, 1, false )]
+        [DataRow( 100, 1, false )]
+        [DataRow( 1000, 1, false )]
+        [DataRow( 10000, 1, false )]
 
-        [DataRow( 10, 5 )]
-        [DataRow( 100, 5 )]
-        [DataRow( 1000, 5 )]
-        [DataRow( 10000, 5 )]
+        [DataRow( 10, 5, false )]
+        [DataRow( 100, 5, false )]
+        [DataRow( 1000, 5, false )]
+        [DataRow( 10000, 5, false )]
 
-        [DataRow( 10, 11 )]
-        [DataRow( 100, 11 )]
-        [DataRow( 1000, 11 )]
-        
-        public void PerformanceTest( int urlCount, int filterCount )
+        [DataRow( 10, 11, false )]
+        [DataRow( 100, 11, false )]
+        [DataRow( 1000, 11, false )]
+
+        [DataRow( 10, 0, true )]
+        [DataRow( 100, 0, true )]
+        [DataRow( 1000, 0, true )]
+
+        [DataRow( 10, 1, true )]
+        [DataRow( 100, 1, true )]
+        [DataRow( 1000, 1, true )]
+        [DataRow( 10000, 1, true )]
+
+        [DataRow( 10, 5, true )]
+        [DataRow( 100, 5, true )]
+        [DataRow( 1000, 5, true )]
+        [DataRow( 10000, 5, true )]
+
+        [DataRow( 10, 11, true )]
+        [DataRow( 100, 11, true )]
+        [DataRow( 1000, 11, true )]
+
+        [DataRow( 1000, 110, true )]
+
+        public void PerformanceTest( int urlCount, int filterCount, bool useEscapeUriString )
         {
             string baseUrl = $"https://localhost:44329/api/People?$filter=";
             StringBuilder filterExpression = new StringBuilder();
@@ -49,7 +69,15 @@ namespace Rock.Tests.UnitTests.Rock
             }
 
             var filterExpressionFilter = filterExpression.ToString();
-            var originalUrl = baseUrl + System.Net.WebUtility.UrlEncode( filterExpressionFilter );
+            string originalUrl;
+            if ( useEscapeUriString )
+            {
+                originalUrl = baseUrl + System.Net.WebUtility.UrlEncode( filterExpressionFilter );
+            }
+            else
+            {
+                originalUrl = baseUrl + Uri.EscapeDataString( filterExpressionFilter );
+            }
 
             var warmup = RockEnableQueryAttribute.ParseUrl( originalUrl, filterExpressionFilter );
 
@@ -63,7 +91,11 @@ namespace Rock.Tests.UnitTests.Rock
                 elaspedMS.Add( stopwatch.Elapsed.TotalMilliseconds );
             }
 
-            Debug.WriteLine($"SB: [{elaspedMS.Average()} ms], urlCount={urlCount}, filterCount={filterCount}" );
+            var averageMS = elaspedMS.Average();
+            const double maxExpectedMS = 0.2;
+
+            Debug.WriteLine( $"[{averageMS} ms], urlCount={urlCount}, filterCount={filterCount}" );
+            Assert.IsTrue( averageMS < maxExpectedMS );
         }
 
         [TestMethod]
@@ -88,12 +120,17 @@ namespace Rock.Tests.UnitTests.Rock
         [DataRow(
             "ModifiedDateTime eq datetime'2022-10-04T10:56:50.747' and Guid eq guid'722dfa12-b47d-49c3-8b23-1b7d08a1cf53'",
             "ModifiedDateTime eq 2022-10-04T10:56:50.747 and Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53" )]
-        public void DidParseCorrectlyTest(string originalFilter, string expectedResult)
+        public void DidParseCorrectlyTest( string originalFilter, string expectedResult )
         {
-            string originalUrl = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={originalFilter}" );
-            var actualResult = RockEnableQueryAttribute.ParseUrl( originalUrl, originalFilter );
-            string expectedUrl = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={expectedResult}" );
-            Assert.AreEqual( actualResult, expectedUrl );
+            string originalUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={originalFilter}" );
+            var actualResultUrlEncoded = RockEnableQueryAttribute.ParseUrl( originalUrlUrlEncoded, originalFilter );
+            string expectedUrlUrlEncoded = System.Net.WebUtility.UrlEncode( $"https://localhost:44329/api/People?$filter={expectedResult}" );
+            Assert.AreEqual( actualResultUrlEncoded, expectedUrlUrlEncoded );
+
+            string originalUrlUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={originalFilter}" );
+            var actualResultUriEscapeUriString = RockEnableQueryAttribute.ParseUrl( originalUrlUriEscapeUriString, originalFilter );
+            string expectedUriEscapeUriString = Uri.EscapeUriString( $"https://localhost:44329/api/People?$filter={expectedResult}" );
+            Assert.AreEqual( actualResultUriEscapeUriString, expectedUriEscapeUriString );
         }
     }
 }
