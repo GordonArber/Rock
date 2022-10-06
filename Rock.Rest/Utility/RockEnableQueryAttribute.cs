@@ -18,10 +18,6 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http.Controllers;
-using System.Web.Http.Filters;
 
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
@@ -30,7 +26,7 @@ namespace Rock.Rest
 {
     /// <summary>
     /// This class defines an attribute that can be applied to an action to enable
-    /// querying using the OData query syntax using the precompiled Rock EdmModel
+    /// querying using the OData query syntax using the precompiled Rock EdmModel.
     /// </summary>
     public class RockEnableQueryAttribute : EnableQueryAttribute
     {
@@ -92,7 +88,7 @@ namespace Rock.Rest
         /// <returns>ODataQueryOptions.</returns>
         private ODataQueryOptions EnsureV4ODataQueryOptions( ODataQueryOptions queryOptions )
         {
-            if ( InferIfRequestUriHasV3Filters( queryOptions ) )
+            if ( RequestUriHasObsoleteV3Filters( queryOptions ) )
             {
                 return ConvertOData3FiltersToODataV4( queryOptions );
             }
@@ -102,14 +98,12 @@ namespace Rock.Rest
             }
         }
 
-        // Sometimes clients will not specify dataserviceversion or maxdataserviceversion
-        // While this is required in the spec, we can quietly check a couple giveaways that the request URI is v3
         /// <summary>
-        /// Infers if request URI has v3 filters.
+        /// Return true if the Request has OData V3 filters that were made obsolete in V4
         /// </summary>
         /// <param name="queryOptions">The query options.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        private bool InferIfRequestUriHasV3Filters( ODataQueryOptions queryOptions )
+        private bool RequestUriHasObsoleteV3Filters( ODataQueryOptions queryOptions )
         {
             var rawFilter = queryOptions?.Filter?.RawValue;
             if ( rawFilter.IsNullOrWhiteSpace() )
@@ -125,11 +119,11 @@ namespace Rock.Rest
         /// <summary>
         /// The date time filter capture
         /// </summary>
-        private readonly Regex _dateTimeFilterCapture = new Regex( @"datetime\'(\S*)\'", RegexOptions.Compiled );
+        private static readonly Regex _dateTimeFilterCapture = new Regex( @"datetime\'(\S*)\'", RegexOptions.Compiled );
         /// <summary>
         /// The unique identifier filter capture
         /// </summary>
-        private readonly Regex _guidFilterCapture = new Regex( @"guid\'([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\'", RegexOptions.Compiled );
+        private static readonly Regex _guidFilterCapture = new Regex( @"guid\'([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\'", RegexOptions.Compiled );
 
         /// <summary>
         /// Converts the o data3 filters to o data v4.
@@ -140,38 +134,11 @@ namespace Rock.Rest
         {
             var originalUrl = queryOptions.Request.RequestUri.OriginalString;
             var rawFilter = queryOptions?.Filter?.RawValue;
-            var dateTimeMatches = _dateTimeFilterCapture.Matches( rawFilter );
-            var updatedUrl = originalUrl;
 
-            foreach ( Match match in dateTimeMatches )
-            {
-                if ( match.Groups.Count == 2 )
-                {
-                    var v3Filter = match.Groups[0].Value;
-                    var capture = match.Groups[1].Value;
+            string updatedUrl = ParseUrl( originalUrl, rawFilter );
 
-                    var replace = System.Net.WebUtility.UrlEncode( v3Filter );
-                    var replaceWith = System.Net.WebUtility.UrlEncode( capture );
-                    updatedUrl = updatedUrl.Replace( replace, replaceWith );
-                }
-            }
-
-            var guidMatches = _guidFilterCapture.Matches( rawFilter );
-            foreach ( Match match in guidMatches )
-            {
-                if ( match.Groups.Count == 2 )
-                {
-                    var v3Filter = match.Groups[0].Value;
-                    var capture = match.Groups[1].Value;
-
-                    var replace = System.Net.WebUtility.UrlEncode( v3Filter );
-                    var replaceWith = System.Net.WebUtility.UrlEncode( capture );
-                    updatedUrl = updatedUrl.Replace( replace, replaceWith );
-                }
-            }
-            
             var convertedRequest = new HttpRequestMessage( queryOptions.Request.Method, updatedUrl );
-            foreach( var origProperty in queryOptions.Request.Properties )
+            foreach ( var origProperty in queryOptions.Request.Properties )
             {
                 convertedRequest.Properties.Add( origProperty.Key, origProperty.Value );
             }
@@ -184,6 +151,46 @@ namespace Rock.Rest
             var convertedODataQueryOptions = new ODataQueryOptions( queryOptions.Context, convertedRequest );
 
             return convertedODataQueryOptions;
+        }
+
+        internal static string ParseUrl( string originalUrl, string rawFilter )
+        {
+            var dateTimeMatches = _dateTimeFilterCapture.Matches( rawFilter );
+            var guidMatches = _guidFilterCapture.Matches( rawFilter );
+            if ( guidMatches.Count == 0 && dateTimeMatches.Count == 0 )
+            {
+                return originalUrl;
+            }
+
+            var updatedUrl = originalUrl;
+
+            foreach ( Match match in dateTimeMatches )
+            {
+                if ( match.Groups.Count == 2 )
+                {
+                    var v3Filter = match.Groups[0].Value;
+                    var capture = match.Groups[1].Value;
+
+                    var replace = Uri.EscapeDataString( v3Filter );
+                    var replaceWith = Uri.EscapeDataString( capture );
+                    updatedUrl = updatedUrl.Replace( replace, replaceWith );
+                }
+            }
+
+            foreach ( Match match in guidMatches )
+            {
+                if ( match.Groups.Count == 2 )
+                {
+                    var v3Filter = match.Groups[0].Value;
+                    var capture = match.Groups[1].Value;
+
+                    var replace = Uri.EscapeDataString( v3Filter );
+                    var replaceWith = Uri.EscapeDataString( capture );
+                    updatedUrl = updatedUrl.Replace( replace, replaceWith );
+                }
+            }
+
+            return updatedUrl;
         }
     }
 }
