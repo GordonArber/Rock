@@ -19,6 +19,7 @@ export * as Page from "./page";
 export * as Popover from "./popover";
 export * as PromiseUtils from "./promiseUtils";
 export * as RockDateTime from "./rockDateTime";
+export * as InternetCalendar from "./internetCalendar";
 export * as SlidingDateRange from "./slidingDateRange";
 export * as StringUtils from "./stringUtils";
 export * as Suspense from "./suspense";
