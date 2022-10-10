@@ -269,6 +269,36 @@ namespace Rock.SystemGuid
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE = "3D90E693-476E-4DFC-B958-A28D1DD370BF";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAction"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_ACTION = "8635E7E7-3576-47FF-92DE-30A69EB5D011";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceAnswer"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_ANSWER = "D11DA9D4-8887-4EC2-B396-78556926DE89";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceOccurrence"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_OCCURRENCE = "2D1263A1-A3E7-4568-AA4B-C1234824188D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceSchedule"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_SCHEDULE = "D23B4DCF-545A-490F-AEAD-BA78A8FB4028";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperienceScheduleCampus"/>
+        /// </summary>
+        public const string INTERACTIVE_EXPERIENCE_SCHEDULE_CAMPUS = "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LavaShortcode"/> (well known as of v14)
         /// </summary>
         public const string LAVA_SHORTCODE = "7574A473-3326-4973-8DF6-C7BF5F64EB36";
