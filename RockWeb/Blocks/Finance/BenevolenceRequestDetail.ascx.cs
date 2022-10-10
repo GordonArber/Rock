@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.Finance
             Person person = persons?.FirstOrDefault();
             if ( person == null )
             {
-                person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress };
+                person = new Person { FirstName = firstName, LastName = lastName, Email = emailAddress, RaceValueId = rpRace.SelectedValueAsId(), EthnicityValueId = epEthnicity.SelectedValueAsId() };
                 var group = PersonService.SaveNewPerson( person, rockContext );
 
                 SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );

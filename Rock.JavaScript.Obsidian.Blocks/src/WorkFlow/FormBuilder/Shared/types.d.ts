@@ -503,6 +503,12 @@ export type FormPersonEntry = {
      * that the following controls are for the spouse.
      */
     spouseLabel?: string | null;
+
+    /**
+    * Determines if the race and ethnicity pickers should be hidden, optional or required
+    * when displaying the person entry form.
+    */
+    raceAndEthnicityEntry?: FormFieldVisibility;
 };
 
 // #endregion

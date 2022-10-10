@@ -76,6 +76,8 @@ namespace Rock.Web.UI.Controls
         private RockDropDownList _ddlPersonEntrySpouseAttribute;
         private RockDropDownList _ddlPersonEntryFamilyAttribute;
         private CodeEditor _cePersonEntryPostHtml;
+        private RacePicker _rpRace;
+        private EthnicityPicker _epEthnicity;
 
         #endregion PersonEntry related
 
@@ -174,6 +176,8 @@ namespace Rock.Web.UI.Controls
             form.PersonEntryPersonAttributeGuid = _ddlPersonEntryPersonAttribute.SelectedValueAsGuid();
             form.PersonEntrySpouseAttributeGuid = _ddlPersonEntrySpouseAttribute.SelectedValueAsGuid();
             form.PersonEntryFamilyAttributeGuid = _ddlPersonEntryFamilyAttribute.SelectedValueAsGuid();
+            form.PersonEntryRaceValueId = _rpRace.SelectedValueAsId();
+            form.PersonEntryEthnicityValueId = _epEthnicity.SelectedValueAsId();
 
             foreach ( var row in AttributeRows )
             {
@@ -279,6 +283,8 @@ namespace Rock.Web.UI.Controls
             _ddlPersonEntryPersonAttribute.SetValue( workflowActionForm.PersonEntryPersonAttributeGuid );
             _ddlPersonEntrySpouseAttribute.SetValue( workflowActionForm.PersonEntrySpouseAttributeGuid );
             _ddlPersonEntryFamilyAttribute.SetValue( workflowActionForm.PersonEntryFamilyAttributeGuid );
+            _rpRace.SetValue( workflowActionForm.PersonEntryRaceValueId );
+            _epEthnicity.SetValue( workflowActionForm.PersonEntryEthnicityValueId );
 
             // Remove any existing rows (shouldn't be any)
             foreach ( var attributeRow in Controls.OfType<WorkflowFormAttributeRow>() )
@@ -385,6 +391,8 @@ namespace Rock.Web.UI.Controls
             target.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
+            target.PersonEntryRaceValueId = source.PersonEntryRaceValueId;
+            target.PersonEntryEthnicityValueId = source.PersonEntryEthnicityValueId;
         }
 
         /// <summary>
@@ -730,6 +738,16 @@ namespace Rock.Web.UI.Controls
                 EditorHeight = "120"
             };
 
+            _rpRace = new RacePicker
+            {
+                ID = "_rpRace"
+            };
+
+            _epEthnicity = new EthnicityPicker
+            {
+                ID = "_epEthnicity"
+            };
+
             /* Person Entry - Row 1*/
             Panel pnlPersonEntryRow1 = new Panel
             {
@@ -953,13 +971,29 @@ namespace Rock.Web.UI.Controls
                 CssClass = "col-xs-6"
             };
 
+            Panel pnlPersonEntryRow6Col4 = new Panel
+            {
+                ID = "pnlPersonEntryRow6Col4",
+                CssClass = "col-xs-3"
+            };
+
+            Panel pnlPersonEntryRow6Col5 = new Panel
+            {
+                ID = "pnlPersonEntryRow6Col5",
+                CssClass = "col-xs-3"
+            };
+
             _pnlPersonEntry.Controls.Add( pnlPersonEntryRow6 );
             pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col1 );
             pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col2 );
             pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col3 );
+            pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col4 );
+            pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col5 );
             pnlPersonEntryRow6Col1.Controls.Add( _ddlPersonEntryPersonAttribute );
             pnlPersonEntryRow6Col2.Controls.Add( _ddlPersonEntrySpouseAttribute );
             pnlPersonEntryRow6Col3.Controls.Add( _ddlPersonEntryFamilyAttribute );
+            pnlPersonEntryRow6Col4.Controls.Add( _rpRace );
+            pnlPersonEntryRow6Col5.Controls.Add( _epEthnicity );
 
             /* Person Entry - Post-HTML*/
             _pnlPersonEntry.Controls.Add( _cePersonEntryPostHtml );

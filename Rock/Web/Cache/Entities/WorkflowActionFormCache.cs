@@ -125,6 +125,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; private set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.RaceAndEthnicityEntryOption"/>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption RaceAndEthnicityEntryOption { get; private set; }
+
         /// <inheritdoc cref="WorkflowActionForm.PersonEntrySpouseLabel"/>
         [DataMember]
         public string PersonEntrySpouseLabel { get; private set; }
@@ -176,6 +180,14 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryShowHeadingSeparator"/>
         [DataMember]
         public bool PersonEntryShowHeadingSeparator { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryRaceValueId"/>
+        [DataMember]
+        public int? PersonEntryRaceValueId { get; set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryEthnicityValueId"/>
+        [DataMember]
+        public int? PersonEntryEthnicityValueId { get; set; }
 
         #endregion Person entry related Entity Properties
 
@@ -337,7 +349,10 @@ namespace Rock.Web.Cache
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
-                    SpouseLabel = actionForm.PersonEntrySpouseLabel
+                    SpouseLabel = actionForm.PersonEntrySpouseLabel,
+                    RaceAndEthnicityEntry = actionForm.RaceAndEthnicityEntryOption,
+                    RaceValueId = actionForm.PersonEntryRaceValueId,
+                    EthnicityValueId = actionForm.PersonEntryEthnicityValueId,
                 };
             }
 
@@ -404,6 +419,9 @@ namespace Rock.Web.Cache
             this.PersonEntryFamilyAttributeGuid = workflowActionForm.PersonEntryFamilyAttributeGuid;
             this.PersonEntryHideIfCurrentPersonKnown = workflowActionForm.PersonEntryHideIfCurrentPersonKnown;
             this.PersonEntryMaritalStatusEntryOption = workflowActionForm.PersonEntryMaritalStatusEntryOption;
+            this.RaceAndEthnicityEntryOption = workflowActionForm.RaceAndEthnicityEntryOption;
+            this.PersonEntryRaceValueId = workflowActionForm.PersonEntryRaceValueId;
+            this.PersonEntryEthnicityValueId = workflowActionForm.PersonEntryEthnicityValueId;
             this.PersonEntryMobilePhoneEntryOption = workflowActionForm.PersonEntryMobilePhoneEntryOption;
             this.PersonEntryPersonAttributeGuid = workflowActionForm.PersonEntryPersonAttributeGuid;
             this.PersonEntryPostHtml = workflowActionForm.PersonEntryPostHtml;

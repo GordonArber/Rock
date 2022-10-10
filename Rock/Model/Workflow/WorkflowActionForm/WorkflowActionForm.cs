@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -233,6 +233,15 @@ namespace Rock.Model
         public WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
 
         /// <summary>
+        /// Gets or sets the person entry marital status entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry marital entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption RaceAndEthnicityEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
+
+        /// <summary>
         /// Gets or sets the person entry spouse label.
         /// </summary>
         /// <value>
@@ -358,6 +367,26 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool PersonEntryShowHeadingSeparator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person race value identifier.
+        /// </summary>
+        /// <value>
+        /// The person entry race value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( Rock.SystemGuid.DefinedType.PERSON_RACE )]
+        public int? PersonEntryRaceValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person ethnicity value identifier.
+        /// </summary>
+        /// <value>
+        /// The person entry ethnicity value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( Rock.SystemGuid.DefinedType.PERSON_ETHNICITY )]
+        public int? PersonEntryEthnicityValueId { get; set; }
 
         #endregion Person entry related Entity Properties
 

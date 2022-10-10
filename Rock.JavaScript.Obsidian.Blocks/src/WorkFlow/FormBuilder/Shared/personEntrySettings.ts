@@ -114,13 +114,14 @@ export default defineComponent({
         const maritalStatus = ref(props.modelValue.maritalStatus?.toString() ?? FormFieldVisibility.Hidden.toString());
         const spouseEntry = ref(props.modelValue.spouseEntry?.toString() ?? FormFieldVisibility.Hidden.toString());
         const spouseLabel = ref(props.modelValue.spouseLabel ?? "Spouse");
+        const raceAndEthnicityEntry = ref(props.modelValue.raceAndEthnicityEntry?.toString() ?? FormFieldVisibility.Hidden.toString());
 
         /** The column span class to apply to the columns. */
         const columnClass = computed((): string => props.isVertical ? "col-xs-12" : "col-md-3");
 
         // Watch for any changes in our simple field values and update the
         // modelValue.
-        watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, connectionStatus, showCampus, campusType, campusStatus, gender, email, mobilePhone, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel], () => {
+        watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, connectionStatus, showCampus, campusType, campusStatus, gender, email, mobilePhone, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel, raceAndEthnicityEntry], () => {
             const newValue: FormPersonEntry = {
                 ...props.modelValue,
                 autofillCurrentPerson: autofillCurrentPerson.value,
@@ -138,7 +139,8 @@ export default defineComponent({
                 addressType: addressType.value,
                 maritalStatus: toNumberOrNull(maritalStatus.value) ?? FormFieldVisibility.Hidden,
                 spouseEntry: toNumberOrNull(spouseEntry.value) ?? FormFieldVisibility.Hidden,
-                spouseLabel: spouseLabel.value
+                spouseLabel: spouseLabel.value,
+                raceAndEthnicityEntry: toNumberOrNull(raceAndEthnicityEntry.value) ?? FormFieldVisibility.Hidden
             };
 
             emit("update:modelValue", newValue);
@@ -163,6 +165,7 @@ export default defineComponent({
             maritalStatus.value = props.modelValue.maritalStatus?.toString() ?? FormFieldVisibility.Hidden.toString();
             spouseEntry.value = props.modelValue.spouseEntry?.toString() ?? FormFieldVisibility.Hidden.toString();
             spouseLabel.value = props.modelValue.spouseLabel ?? "";
+            raceAndEthnicityEntry.value = props.modelValue.raceAndEthnicityEntry?.toString() ?? FormFieldVisibility.Hidden.toString();
         });
 
         return {
@@ -183,6 +186,7 @@ export default defineComponent({
             showCampus,
             spouseEntry,
             spouseLabel,
+            raceAndEthnicityEntry,
             formFieldVisibilityOptions
         };
     },
@@ -298,6 +302,15 @@ export default defineComponent({
         <div :class="columnClass">
             <TextBox v-model="spouseLabel"
                 label="Spouse Label" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div :class="columnClass">
+            <DropDownList v-model="raceAndEthnicityEntry"
+                label="Race And Ethnicity Entry"
+                :showBlankItem="false"
+                :items="formFieldVisibilityOptions" />
         </div>
     </div>
 </div>

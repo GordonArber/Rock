@@ -60,7 +60,8 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 RecordStatus = Utility.GetDefinedValueGuid( settings.RecordStatusValueId ),
                 ShowCampus = settings.ShowCampus,
                 SpouseEntry = settings.SpouseEntry.ToFormFieldVisibility(),
-                SpouseLabel = settings.SpouseLabel
+                SpouseLabel = settings.SpouseLabel,
+                RaceAndEthnicityEntry = settings.RaceAndEthnicityEntry.ToFormFieldVisibility()
             };
         }
 
@@ -89,7 +90,8 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 RecordStatusValueId = Utility.GetDefinedValueId( viewModel.RecordStatus ),
                 ShowCampus = viewModel.ShowCampus,
                 SpouseEntry = viewModel.SpouseEntry.ToPersonEntryOption(),
-                SpouseLabel = viewModel.SpouseLabel
+                SpouseLabel = viewModel.SpouseLabel,
+                RaceAndEthnicityEntry = viewModel.RaceAndEthnicityEntry.ToPersonEntryOption()
             };
         }
 

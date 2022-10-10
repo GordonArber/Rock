@@ -82,12 +82,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [CustomDropdownListField (
+        "Race/Ethnicity",
+        Key = AttributeKey.RaceAndEthnicityOption,
+        Description = "Allow Race and Ethnicity to be optionally selected.",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Hide",
+        Order = 4 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
-
         #region Attribute Keys and Values
 
         private static class AttributeKey
@@ -96,6 +104,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string HideAnniversaryDate = "HideAnniversaryDate";
             public const string SearchKeyTypes = "SearchKeyTypes";
             public const string RequireCompleteBirthDate = "RequireCompleteBirthDate";
+            public const string RaceAndEthnicityOption = "RaceAndEthnicityOption";
         }
 
         private static class ListSource
@@ -119,6 +128,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         AND AV.[Id] IS NULL
         ORDER BY V.[Order]
 ";
+            public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
         }
 
         #endregion Attribute Keys and Values
@@ -161,6 +171,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
             dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
             dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
+            rpRace.Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" );
+            epEthnicity.Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_ETHNICITY_LABEL, "Ethnicity" );
 
             pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditFinancials );
 
@@ -256,6 +268,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 ShowDetails();
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         /// <summary>
@@ -274,6 +288,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 bpBirthDay.RequireYear = false;
             }
+
+            ShowOrHideEthnicityAndRace();
         }
 
         #region View State related stuff
@@ -454,6 +470,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         person.AnniversaryDate = person.MaritalStatusValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id ? dpAnniversaryDate.SelectedDate : null;
                         person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
                         person.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
+
+                        if ( pnlRaceAndEthnicity.Visible )
+                        {
+                            person.RaceValueId = rpRace.SelectedValueAsId();
+                            person.EthnicityValueId = epEthnicity.SelectedValueAsId();
+                        }
 
                         var phoneNumberTypeIds = new List<int>();
 
@@ -1175,6 +1197,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     args.IsValid = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Shows or hides the RacePicker and EthnicityPicker according to settings and business rules.
+        /// </summary>
+        protected void ShowOrHideEthnicityAndRace()
+        {
+            var attributeValue = GetAttributeValue( AttributeKey.RaceAndEthnicityOption );
+
+            pnlRaceAndEthnicity.Visible = attributeValue != "Hide";
+
+            rpRace.Required = attributeValue == "Required";
+            epEthnicity.Required = attributeValue == "Required";
         }
     }
 }
