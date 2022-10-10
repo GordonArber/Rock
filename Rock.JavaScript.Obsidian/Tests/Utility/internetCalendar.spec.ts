@@ -1,4 +1,4 @@
-import { RecurrenceRule, Event } from "../../Framework/Utility/internetCalendar";
+import { RecurrenceRule, Event, Calendar } from "../../Framework/Utility/internetCalendar";
 import { DayOfWeek, RockDateTime } from "../../Framework/Utility/rockDateTime";
 
 describe("RecurrenceRule", () => {
@@ -438,10 +438,56 @@ END:VEVENT`;
         expect(dates[7].toASPString("r")).toBe(RockDateTime.fromParts(2022, 7, 4, 16, 0, 0).toASPString("r"));
         expect(dates[8].toASPString("r")).toBe(RockDateTime.fromParts(2022, 7, 25, 16, 0, 0).toASPString("r"));
     });
+
+    it("Builds Daily at 4:00 PM", () => {
+        const event = new Event();
+
+        event.uid = "123af714-192f-4539-9f96-7c1d899cdc5a";
+        event.startDateTime = RockDateTime.fromParts(2022, 4, 1, 16, 0, 0);
+        event.endDateTime = RockDateTime.fromParts(2022, 4, 1, 17, 0, 0);
+
+        const rrule = new RecurrenceRule();
+        rrule.frequency = "DAILY";
+        rrule.endDate = RockDateTime.fromParts(2022, 4, 5, 0, 0, 0);
+        event.recurrenceRules.push(rrule);
+
+        const lines = event.buildLines();
+
+        expect(lines.length).toBe(8);
+        expect(lines[0]).toBe("BEGIN:VEVENT");
+        expect(lines[1]).toBe("DTEND:20220401T170000");
+        expect(lines[2].substring(0, 8)).toBe("DTSTAMP:");
+        expect(lines[3]).toBe("DTSTART:20220401T160000");
+        expect(lines[4]).toBe("RRULE:FREQ=DAILY;UNTIL=20220405T000000");
+        expect(lines[5]).toBe("SEQUENCE:0");
+        expect(lines[6]).toBe("UID:123af714-192f-4539-9f96-7c1d899cdc5a");
+        expect(lines[7]).toBe("END:VEVENT");
+    });
 });
 
 describe("Calendar", () => {
     it("Parses single event calendar", () => {
-        expect(false).toBe(true);
+        const ical = `BEGIN:VCALENDAR
+PRODID:-//github.com/rianjs/ical.net//NONSGML ical.net 4.0//EN
+VERSION:2.0
+BEGIN:VEVENT
+DTEND:20130501T235900
+DTSTAMP:20221005T161039
+DTSTART;TZID=US-Eastern:20130501T000200
+EXDATE:20221101/P1D,20221102/P1D,20221103/P1D,20221104/P1D,20221105/P1D,20
+ 221106/P1D,20221107/P1D,20221108/P1D,20221109/P1D,20221110/P1D,20221111/P
+ 1D,20221112/P1D,20221113/P1D,20221114/P1D,20221115/P1D,20221116/P1D,20221
+ 117/P1D,20221118/P1D,20221119/P1D,20221120/P1D,20221121/P1D,20221122/P1D,
+ 20221123/P1D,20221124/P1D,20221125/P1D,20221126/P1D,20221127/P1D,20221128
+ /P1D,20221129/P1D,20221130/P1D
+RRULE:FREQ=WEEKLY;UNTIL=20240410T000000;BYDAY=MO,TU,WE
+SEQUENCE:0
+UID:91343141-238a-4b7b-a3d4-ce93b08d2712
+END:VEVENT
+END:VCALENDAR`;
+
+        const calendar = new Calendar(ical);
+
+        expect(calendar.events.length).toBe(1);
     });
 });
