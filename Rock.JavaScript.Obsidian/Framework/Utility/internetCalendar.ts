@@ -15,10 +15,10 @@
 // </copyright>
 //
 
-import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { newGuid } from "@Obsidian/Utility/guid";
-import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { pluralConditional } from "@Obsidian/Utility/stringUtils";
+import { DayOfWeek, RockDateTime } from "./rockDateTime";
+import { newGuid } from "./guid";
+import { toNumberOrNull } from "./numberUtils";
+import { pluralConditional } from "./stringUtils";
 
 type Frequency = "DAILY" | "WEEKLY" | "MONTHLY";
 

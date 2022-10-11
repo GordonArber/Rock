@@ -30,7 +30,7 @@
 			{
 				"label": "Build Obsidian Components",
 				"type": "shell",
-				"command": "npm run build -s",
+				"command": "npm run build-fast",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true
@@ -46,7 +46,7 @@
 			{
 				"label": "Build Obsidian Blocks",
 				"type": "shell",
-				"command": "npm run build -s",
+				"command": "npm run build-fast",
 				"presentation": {
 					"showReuseMessage": false,
 					"clear": true

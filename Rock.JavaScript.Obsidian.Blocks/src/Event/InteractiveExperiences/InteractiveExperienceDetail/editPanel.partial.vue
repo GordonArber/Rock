@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
+        <InlineScheduleBuilder rules="required" />
         <div class="row">
             <div class="col-md-6">
                 <TextBox v-model="name"
@@ -257,6 +258,7 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import ColorPicker from "@Obsidian/Controls/colorPicker";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
+    import InlineScheduleBuilder from "@Obsidian/Controls/inlineScheduleBuilder.vue";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import SectionContainer from "@Obsidian/Controls/sectionContainer";
     import TextBox from "@Obsidian/Controls/textBox";
