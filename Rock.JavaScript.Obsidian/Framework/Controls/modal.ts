@@ -99,7 +99,7 @@ export default defineComponent({
         /**
          * Event handler for when the visible validation errors have changed.
          * This should trigger us showing these errors in the modal.
-         * 
+         *
          * @param errors The errors that should be displayed.
          */
         const onVisibleValidationChanged = (errors: FormError[]): void => {
@@ -150,7 +150,9 @@ export default defineComponent({
     template: `
 <teleport :to="container" v-if="modelValue">
     <div>
-        <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1060;">
+    <div class="modal-backdrop" style="z-index: 1050;"></div>
+
+    <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1050;">
             <div @click.stop
                 class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
                 :class="{'animated shake': isShaking}"
@@ -182,8 +184,6 @@ export default defineComponent({
                 </RockForm>
             </div>
         </div>
-
-        <div class="modal-backdrop" style="z-index: 1050;"></div>
     </div>
 </teleport>
 `

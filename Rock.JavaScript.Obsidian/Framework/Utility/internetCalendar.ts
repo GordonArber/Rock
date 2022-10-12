@@ -22,9 +22,14 @@ import { pluralConditional } from "./stringUtils";
 
 type Frequency = "DAILY" | "WEEKLY" | "MONTHLY";
 
-type WeekdayNumber = {
+/**
+ * The day of the week and an interval number for that particular day.
+ */
+export type WeekdayNumber = {
+    /** The interval number for this day. */
     value: number;
 
+    /** The day of the week. */
     day: DayOfWeek;
 };
 
@@ -1211,7 +1216,10 @@ export class Event {
         else {
             const dates: RockDateTime[] = [this.startDateTime, ...this.recurrenceDates];
 
-            if (!html || dates.length > 99) {
+            if (dates.length === 1) {
+                return `Once at ${this.startDateTime.toASPString("g")}`;
+            }
+            else if (!html || dates.length > 99) {
                 const firstDate = dates[0];
                 const lastDate = dates[dates.length - 1];
 
@@ -1232,9 +1240,6 @@ export class Event {
                 listHtml += "</li>";
 
                 return listHtml;
-            }
-            else if (dates.length === 1) {
-                return `Once at ${this.startDateTime.toASPString("g")}`;
             }
             else {
                 return "No Schedule";
