@@ -150,9 +150,9 @@ export default defineComponent({
     template: `
 <teleport :to="container" v-if="modelValue">
     <div>
-    <div class="modal-backdrop" style="z-index: 1050;"></div>
+        <div class="modal-backdrop" style="z-index: 1050;"></div>
 
-    <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1050;">
+        <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1050;">
             <div @click.stop
                 class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
                 :class="{'animated shake': isShaking}"

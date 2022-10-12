@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <InlineScheduleBuilder rules="required" />
         <div class="row">
             <div class="col-md-6">
                 <TextBox v-model="name"
@@ -249,6 +248,20 @@
             </TransitionVerticalCollapse>
         </SectionContainer>
     </fieldset>
+
+    <Modal v-model="isScheduleModalVisible"
+           :title="scheduleModalTitle"
+           saveText="OK"
+           @save="onSaveSchedule">
+        <div class="row">
+            <div class="col-md-6">
+                <ScheduleBuilder v-model="icalData" rules="required" />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="icalData" textMode="multiline" :rows="30" />
+            </div>
+        </div>
+    </Modal>
 </template>
 
 <script setup lang="ts">
@@ -258,7 +271,8 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import ColorPicker from "@Obsidian/Controls/colorPicker";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
-    import InlineScheduleBuilder from "@Obsidian/Controls/inlineScheduleBuilder.vue";
+    import Modal from "@Obsidian/Controls/modal";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import SectionContainer from "@Obsidian/Controls/sectionContainer";
     import TextBox from "@Obsidian/Controls/textBox";
@@ -291,6 +305,7 @@
     }>();
 
     // #region Values
+    const icalData = ref("");
 
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
@@ -322,6 +337,9 @@
     const audienceAccentColor = propertyRef(props.modelValue.audienceAccentColor ?? "", "AudienceAccentColor");
     const audienceBackgroundImage = propertyRef(props.modelValue.audienceBackgroundImageBinaryFile ?? null, "AudienceBackgroundImageBinaryFileId");
     const audienceCustomCss = propertyRef(props.modelValue.audienceCustomCss ?? "", "AudienceCustomCss");
+
+    const isScheduleModalVisible = ref(false);
+    const scheduleModalTitle = ref("");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -394,7 +412,12 @@
     // #region Event Handlers
 
     function onAddScheduleClick(): void {
+        scheduleModalTitle.value = "Add Schedule";
+        isScheduleModalVisible.value = true;
+    }
 
+    function onSaveSchedule(): void {
+        isScheduleModalVisible.value = false;
     }
 
     function onActionAdvancedOptionsClick(): void {
