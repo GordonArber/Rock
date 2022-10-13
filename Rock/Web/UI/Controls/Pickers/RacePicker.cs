@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Control that can be used to select a person's race
     /// </summary>
-    public class RacePicker : RockDropDownList
+    public class RacePicker : RockDropDownList, IRacePicker
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RacePicker"/> class.
@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         public RacePicker() : base()
         {
             Label = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.PERSON_RACE_LABEL, "Race" );
-            LoadItems( true );
+            LoadItems( this, true );
         }
 
         /// <summary>
@@ -45,25 +45,30 @@ namespace Rock.Web.UI.Controls
 
             if ( !Page.IsPostBack && Items.Count == 0 )
             {
-                LoadItems( true );
+                LoadItems( this, true );
             }
         }
 
-        private void LoadItems( bool includeEmptyOption )
+        /// <summary>
+        /// Loads the drop down items.
+        /// </summary>
+        /// <param name="picker">The picker.</param>
+        /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
+        private void LoadItems( IRacePicker picker, bool includeEmptyOption )
         {
-            var selectedItems = this.Items.Cast<ListItem>()
+            var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )
                 .Select( i => i.Value ).AsIntegerList();
 
-            this.Items.Clear();
+            picker.Items.Clear();
 
             if ( includeEmptyOption )
             {
                 // add Empty option first
-                this.Items.Add( new ListItem() );
+                picker.Items.Add( new ListItem() );
             }
 
-            var races = DefinedValueCache.All().Where( dv => dv.DefinedType.Guid == Rock.SystemGuid.DefinedType.PERSON_RACE.AsGuid() );
+            var races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE ).DefinedValues;
 
             foreach ( var race in races )
             {
@@ -71,8 +76,19 @@ namespace Rock.Web.UI.Controls
                 {
                     Selected = selectedItems.Contains( race.Id )
                 };
-                this.Items.Add( li );
+                picker.Items.Add( li );
             }
         }
+    }
+
+    /// <summary>
+    /// Interface used by race pickers
+    /// </summary>
+    public interface IRacePicker
+    {
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        ListItemCollection Items { get; }
     }
 }
