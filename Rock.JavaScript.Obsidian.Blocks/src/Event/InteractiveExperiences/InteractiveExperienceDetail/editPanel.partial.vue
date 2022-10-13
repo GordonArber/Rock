@@ -253,28 +253,41 @@
            :title="scheduleModalTitle"
            saveText="OK"
            @save="onSaveSchedule">
-        <div class="row">
-            <div class="col-md-6">
-                <ScheduleBuilder v-model="icalData" rules="required" />
-            </div>
-            <div class="col-md-6">
-                <TextBox v-model="icalData" textMode="multiline" :rows="30" />
-            </div>
+        <div class="form-group">
+            <ScheduleBuilder v-model="scheduleContent"
+                             label="Schedule"
+                             help="The schedule of when the experience is active."
+                             rules="required" />
         </div>
+
+        <SectionHeader title="Filters"
+                       description="Filters help to limit who will see experiences on the list those that are available." />
+
+        <CampusPicker v-model="scheduleCampuses"
+                      label="Campus"
+                      help="Which campuses the experience is for. Leave blank to show for all campuses."
+                      multiple />
+
+        <DataViewPicker v-model="scheduleDataView"
+                        label="Data View"
+                        help="A data view that the individual must be in to see the environment. It is highly encouraged that this data view be persisted for performance." />
     </Modal>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
     import CheckBox from "@Obsidian/Controls/checkBox";
     import CodeEditor from "@Obsidian/Controls/codeEditor";
     import ColorPicker from "@Obsidian/Controls/colorPicker";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
     import Modal from "@Obsidian/Controls/modal";
-    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
     import SectionContainer from "@Obsidian/Controls/sectionContainer";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader";
     import TextBox from "@Obsidian/Controls/textBox";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -305,7 +318,6 @@
     }>();
 
     // #region Values
-    const icalData = ref("");
 
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
@@ -340,6 +352,9 @@
 
     const isScheduleModalVisible = ref(false);
     const scheduleModalTitle = ref("");
+    const scheduleContent = ref("");
+    const scheduleCampuses = ref<ListItemBag[]>([]);
+    const scheduleDataView = ref<ListItemBag | null>(null);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
