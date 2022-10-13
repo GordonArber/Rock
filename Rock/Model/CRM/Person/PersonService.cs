@@ -2395,7 +2395,7 @@ namespace Rock.Model
         /// <param name="phoneNumber">The phone number.</param>
         /// <returns></returns>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter" )]
+        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter", true )]
         public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
         {
             return GetPersonFromMobilePhoneNumber( phoneNumber, false );
@@ -4387,6 +4387,7 @@ FROM (
         FROM GroupMember gm
         JOIN [Group] g ON g.Id = gm.GroupId
         WHERE g.GroupTypeId = {groupTypeIdFamily}
+            AND gm.IsArchived = 0
             AND gm.PersonId = p.Id
         ORDER BY gm.GroupOrder
             ,gm.GroupId

@@ -21,6 +21,7 @@
  * - attributeEditor
  * - blockActionSourceGrid
  * - componentFromUrl
+ * - definedValueEditor
  * - fieldFilterContainer
  * - fieldFilterRuleRow
  * - gatewayControl
@@ -41,10 +42,12 @@
  * - saveFinancialAccountForm
  * - secondaryBlock
  * - testGatewayControl
+ * - timeIntervalPicker
  */
 
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
 import { ObjectUtils } from "@Obsidian/Utility";
+import { BtnType, BtnSize } from "@Obsidian/Enums/Controls/buttonOptions";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -66,7 +69,7 @@ import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Contr
 import StaticFormControl from "@Obsidian/Controls/staticFormControl";
 import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
 import RockForm from "@Obsidian/Controls/rockForm";
-import RockButton, { BtnSize, BtnType } from "@Obsidian/Controls/rockButton";
+import RockButton from "@Obsidian/Controls/rockButton";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Dialog from "@Obsidian/Controls/dialog";
@@ -96,7 +99,7 @@ import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderP
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
 import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
-import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.vue";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import ConnectionRequestPicker from "@Obsidian/Controls/connectionRequestPicker";
@@ -171,6 +174,13 @@ import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplateP
 import ReportPicker from "@Obsidian/Controls/reportPicker";
 import SchedulePicker from "@Obsidian/Controls/schedulePicker";
 import WorkflowActionTypePicker from "@Obsidian/Controls/workflowActionTypePicker.vue";
+import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.vue";
+import MonthDayPicker from "@Obsidian/Controls/monthDayPicker.vue";
+import MonthYearPicker from "@Obsidian/Controls/monthYearPicker.vue";
+import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
+import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.vue";
+import ButtonGroup from "@Obsidian/Controls/buttonGroup.vue";
+import IntervalPicker from "@Obsidian/Controls/intervalPicker.vue";
 
 // #region Gallery Support
 
@@ -465,6 +475,17 @@ export function getControlImportPath(fileName: string): string {
 }
 
 /**
+ * Generate a string of an import statement that imports the SFC control will the given file name.
+ * The control's name will be based off the filename
+ *
+ * @param fileName Name of the control's file
+ * @returns A string of code that can be used to import the given control file
+ */
+export function getSfcControlImportPath(fileName: string): string {
+    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}.vue";`;
+}
+
+/**
  * Generate a string of an import statement that imports the template will the given file name.
  * The template's name will be based off the filename
  *
@@ -602,6 +623,7 @@ const attributeValuesContainerGallery = defineComponent({
     hasMultipleValues
     :importCode="importCode"
     :exampleCode="exampleCode" >
+
     <AttributeValuesContainer
         v-model="attributeValues"
         :attributes="attributes"
@@ -2373,14 +2395,27 @@ const definedValuePickerGallery = defineComponent({
         GalleryAndResult,
         CheckBox,
         DefinedValuePicker,
-        TextBox
+        TextBox,
+        RockForm
     },
     setup() {
+
+        function onsubmit(): void {
+            alert("control gallery form submitted");
+        }
+
+        const multiple = ref(false);
+        const enhanceForLongLists = ref(false);
+        const displayStyle = computed(() => (multiple.value && !enhanceForLongLists.value) ? PickerDisplayStyle.List : PickerDisplayStyle.Auto);
+
         return {
+            onsubmit,
+            allowAdd: ref(false),
             definedTypeGuid: ref(DefinedType.PersonConnectionStatus),
-            enhanceForLongLists: ref(false),
-            multiple: ref(false),
-            value: ref({ "value": "b91ba046-bc1e-400c-b85d-638c1f4e0ce2", "text": "Visitor" }),
+            enhanceForLongLists,
+            multiple,
+            displayStyle,
+            value: ref(null),
             importCode: getControlImportPath("definedValuePicker"),
             exampleCode: `<DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="false" :enhanceForLongLists="false" />`
         };
@@ -2391,13 +2426,16 @@ const definedValuePickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" />
+
+    <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
 
     <template #settings>
-        <TextBox label="Defined Type" v-model="definedTypeGuid" />
-        <CheckBox label="Multiple" v-model="multiple" />
-        <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-
+        <div class="row">
+            <TextBox formGroupClasses="col-md-4" label="Defined Type" v-model="definedTypeGuid" />
+            <CheckBox formGroupClasses="col-md-2" label="Multiple" v-model="multiple" />
+            <CheckBox formGroupClasses="col-md-3" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            <CheckBox formGroupClasses="col-md-3" label="Allow Adding Values" v-model="allowAdd" />
+        </div>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
     </template>
 </GalleryAndResult>`
@@ -5033,15 +5071,28 @@ const rockButtonGallery = defineComponent({
         TextBox
     },
     setup() {
-        const sizeOptions: ListItemBag[] = Object.keys(BtnSize).map(key => ({ text: key, value: BtnSize[key] }));
-        const typeOptions: ListItemBag[] = Object.keys(BtnType).map(key => ({ text: key, value: BtnType[key] }));
+        const sizeOptions: ListItemBag[] = [
+            { text: "Default", value: BtnSize.Default },
+            { text: "ExtraSmall", value: BtnSize.ExtraSmall },
+            { text: "Small", value: BtnSize.Small },
+            { text: "Large", value: BtnSize.Large }
+        ];
+
+        const typeOptions: ListItemBag[] = [
+            { text: "Default", value: BtnType.Default },
+            { text: "Primary", value: BtnType.Primary },
+            { text: "Danger", value: BtnType.Danger },
+            { text: "Warning", value: BtnType.Warning },
+            { text: "Success", value: BtnType.Success },
+            { text: "Info", value: BtnType.Info },
+            { text: "Link", value: BtnType.Link },
+        ];
 
         return {
             sizeOptions,
             typeOptions,
             btnSize: ref(BtnSize.Default),
             btnType: ref(BtnType.Default),
-            value: ref(10),
             onClick: () => new Promise((res) => setTimeout(() => {
                 res(true); alert("done");
             }, 3000)),
@@ -5064,7 +5115,6 @@ const rockButtonGallery = defineComponent({
     },
     template: `
 <GalleryAndResult
-    :value="value"
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
@@ -5156,7 +5206,7 @@ const sliderGallery = defineComponent({
             max: ref(100),
             showValue: ref(false),
             importCode: getControlImportPath("slider"),
-            exampleCode: `<Slider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
+            exampleCode: `<Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
         };
     },
     template: `
@@ -5166,7 +5216,7 @@ const sliderGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection >
 
-    <Slider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+    <Slider v-model="value" label="Slider Value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
 
     <template #settings>
         <div class="row">
@@ -5729,7 +5779,7 @@ const workflowActionTypePickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("workflowActionTypePicker"),
+            importCode: getSfcControlImportPath("workflowActionTypePicker"),
             exampleCode: `<WorkflowActionTypePicker label="Workflow Action Type" v-model="value" :multiple="false" />`
         };
     },
@@ -5749,6 +5799,252 @@ const workflowActionTypePickerGallery = defineComponent({
         <CheckBox label="Multiple" v-model="multiple" />
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a day of week picker */
+const dayOfWeekPickerGallery = defineComponent({
+    name: "DayOfWeekPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        DayOfWeekPicker
+    },
+    setup() {
+        return {
+            showBlankItem: ref(false),
+            multiple: ref(false),
+            columns: ref(1),
+            value: ref(null),
+            importCode: getSfcControlImportPath("dayOfWeekPicker"),
+            exampleCode: `<DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <DayOfWeekPicker label="Day of the Week" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
+            <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
+            <NumberUpDown v-if="multiple" formGroupClasses="col-sm-4" label="Columns" v-model="columns" />
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a month/day picker */
+const monthDayPickerGallery = defineComponent({
+    name: "MonthDayPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        MonthDayPicker
+    },
+    setup() {
+        return {
+            value: ref({ month: 0, day: 0 }),
+            importCode: getSfcControlImportPath("monthDayPicker"),
+            exampleCode: `<MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MonthDayPicker label="Month and Day" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a month/year picker */
+const monthYearPickerGallery = defineComponent({
+    name: "MonthYearPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        MonthYearPicker
+    },
+    setup() {
+        return {
+            value: ref({ month: 0, year: 0 }),
+            importCode: getSfcControlImportPath("monthYearPicker"),
+            exampleCode: `<MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <MonthYearPicker label="Month and Year" v-model="value" :showBlankItem="showBlankItem" :multiple="multiple" :repeatColumns="columns" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a cacheability picker */
+const cacheabilityPickerGallery = defineComponent({
+    name: "CacheabilityPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        NumberUpDown,
+        CacheabilityPicker
+    },
+    setup() {
+        return {
+            value: ref<RockCacheability | null>(null),
+            importCode: getSfcControlImportPath("cacheabilityPicker"),
+            exampleCode: `<CacheabilityPicker v-model="value" :showBlankItem="false" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <CacheabilityPicker label="Cacheability" v-model="value" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Button Group */
+const buttonGroupGallery = defineComponent({
+    name: "ButtonGroupGallery",
+    components: {
+        GalleryAndResult,
+        ButtonGroup,
+        DropDownList,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        const sizeOptions: ListItemBag[] = [
+            { text: "Default", value: BtnSize.Default },
+            { text: "ExtraSmall", value: BtnSize.ExtraSmall },
+            { text: "Small", value: BtnSize.Small },
+            { text: "Large", value: BtnSize.Large }
+        ];
+
+        const typeOptions: ListItemBag[] = [
+            { text: "Default", value: BtnType.Default },
+            { text: "Primary", value: BtnType.Primary },
+            { text: "Danger", value: BtnType.Danger },
+            { text: "Warning", value: BtnType.Warning },
+            { text: "Success", value: BtnType.Success },
+            { text: "Info", value: BtnType.Info },
+            { text: "Link", value: BtnType.Link },
+        ];
+
+        const buttonOptions: ListItemBag[] = [
+            { text: "Mins", value: "1" },
+            { text: "Hours", value: "2" },
+            { text: "Days", value: "3" },
+        ];
+
+        return {
+            sizeOptions,
+            typeOptions,
+            buttonOptions,
+            btnSize: ref(BtnSize.Default),
+            sbtnType: ref(BtnType.Primary),
+            ubtnType: ref(BtnType.Default),
+            value: ref("1"),
+            importCode: getSfcControlImportPath("buttonGroup"),
+            exampleCode: `<ButtonGroup :btnSize="BtnSize.Default" :btnType="BtnType.Default" :items="items" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ButtonGroup v-model="value" :btnSize="btnSize" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" :items="buttonOptions" />
+
+    <template #settings>
+        <div class="row">
+            <DropDownList formGroupClasses="col-md-4" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
+            <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
+            <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Interval Picker */
+const intervalPickerGallery = defineComponent({
+    name: "IntervalPickerGallery",
+    components: {
+        GalleryAndResult,
+        IntervalPicker,
+        DropDownList,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        const typeOptions: ListItemBag[] = [
+            { text: "Default", value: BtnType.Default },
+            { text: "Primary", value: BtnType.Primary },
+            { text: "Danger", value: BtnType.Danger },
+            { text: "Warning", value: BtnType.Warning },
+            { text: "Success", value: BtnType.Success },
+            { text: "Info", value: BtnType.Info },
+            { text: "Link", value: BtnType.Link },
+        ];
+
+        return {
+            typeOptions,
+            sbtnType: ref(BtnType.Primary),
+            ubtnType: ref(BtnType.Default),
+            value: ref(null),
+            importCode: getSfcControlImportPath("intervalPicker"),
+            exampleCode: `<IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />
+
+    <template #settings>
+        <div class="row">
+            <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
+            <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
+        </div>
     </template>
 </GalleryAndResult>`
 });
@@ -5863,6 +6159,12 @@ const controlGalleryComponents: Record<string, Component> = [
     reportPickerGallery,
     schedulePickerGallery,
     workflowActionTypePickerGallery,
+    dayOfWeekPickerGallery,
+    monthDayPickerGallery,
+    monthYearPickerGallery,
+    cacheabilityPickerGallery,
+    buttonGroupGallery,
+    intervalPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

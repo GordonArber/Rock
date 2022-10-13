@@ -123,7 +123,7 @@ namespace Rock.Blocks.Cms
     </div>
 </div>
 <div class=""actions"">
-   <a href=""#"" class=""btn btn-default show-more"">Show More</a>
+   <a href=""#"" class=""btn btn-default js-more"">Show More</a>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ResultsTemplate )]
@@ -132,9 +132,9 @@ namespace Rock.Blocks.Cms
         Description = "The lava template to use to render a single result.",
         DefaultValue = @"<div class=""result-item"">
     <a href=""#"" class=""list-group-item"">
-        <h4>{{ Item.Name }}</h4>
+        <h4>{{ Item.Name | Escape }}</h4>
         <p>Posted on {{ Item.RelevanceDateTime  | AsDateTime | Date:'MMM dd, yyyy' }}</p>
-        {{ Item.Content | StripHtml | Truncate:100 }}
+        {{ Item.Content | StripHtml | Truncate:100 | Escape }}
         <span class=""pull-right pt-4 pl-2 text-primary"">
             <i class=""fa fa-arrow-right""></i>
         </span>
@@ -236,9 +236,6 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
-        private IEnumerable<int> _blockInitPersonalizationSegmentIds = Array.Empty<int>();
-        private IEnumerable<int> _blockInitPersonalizationRequestFilterIds = Array.Empty<int>();
-
         #region Methods
 
         /// <inheritdoc/>
@@ -266,9 +263,6 @@ namespace Rock.Blocks.Cms
                 {
                     try
                     {
-                        _blockInitPersonalizationSegmentIds = RequestContext.GetPersonalizationSegmentIds();
-                        _blockInitPersonalizationRequestFilterIds = RequestContext.GetPersonalizationRequestFilterIds();
-
                         var searchTask = Task.Run( PerformInitialSearchAsync );
                         searchTask.Wait();
                         initialSearchResults = searchTask.Result;
@@ -725,7 +719,7 @@ namespace Rock.Blocks.Cms
             // Add all the personalization segments this person matches.
             if ( contentCollection.EnableSegments )
             {
-                var segmentIds = _blockInitPersonalizationSegmentIds ?? RequestContext.GetPersonalizationSegmentIds();
+                var segmentIds = RequestContext.PersonalizationSegmentIds;
 
                 foreach ( var segmentId in segmentIds )
                 {
@@ -743,7 +737,7 @@ namespace Rock.Blocks.Cms
             // Add all the request filters this request matches.
             if ( contentCollection.EnableRequestFilters )
             {
-                var filterIds = _blockInitPersonalizationRequestFilterIds ?? RequestContext.GetPersonalizationRequestFilterIds();
+                var filterIds = RequestContext.PersonalizationRequestFilterIds;
 
                 foreach ( var filterId in filterIds )
                 {

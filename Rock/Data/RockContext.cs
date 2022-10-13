@@ -1355,6 +1355,14 @@ namespace Rock.Data
         public DbSet<InteractiveExperienceAnswer> InteractiveExperienceAnswers { get; set; }
 
         /// <summary>
+        /// Gets or sets the Interactive Experience Occurrences.
+        /// </summary>
+        /// <value>
+        /// the Interactive Experience Occurrences.
+        /// </value>
+        public DbSet<InteractiveExperienceOccurrence> InteractiveExperienceOccurrences { get; set; }
+
+        /// <summary>
         /// Gets or sets the Interactive Experience Schedules.
         /// </summary>
         /// <value>
@@ -2113,7 +2121,7 @@ namespace Rock.Data
         /// The system emails.
         /// </value>
         [RockObsolete( "1.10" )]
-        [Obsolete( "Use SystemCommunications instead." )]
+        [Obsolete( "Use SystemCommunications instead.", true )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
 
         /// <summary>
