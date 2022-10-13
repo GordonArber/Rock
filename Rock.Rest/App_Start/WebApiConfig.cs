@@ -353,6 +353,8 @@ namespace Rock.Rest
 
             config.MapODataServiceRoute( "api", "api", WebApiConfig.EdmModel, pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
             config.EnableDependencyInjection();
+
+            // This enables the various features of OData (they are disabled by default)
             config.Count().Filter().OrderBy().Expand().Select().MaxTop( null );
 
             new Rock.Transactions.RegisterControllersTransaction().Enqueue();
