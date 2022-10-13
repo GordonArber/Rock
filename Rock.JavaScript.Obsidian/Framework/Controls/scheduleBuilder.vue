@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="internalValue"
+                   v-bind="standardProps"
                    name="schedule-builder">
         <div class="control-wrapper">
             <div class="picker">
@@ -301,18 +302,19 @@
     import { rulesPropType, containsRequiredRule } from "@Obsidian/ValidationRules";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { updateRefValue, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     type DayName = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
 
     const props = defineProps({
+        /** The ICS contents that represents the schedule. */
         modelValue: {
             type: String as PropType<string>,
             default: ""
         },
 
-        rules: rulesPropType
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -327,6 +329,7 @@
     const monthlyRadioId = newGuid().toString();
     const continueUntilRadioId = newGuid().toString();
 
+    const standardProps = useStandardRockFormFieldProps(props);
     const scheduleSummary = ref("");
     const isModalVisible = ref(false);
     const startDateTime = ref<string | null>(null);

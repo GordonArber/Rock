@@ -131,6 +131,7 @@ import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
 import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
 import GradePicker from "@Obsidian/Controls/gradePicker";
+import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
 import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
 import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
@@ -275,6 +276,11 @@ export const GalleryAndResult = defineComponent({
         description: {
             type: String as PropType<string>,
             default: ""
+        },
+        /** Display the value raw and unformatted inside the PRE element. */
+        displayAsRaw: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -283,7 +289,10 @@ export const GalleryAndResult = defineComponent({
         const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
 
         const formattedValue = computed(() => {
-            if (!props.hasMultipleValues) {
+            if (props.displayAsRaw) {
+                return props.value;
+            }
+            else if (!props.hasMultipleValues) {
                 return JSON.stringify(props.value, null, 4);
             }
             else {
@@ -3156,7 +3165,6 @@ const campusPickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(true),
-            rules: ref("required"),
             value: ref({}),
             forceVisible: ref(false),
             includeInactive: ref(false),
@@ -3181,7 +3189,6 @@ const campusPickerGallery = defineComponent({
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
         :showBlankItem="showBlankItem"
-        :rules="rules"
         :forceVisible="forceVisible"
         :includeInactive="includeInactive"
         :campusStatusFilter="campusStatusFilter?.value"
@@ -3210,10 +3217,6 @@ const campusPickerGallery = defineComponent({
             <div class="col-md-4">
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
-
-            <div class="col-md-4">
-                <TextBox label="Rules" v-model="rules" />
-            </div>
         </div>
 
         <div class="row">
@@ -3235,6 +3238,36 @@ const campusPickerGallery = defineComponent({
                 <DefinedValuePicker label="Campus Status Filter" v-model="campusStatusFilter" :definedTypeGuid="campusStatusDefinedTypeGuid" showBlankItem />
             </div>
         </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates Schedule Builder */
+const scheduleBuilderGallery = defineComponent({
+    name: "ScheduleBuilderGallery",
+    components: {
+        GalleryAndResult,
+        ScheduleBuilder
+    },
+    setup() {
+        return {
+            value: ref(""),
+            importCode: getControlImportPath("scheduleBuilder"),
+            exampleCode: `<ScheduleBuilder label="Schedule Builder" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+    displayAsRaw>
+    <ScheduleBuilder label="Schedule Builder"
+        v-model="value" />
+
+    <template #settings>
     </template>
 </GalleryAndResult>`
 });
@@ -5543,6 +5576,7 @@ const controlGalleryComponents: Record<string, Component> = [
     tabbedContentGallery,
     transitionVerticalCollapseGallery,
     valueDetailListGallery,
+    scheduleBuilderGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
