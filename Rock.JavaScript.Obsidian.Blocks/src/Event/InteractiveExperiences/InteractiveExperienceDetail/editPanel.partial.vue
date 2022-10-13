@@ -65,7 +65,7 @@
                         <td>{{ row.dataView?.text }}</td>
                         <td>{{ row.group?.text }}</td>
                         <td class="grid-columncommand" align="center">
-                            <a class="btn btn-sm grid-edit-button">
+                            <a class="btn btn-sm grid-edit-button" @click.prevent="onEditScheduleClick(row)">
                                 <i class="fa fa-pencil"></i>
                             </a>
                         </td>
@@ -253,12 +253,10 @@
            :title="scheduleModalTitle"
            saveText="OK"
            @save="onSaveSchedule">
-        <div class="form-group">
-            <ScheduleBuilder v-model="scheduleContent"
-                             label="Schedule"
-                             help="The schedule of when the experience is active."
-                             rules="required" />
-        </div>
+        <ScheduleBuilder v-model="scheduleContent"
+                         label="Schedule"
+                         help="The schedule of when the experience is active."
+                         rules="required" />
 
         <SectionHeader title="Filters"
                        description="Filters help to limit who will see experiences on the list those that are available." />
@@ -271,11 +269,15 @@
         <DataViewPicker v-model="scheduleDataView"
                         label="Data View"
                         help="A data view that the individual must be in to see the environment. It is highly encouraged that this data view be persisted for performance." />
+
+        <GroupPicker v-model="scheduleGroup"
+                     label="Group"
+                     help="A group that the individual must be in to see the environment." />
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, ref, shallowRef, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
     import CheckBox from "@Obsidian/Controls/checkBox";
@@ -283,6 +285,7 @@
     import ColorPicker from "@Obsidian/Controls/colorPicker";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
     import ImageUploader from "@Obsidian/Controls/imageUploader";
+    import GroupPicker from "@Obsidian/Controls/groupPicker";
     import Modal from "@Obsidian/Controls/modal";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.vue";
@@ -299,6 +302,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { InteractiveExperiencePushNotificationType } from "@Obsidian/Enums/Event/interactiveExperiencePushNotificationType";
     import { InteractiveExperienceScheduleBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceScheduleBag";
+    import { Calendar } from "@Obsidian/Utility/internetCalendar";
 
     const props = defineProps({
         modelValue: {
@@ -351,10 +355,12 @@
     const audienceCustomCss = propertyRef(props.modelValue.audienceCustomCss ?? "", "AudienceCustomCss");
 
     const isScheduleModalVisible = ref(false);
+    let editingSchedule: InteractiveExperienceScheduleBag | null = null;
     const scheduleModalTitle = ref("");
     const scheduleContent = ref("");
-    const scheduleCampuses = ref<ListItemBag[]>([]);
-    const scheduleDataView = ref<ListItemBag | null>(null);
+    const scheduleCampuses = shallowRef<ListItemBag[]>([]);
+    const scheduleDataView = shallowRef<ListItemBag | null>(null);
+    const scheduleGroup = shallowRef<ListItemBag | null>(null);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -413,6 +419,13 @@
 
     // #region Functions
 
+    /**
+     * Gets the campus names for a schedule as a comma separated string.
+     *
+     * @param schedule The schedule whose campus names are to be returned.
+     *
+     * @returns A string that represents the campuses tied to the schedule.
+     */
     function getScheduleCampusNames(schedule: InteractiveExperienceScheduleBag): string {
         if (schedule.campuses && schedule.campuses.length) {
             return schedule.campuses.map(c => c.text ?? "").join(", ");
@@ -426,19 +439,68 @@
 
     // #region Event Handlers
 
+    /**
+     * Called when the "+" add button on the schedule grid is clicked.
+     */
     function onAddScheduleClick(): void {
         scheduleModalTitle.value = "Add Schedule";
+        editingSchedule = null;
+        scheduleContent.value = "";
+        scheduleCampuses.value = [];
+        scheduleDataView.value = null;
+        scheduleGroup.value = null;
         isScheduleModalVisible.value = true;
     }
 
+    /**
+     * Called when the pencil/edit button on the schedule grid is clicked.
+     *
+     * @param schedule The schedule to be edited.
+     */
+    function onEditScheduleClick(schedule: InteractiveExperienceScheduleBag): void {
+        scheduleModalTitle.value = "Edit Schedule";
+        editingSchedule = schedule;
+        scheduleContent.value = schedule.schedule?.value ?? "";
+        scheduleCampuses.value = schedule.campuses ?? [];
+        scheduleDataView.value = schedule.dataView ?? null;
+        scheduleGroup.value = schedule.group ?? null;
+        isScheduleModalVisible.value = true;
+    }
+
+    /**
+     * Called when a schedule is ready to be saved.
+     */
     function onSaveSchedule(): void {
+        const calendar = new Calendar(scheduleContent.value);
+
+        let schedule = editingSchedule ?? {};
+        schedule.schedule = {
+            value: scheduleContent.value,
+            text: calendar.events[0].toFriendlyText()
+        };
+        schedule.campuses = scheduleCampuses.value;
+        schedule.dataView = scheduleDataView.value;
+        schedule.group = scheduleGroup.value;
+
+        if (!editingSchedule) {
+            schedules.value.push(schedule);
+        }
+
         isScheduleModalVisible.value = false;
     }
 
+    /**
+     * Called when the advanced options of the action section should be
+     * expaned or collapsed.
+     */
     function onActionAdvancedOptionsClick(): void {
         isActionAdvancedOptionsVisible.value = !isActionAdvancedOptionsVisible.value;
     }
 
+    /**
+     * Called when the advanced options of the audience section should be
+     * expaned or collapsed.
+     */
     function onAudienceAdvancedOptionsClick(): void {
         isAudienceAdvancedOptionsVisible.value = !isAudienceAdvancedOptionsVisible.value;
     }

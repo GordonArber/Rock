@@ -92,6 +92,7 @@
         "photoBinaryFile",
         "publicLabel",
         "pushNotificationType",
+        "schedules",
         "welcomeHeaderImageBinaryFile",
         "welcomeMessage",
         "welcomeTitle"
@@ -221,7 +222,7 @@
         else {
             return false;
         }
-    };
+    }
 
     /**
      * Event handler for when a value has changed that has an associated

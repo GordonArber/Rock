@@ -299,7 +299,7 @@
     import TransitionVerticalCollapse from "./transitionVerticalCollapse";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
     import { Event, Calendar, RecurrenceRule } from "@Obsidian/Utility/internetCalendar";
-    import { rulesPropType, containsRequiredRule } from "@Obsidian/ValidationRules";
+    import { containsRequiredRule } from "@Obsidian/ValidationRules";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { updateRefValue, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
@@ -909,9 +909,9 @@
     }
 
     function onSaveSchedule(): void {
-        const ical = getCalendarString();
+        internalValue.value = getCalendarString();
 
-        emit("update:modelValue", ical);
+        emit("update:modelValue", internalValue.value);
         isModalVisible.value = false;
     }
 
@@ -1000,6 +1000,7 @@
     // #endregion
 
     watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
         updateValuesFromModel();
     });
 

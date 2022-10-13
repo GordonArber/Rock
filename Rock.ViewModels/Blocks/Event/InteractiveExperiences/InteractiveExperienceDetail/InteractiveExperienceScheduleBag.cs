@@ -15,10 +15,10 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
-using Rock.Enums.Event;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail
 {
@@ -28,6 +28,12 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
     /// </summary>
     public class InteractiveExperienceScheduleBag
     {
+        /// <summary>
+        /// Gets or sets the unique identifier of this schedule.
+        /// </summary>
+        /// <value>The unique identifier of this schedule.</value>
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// Gets or sets the schedule.
         /// </summary>

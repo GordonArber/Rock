@@ -26,6 +26,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event.InteractiveExperiences
 {
@@ -200,6 +202,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 PhotoBinaryFile = entity.PhotoBinaryFile.ToListItemBag(),
                 PublicLabel = entity.PublicLabel,
                 PushNotificationType = entity.PushNotificationType,
+                Schedules = entity.InteractiveExperienceSchedules?.Select( s => GetScheduleBag( s ) ).ToList(),
                 WelcomeHeaderImageBinaryFile = entity.WelcomeHeaderImageBinaryFile.ToListItemBag(),
                 WelcomeMessage = entity.WelcomeMessage,
                 WelcomeTitle = entity.WelcomeTitle
@@ -250,9 +253,12 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <param name="entity">The entity to be updated.</param>
         /// <param name="box">The box containing the information to be updated.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessage">Contains any custom error message if the update was not successful.</param>
         /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( InteractiveExperience entity, DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag> box, RockContext rockContext )
+        private bool UpdateEntityFromBox( InteractiveExperience entity, DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag> box, RockContext rockContext, out string errorMessage )
         {
+            errorMessage = null;
+
             if ( box.ValidProperties == null )
             {
                 return false;
@@ -332,6 +338,18 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
             box.IfValidProperty( nameof( box.Entity.PushNotificationType ),
                 () => entity.PushNotificationType = box.Entity.PushNotificationType );
+
+            string scheduleError = null;
+
+            var schedulesOk = box.IfValidProperty( nameof( box.Entity.Schedules ),
+                () => UpdateSchedules( entity, box.Entity.Schedules, rockContext, out scheduleError ),
+                true );
+
+            if ( !schedulesOk )
+            {
+                errorMessage = scheduleError;
+                return false;
+            }
 
             box.IfValidProperty( nameof( box.Entity.WelcomeHeaderImageBinaryFile ),
                 () => entity.WelcomeHeaderImageBinaryFileId = box.Entity.WelcomeHeaderImageBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
@@ -458,6 +476,154 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             return true;
         }
 
+        /// <summary>
+        /// Gets the schedule bag for the specified experience schedule.
+        /// </summary>
+        /// <param name="experienceSchedule">The experience schedule that needs to be bagged.</param>
+        /// <returns>A new <see cref="InteractiveExperienceScheduleBag"/> that represents <paramref name="experienceSchedule"/>.</returns>
+        private static InteractiveExperienceScheduleBag GetScheduleBag( InteractiveExperienceSchedule experienceSchedule )
+        {
+            return new InteractiveExperienceScheduleBag
+            {
+                Guid = experienceSchedule.Guid,
+                Schedule = new ListItemBag
+                {
+                    Value = experienceSchedule.Schedule.iCalendarContent,
+                    Text = experienceSchedule.Schedule.ToString()
+                },
+                Campuses = experienceSchedule.InteractiveExperienceScheduleCampuses.Select( c => c.Campus ).ToListItemBagList(),
+                DataView = experienceSchedule.DataView.ToListItemBag(),
+                Group = experienceSchedule.Group.ToListItemBag()
+            };
+        }
+
+        /// <summary>
+        /// Updates the schedules of the experience with the data provided
+        /// in the bags.
+        /// </summary>
+        /// <param name="interactiveExperience">The interactive experience to be updated.</param>
+        /// <param name="scheduleBags">The schedule bags that contain the new schedule information.</param>
+        /// <param name="rockContext">The rock context to operate in.</param>
+        /// <param name="errorMessage">The error message if the schedules could not be updated.</param>
+        /// <returns><c>true</c> if the schedules were updated, <c>false</c> otherwise.</returns>
+        private static bool UpdateSchedules( InteractiveExperience interactiveExperience, List<InteractiveExperienceScheduleBag> scheduleBags, RockContext rockContext, out string errorMessage )
+        {
+            var experienceScheduleService = new InteractiveExperienceScheduleService( rockContext );
+            var incomingScheduleGuids = scheduleBags?.Select( s => s.Guid ).ToList() ?? new List<Guid>();
+
+            errorMessage = null;
+
+            // Delete any existing schedules that have been removed.
+            foreach ( var schedule in interactiveExperience.InteractiveExperienceSchedules.ToList() )
+            {
+                if ( !incomingScheduleGuids.Contains( schedule.Guid ) )
+                {
+                    if ( !experienceScheduleService.CanDelete( schedule, out errorMessage ) )
+                    {
+                        return false;
+                    }
+
+                    interactiveExperience.InteractiveExperienceSchedules.Remove( schedule );
+                    experienceScheduleService.Delete( schedule );
+                }
+            }
+
+            // Add or update any schedules that were newly added.
+            if ( scheduleBags != null && scheduleBags.Count > 0 )
+            {
+                foreach ( var scheduleBag in scheduleBags )
+                {
+                    var schedule = interactiveExperience.InteractiveExperienceSchedules.FirstOrDefault( s => s.Guid == scheduleBag.Guid );
+
+                    if ( schedule == null )
+                    {
+                        schedule = new InteractiveExperienceSchedule
+                        {
+                            Guid = scheduleBag.Guid,
+                            Schedule = new Schedule()
+                        };
+
+                        interactiveExperience.InteractiveExperienceSchedules.Add( schedule );
+                    }
+
+                    if ( !UpdateScheduleCampuses( schedule, scheduleBag.Campuses, rockContext, out errorMessage ) )
+                    {
+                        return false;
+                    }
+
+                    schedule.Schedule.iCalendarContent = scheduleBag.Schedule.Value;
+                    schedule.DataViewId = scheduleBag.DataView.GetEntityId<DataView>( rockContext );
+                    schedule.GroupId = scheduleBag.Group.GetEntityId<Group>( rockContext );
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Updates the experience schedule campuses to match what is provided
+        /// in the bags.
+        /// </summary>
+        /// <param name="experienceSchedule">The experience schedule to be updated.</param>
+        /// <param name="campusBags">The campus bags that identify the campuses.</param>
+        /// <param name="rockContext">The rock context to operate in.</param>
+        /// <param name="errorMessage">The error message if the experience schedule could not be updated.</param>
+        /// <returns><c>true</c> if the experience schedule was updated, <c>false</c> otherwise.</returns>
+        private static bool UpdateScheduleCampuses( InteractiveExperienceSchedule experienceSchedule, List<ListItemBag> campusBags, RockContext rockContext, out string errorMessage )
+        {
+            var experienceScheduleCampusService = new InteractiveExperienceScheduleCampusService( rockContext );
+            var incomingCampusGuids = campusBags?.Select( c => c.Value.AsGuid() ).ToList() ?? new List<Guid>();
+
+            errorMessage = null;
+
+            // Delete any existing campuses that have been removed.
+            foreach ( var scheduleCampus in experienceSchedule.InteractiveExperienceScheduleCampuses.ToList() )
+            {
+                if ( !incomingCampusGuids.Contains( scheduleCampus.Campus.Guid ) )
+                {
+                    if ( !experienceScheduleCampusService.CanDelete( scheduleCampus, out errorMessage ) )
+                    {
+                        return false;
+                    }
+
+                    experienceSchedule.InteractiveExperienceScheduleCampuses.Remove( scheduleCampus );
+                    experienceScheduleCampusService.Delete( scheduleCampus );
+                }
+            }
+
+            // Add or update any campuses that were newly added.
+            if ( campusBags != null && campusBags.Count > 0 )
+            {
+                foreach ( var campusBag in campusBags )
+                {
+                    var campusId = CampusCache.GetId( campusBag.Value.AsGuid() );
+
+                    if ( !campusId.HasValue )
+                    {
+                        continue;
+                    }
+
+                    var scheduleCampus = experienceSchedule.InteractiveExperienceScheduleCampuses.FirstOrDefault( s => s.Campus.Guid == campusBag.Value.AsGuid() );
+
+                    if ( scheduleCampus == null )
+                    {
+                        scheduleCampus = new InteractiveExperienceScheduleCampus
+                        {
+                            CampusId = campusId.Value
+                        };
+
+                        experienceSchedule.InteractiveExperienceScheduleCampuses.Add( scheduleCampus );
+                    }
+                    else
+                    {
+                        scheduleCampus.CampusId = campusId.Value;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region Block Actions
@@ -520,9 +686,9 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
 
                 // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                if ( !UpdateEntityFromBox( entity, box, rockContext, out var updateMessage ) )
                 {
-                    return ActionBadRequest( "Invalid data." );
+                    return ActionBadRequest( updateMessage ?? "Invalid data." );
                 }
 
                 // Ensure everything is valid before saving.
@@ -623,9 +789,9 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 }
 
                 // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                if ( !UpdateEntityFromBox( entity, box, rockContext, out var updateMessage ) )
                 {
-                    return ActionBadRequest( "Invalid data." );
+                    return ActionBadRequest( updateMessage ?? "Invalid data." );
                 }
 
                 // Reload attributes based on the new property values.
