@@ -491,6 +491,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Connection\connectionRequestCountsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\addressControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\birthdayPickerBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\campusPickerItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\electronicSignatureValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
@@ -746,6 +747,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgePickerGetBadgesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFilePickerGetBinaryFilesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusPickerGetCampusesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewsPickerGetDataViewsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />

@@ -103,6 +103,7 @@ import CopyButton from "@Obsidian/Controls/copyButton";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import Following from "@Obsidian/Controls/following";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
+import CampusPicker from "@Obsidian/Controls/campusPicker.vue";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -3135,6 +3136,110 @@ const binaryFileTypePickerGallery = defineComponent({
 });
 
 
+/** Demonstrates Campus picker */
+const campusPickerGallery = defineComponent({
+    name: "CampusPickerGallery",
+    components: {
+        GalleryAndResult,
+        CampusPicker,
+        CheckBox,
+        DefinedValuePicker,
+        DropDownList,
+        NumberUpDown,
+        TextBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(true),
+            rules: ref("required"),
+            value: ref({}),
+            forceVisible: ref(false),
+            includeInactive: ref(false),
+            campusStatusFilter: ref(null),
+            campusTypeFilter: ref(null),
+            campusStatusDefinedTypeGuid: DefinedType.CampusStatus,
+            campusTypeDefinedTypeGuid: DefinedType.CampusType,
+            importCode: getControlImportPath("campusPicker"),
+            exampleCode: `<CampusPicker label="Campus" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <CampusPicker label="Campus"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :rules="rules"
+        :forceVisible="forceVisible"
+        :includeInactive="includeInactive"
+        :campusStatusFilter="campusStatusFilter?.value"
+        :campusTypeFilter="campusTypeFilter?.value" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox label="Rules" v-model="rules" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Force Visible" v-model="forceVisible" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Include Inactive" v-model="includeInactive" />
+            </div>
+
+            <div class="col-md-4">
+                <DefinedValuePicker label="Campus Type Filter" v-model="campusTypeFilter" :definedTypeGuid="campusTypeDefinedTypeGuid" showBlankItem />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DefinedValuePicker label="Campus Status Filter" v-model="campusStatusFilter" :definedTypeGuid="campusStatusDefinedTypeGuid" showBlankItem />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
 /** Demonstrates BinaryFile  picker */
 const binaryFilePickerGallery = defineComponent({
     name: "BinaryFilePickerGallery",
@@ -5382,6 +5487,7 @@ const controlGalleryComponents: Record<string, Component> = [
     imageUploaderGallery,
     slidingDateRangePickerGallery,
     definedValuePickerGallery,
+    campusPickerGallery,
     entityTypePickerGallery,
     sectionHeaderGallery,
     sectionContainerGallery,

@@ -123,6 +123,7 @@
     <Compile Include="Cms\ContentCollectionFilterSettingsBag.cs" />
     <Compile Include="Cms\ObsidianBlockConfigBag.cs" />
     <Compile Include="Cms\BlockCustomActionBag.cs" />
+    <Compile Include="Controls\CampusPickerItemBag.cs" />
     <Compile Include="Controls\SlidingDateRangeBox.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
     <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
@@ -367,6 +368,7 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CampusPickerGetCampusesOptionsBag.cs" />
     <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\StepTypePickerGetStepTypesOptionsBag.cs" />
