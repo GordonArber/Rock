@@ -27,6 +27,8 @@ namespace Rock.Rest
     /// <summary>
     /// This class defines an attribute that can be applied to an action to enable
     /// querying using the OData query syntax using the precompiled Rock EdmModel.
+    /// This also will detect datetime and guid $filter parameters that might be in ODataV3 format
+    /// and convert them to the ODataV4 spec.
     /// </summary>
     public class RockEnableQueryAttribute : EnableQueryAttribute
     {
@@ -116,12 +118,23 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// The date time filter capture
+        /// This RegEx is used to find datetime $filters in the obsolete V3 format, which will then be converted
+        /// to the V4 spec.
         /// </summary>
+        /// <remarks>
+        /// $filter in V3 Format - <code>ModifiedDateTime eq datetime'2022-10-04T10:56:50.747'</code>
+        /// $filter in V4 Format - <code>ModifiedDateTime eq 2022-10-04T10:56:50.747</code>
+        /// </remarks>
         private static readonly Regex _dateTimeFilterCapture = new Regex( @"datetime\'(\S*)\'", RegexOptions.Compiled );
+
         /// <summary>
-        /// The unique identifier filter capture
+        /// This RegEx is used to find guid $filters in the obsolete V3 format, which will then be converted
+        /// to the V4 spec.
         /// </summary>
+        /// <remarks>
+        /// $filter in V3 Format - <code>Guid eq guid'722dfa12-b47d-49c3-8b23-1b7d08a1cf53'</code>
+        /// $filter in V4 Format - <code>Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53</code>
+        /// </remarks>
         private static readonly Regex _guidFilterCapture = new Regex( @"guid\'([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\'", RegexOptions.Compiled );
 
         /// <summary>
@@ -154,6 +167,23 @@ namespace Rock.Rest
 
         internal static string ParseUrl( string originalUrl, string rawFilter )
         {
+            /* 10/14/2022 MDP
+
+            ODataV4 has a breaking change regarding datetime and guid filters.
+
+            This will take care of $filters in the obsolete V3 format, which will then be converted
+            to the V4 spec.
+
+            For example:
+
+            DateTime $filter in V3 Format - <code>ModifiedDateTime eq datetime'2022-10-04T10:56:50.747'</code>
+            DateTime $filter in V4 Format - <code>ModifiedDateTime eq 2022-10-04T10:56:50.747</code>
+             
+            Guid $filter in V3 Format - <code>Guid eq guid'722dfa12-b47d-49c3-8b23-1b7d08a1cf53'</code>
+            Guid $filter in V4 Format - <code>Guid eq 722dfa12-b47d-49c3-8b23-1b7d08a1cf53</code> 
+             
+             */
+
             var dateTimeMatches = _dateTimeFilterCapture.Matches( rawFilter );
             var guidMatches = _guidFilterCapture.Matches( rawFilter );
             if ( guidMatches.Count == 0 && dateTimeMatches.Count == 0 )
