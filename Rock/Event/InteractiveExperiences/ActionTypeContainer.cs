@@ -94,20 +94,53 @@ namespace Rock.Event.InteractiveExperiences
         /// Gets the component with the matching Entity Type Name.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
+        /// <returns>An instance of <see cref="ActionTypeComponent"/> or <c>null</c> if it was not found.</returns>
         public static ActionTypeComponent GetComponent( string entityType )
         {
             return Instance.GetComponentByEntity( entityType );
         }
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the component matching the specified type.
+        /// </summary>
+        /// <returns>An instance of <see cref="ActionTypeComponent"/> or <c>null</c> if it was not found.</returns>
+        public static ActionTypeComponent GetComponent<T>()
+        {
+            return GetComponent( typeof( T ).FullName );
+        }
+
+        /// <summary>
+        /// Gets the name of the component.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
-        /// <returns></returns>
+        /// <returns>A <see cref="string"/> that represents the name of the component or an empty string if not found.</returns>
         public static string GetComponentName( string entityType )
         {
             return Instance.GetComponentNameByEntity( entityType );
+        }
+
+        /// <summary>
+        /// Gets the name of the component.
+        /// </summary>
+        /// <returns>A <see cref="string"/> that represents the name of the component or an empty string if not found.</returns>
+        public static string GetComponentName<T>()
+        {
+            return GetComponentName( typeof( T ).FullName );
+        }
+
+        /// <summary>
+        /// Gets the name of the component.
+        /// </summary>
+        /// <param name="component">The component whose name is to be determined.</param>
+        /// <returns>A <see cref="string"/> that represents the name of the component or an empty string if not found.</returns>
+        public static string GetComponentName( ActionTypeComponent component )
+        {
+            if ( component == null )
+            {
+                throw new ArgumentNullException( nameof( component ) );
+            }
+
+            return GetComponentName( component.GetType().FullName );
         }
     }
 }

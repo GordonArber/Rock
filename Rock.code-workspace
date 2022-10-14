@@ -29,7 +29,8 @@
 			"typescript",
 			"typescriptreact",
 			"vue"
-		]
+		],
+		"css.format.spaceAroundSelectorSeparator": true
 	},
 	"tasks": {
 		"version": "2.0.0",

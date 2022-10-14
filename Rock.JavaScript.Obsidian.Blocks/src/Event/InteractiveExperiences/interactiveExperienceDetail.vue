@@ -32,7 +32,8 @@
 
     <ActionsPanel v-if="isActionListVisible"
                   v-model="interactiveExperienceActions"
-                  :name="interactiveExperienceViewBag!.name!" />
+                  :name="interactiveExperienceViewBag!.name!"
+                  :actionTypes="actionTypes" />
 </template>
 
 <script setup lang="ts">
@@ -51,6 +52,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { InteractiveExperienceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceBag";
     import { InteractiveExperienceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceDetailOptionsBag";
+    import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
 
     const config = useConfigurationValues<DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -162,6 +164,10 @@
 
     const isActionListVisible = computed((): boolean => {
         return !blockError.value && panelMode.value === DetailPanelMode.View && !!interactiveExperienceViewBag.value;
+    });
+
+    const actionTypes = computed((): InteractiveExperienceActionTypeBag[] => {
+        return config.options?.actionTypes ?? [];
     });
 
     // #endregion

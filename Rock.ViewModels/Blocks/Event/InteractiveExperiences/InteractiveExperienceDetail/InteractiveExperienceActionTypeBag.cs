@@ -41,6 +41,13 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the icon CSS class that will visually represent this
+        /// action type.
+        /// </summary>
+        /// <value>The icon that CSS class will visually represent this action type.</value>
+        public string IconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this type supports question text.
         /// </summary>
         /// <value><c>true</c> if this type supports question text; otherwise, <c>false</c>.</value>

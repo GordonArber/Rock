@@ -35,6 +35,12 @@ export type InteractiveExperienceActionTypeBag = {
     /** Gets or sets the display name for this type of action. */
     name?: string | null;
 
+    /**
+     * Gets or sets the icon CSS class that will visually represent this
+     * action type.
+     */
+    iconCssClass?: string | null;
+
     /** Gets or sets a value indicating whether this type supports question text. */
     isQuestionSupported: boolean;
 

@@ -34,6 +34,12 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         public Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the title of this action.
+        /// </summary>
+        /// <value>The title of this action.</value>
+        public string Title { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of action.
         /// </summary>
         /// <value>The type of action.</value>

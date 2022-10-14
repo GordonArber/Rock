@@ -83,6 +83,13 @@ namespace Rock.Event.InteractiveExperiences
         /// <value><c>true</c> if this type allows multiple submissions; otherwise, <c>false</c>.</value>
         public virtual bool IsMultipleSubmissionSupported => true;
 
+        /// <summary>
+        /// Gets the icon CSS class that will be used to visually represent
+        /// this action type.
+        /// </summary>
+        /// <value>The icon CSS class that will be used to visually represent this action type.</value>
+        public virtual string IconCssClass => "fa fa-play";
+
         #endregion
 
         #region Constructors
@@ -148,6 +155,12 @@ namespace Rock.Event.InteractiveExperiences
 
         #region Abstract Methods
 
+        /// <summary>
+        /// Gets the text that will be used as a title for the action. This should
+        /// be able to uniquely identify the item to the individual.
+        /// </summary>
+        /// <returns>A <see cref="string"/> that represents the title of the action.</returns>
+        public abstract string GetDisplayTitle( InteractiveExperienceAction action );
 
         #endregion Abstract Methods
     }

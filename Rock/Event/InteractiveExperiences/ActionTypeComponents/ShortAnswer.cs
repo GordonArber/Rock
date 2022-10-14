@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Model;
 
 namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
 {
@@ -43,6 +44,28 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         private static class AttributeKey
         {
             public const string Question = "Question";
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <inheritdoc/>
+        public override string IconCssClass => "fa fa-comment-o";
+
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
+        public override string GetDisplayTitle( InteractiveExperienceAction action )
+        {
+            if ( action.Attributes == null )
+            {
+                LoadAttributes( action );
+            }
+
+            return GetAttributeValue( action, AttributeKey.Question );
         }
 
         #endregion

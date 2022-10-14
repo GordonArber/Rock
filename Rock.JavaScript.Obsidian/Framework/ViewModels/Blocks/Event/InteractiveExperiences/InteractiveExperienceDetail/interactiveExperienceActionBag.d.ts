@@ -29,6 +29,9 @@ export type InteractiveExperienceActionBag = {
     /** Gets or sets the unique identifier of this action instance. */
     guid?: Guid | null;
 
+    /** Gets or sets the title of this action. */
+    title?: string | null;
+
     /** Gets or sets the type of action. */
     actionType?: ListItemBag | null;
 
