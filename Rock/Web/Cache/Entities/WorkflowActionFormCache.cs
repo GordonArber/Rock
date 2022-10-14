@@ -125,6 +125,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; private set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryRaceEntryOption"/>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption RaceEntryOption { get; private set; }
+
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryEthnicityEntryOption"/>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption EthnicityEntryOption { get; private set; }
+
         /// <inheritdoc cref="WorkflowActionForm.PersonEntrySpouseLabel"/>
         [DataMember]
         public string PersonEntrySpouseLabel { get; private set; }
@@ -337,7 +345,9 @@ namespace Rock.Web.Cache
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
-                    SpouseLabel = actionForm.PersonEntrySpouseLabel
+                    SpouseLabel = actionForm.PersonEntrySpouseLabel,
+                    RaceEntry = actionForm.RaceEntryOption,
+                    EthnicityEntry = actionForm.EthnicityEntryOption
                 };
             }
 
@@ -404,6 +414,8 @@ namespace Rock.Web.Cache
             this.PersonEntryFamilyAttributeGuid = workflowActionForm.PersonEntryFamilyAttributeGuid;
             this.PersonEntryHideIfCurrentPersonKnown = workflowActionForm.PersonEntryHideIfCurrentPersonKnown;
             this.PersonEntryMaritalStatusEntryOption = workflowActionForm.PersonEntryMaritalStatusEntryOption;
+            this.RaceEntryOption = workflowActionForm.PersonEntryRaceEntryOption;
+            this.EthnicityEntryOption = workflowActionForm.PersonEntryEthnicityEntryOption;
             this.PersonEntryMobilePhoneEntryOption = workflowActionForm.PersonEntryMobilePhoneEntryOption;
             this.PersonEntryPersonAttributeGuid = workflowActionForm.PersonEntryPersonAttributeGuid;
             this.PersonEntryPostHtml = workflowActionForm.PersonEntryPostHtml;
