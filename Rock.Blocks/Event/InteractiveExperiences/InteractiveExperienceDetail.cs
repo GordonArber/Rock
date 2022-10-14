@@ -491,7 +491,11 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     Value = experienceSchedule.Schedule.iCalendarContent,
                     Text = experienceSchedule.Schedule.ToString()
                 },
-                Campuses = experienceSchedule.InteractiveExperienceScheduleCampuses.Select( c => c.Campus ).ToListItemBagList(),
+                Campuses = experienceSchedule.InteractiveExperienceScheduleCampuses
+                    .Select( c => c.Campus )
+                    .OrderBy( c => c.Order )
+                    .ThenBy( c => c.Name )
+                    .ToListItemBagList(),
                 DataView = experienceSchedule.DataView.ToListItemBag(),
                 Group = experienceSchedule.Group.ToListItemBag()
             };
@@ -735,11 +739,17 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     } ) );
                 }
 
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
+                // Using a second context isn't normal, but because we do such deep
+                // manipulation of entities we needed this. Otherwise the entity
+                // loaded from the old RockContext would pull a non-proxy object
+                // from cache which causes ToListItemBag() to fail.
+                using ( var freshRockContext = new RockContext() )
+                {
+                    entity = new InteractiveExperienceService( freshRockContext ).Get( entity.Id );
+                    entity.LoadAttributes( rockContext );
 
-                return ActionOk( GetEntityBagForView( entity ) );
+                    return ActionOk( GetEntityBagForView( entity ) );
+                }
             }
         }
 

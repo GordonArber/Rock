@@ -118,7 +118,6 @@
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\StepFlow\flowNodeDiagram.partial.ts" />
-    <TypeScriptCompile Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\scheduleHelper.ts" />
     <TypeScriptCompile Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Event\registrationEntry.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\costSummary.partial.ts" />

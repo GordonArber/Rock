@@ -253,7 +253,7 @@ END:VEVENT`;
 
         const event = new Event(ical);
 
-        expect(event.toFriendlyText()).toBe("Multiple dates between 4/01/2022 4:00 PM and 10/07/2022 4:00 PM");
+        expect(event.toFriendlyText()).toBe("Multiple dates between 4/1/2022 4:00 PM and 10/7/2022 4:00 PM");
 
         const startDateTime = RockDateTime.fromParts(2022, 1, 1);
         const endDateTime = RockDateTime.fromParts(2022, 12, 31);

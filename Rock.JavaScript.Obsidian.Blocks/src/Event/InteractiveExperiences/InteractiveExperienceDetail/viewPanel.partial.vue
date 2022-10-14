@@ -1,17 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="row">
-        <div class="col-md-6">
-            <textarea v-model="ical" style="width: 100%; height: 400px;" />
-        </div>
-
-        <div class="col-md-6">
-            <div v-html="icalFriendly"></div>
-
-            <pre>{{ icalText }}</pre>
-        </div>
-    </div>
-
     <fieldset>
         <ValueDetailList :modelValue="topValues" />
 
@@ -30,38 +18,15 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { InteractiveExperienceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceBag";
     import { InteractiveExperienceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceDetailOptionsBag";
-    import { ScheduleRuleBuilder } from "./scheduleHelper";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-
-    const ical = ref("");
-    const icalFriendly = ref("");
-    const icalText = ref("");
-
-    watch(ical, () => {
-        if (!ical.value) {
-            return;
-        }
-
-        try {
-            const sched = new ScheduleRuleBuilder(ical.value);
-            const dates = sched.getDates(RockDateTime.fromParts(2000, 1, 1)!, RockDateTime.now().addYears(2));
-
-            icalFriendly.value = sched.toFriendlyHtml()
-
-            icalText.value = dates.map(d => d.toASPString("M/d/yyyy h:mm tt")).join("\n");
-        }
-        catch {
-            icalFriendly.value = "";
-            icalText.value = "";
-        }
-    });
+    import { InteractiveExperienceScheduleBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceScheduleBag";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -107,6 +72,8 @@
             return valueBuilder.build();
         }
 
+        valueBuilder.addHtmlValue("Schedules", getSchedulesHtml(props.modelValue.schedules ?? []));
+
         return valueBuilder.build();
     });
 
@@ -124,6 +91,48 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets an HTML string that describes the schedules and any filtering options.
+     *
+     * @param schedules The schedules to be turned into descriptive text.
+     *
+     * @returns An HTML string that represents the information about the schedules.
+     */
+    function getSchedulesHtml(schedules: InteractiveExperienceScheduleBag[]): string {
+        if (schedules.length === 0) {
+            return "";
+        }
+
+        return `<ul>${schedules.map(s => getScheduleHtml(s))}</ul>`;
+    }
+
+    /**
+     * Gets an HTML string that describes the schedule and any filtering options.
+     *
+     * @param schedule The schedule to be turned into descriptive text.
+     *
+     * @returns An HTML string that represents the information about the schedule.
+     */
+    function getScheduleHtml(schedule: InteractiveExperienceScheduleBag): string {
+        let html = schedule.schedule?.text || "No Schedule";
+
+        if (schedule.campuses && schedule.campuses.length > 0) {
+            const campusNames = schedule.campuses.map(c => escapeHtml(c.text ?? "")).join(", ");
+
+            html += `<br /><span class="text-muted">${campusNames}</span>`;
+        }
+
+        if (schedule.dataView && schedule.dataView.text) {
+            html += `<br /><span class="text-muted">Data View: ${escapeHtml(schedule.dataView.text)}</span>`;
+        }
+
+        if (schedule.group && schedule.group.text) {
+            html += `<br /><span class="text-muted">Group: ${escapeHtml(schedule.group.text)}</span>`;
+        }
+
+        return `<li>${html}</li>`;
+    }
 
     // #endregion
 
