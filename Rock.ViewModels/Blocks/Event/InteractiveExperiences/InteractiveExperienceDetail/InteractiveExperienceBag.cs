@@ -107,7 +107,7 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         /// <summary>
         /// Gets or sets the InteractiveExperienceActions  for this Interactive Experience.
         /// </summary>
-        public List<ListItemBag> Actions { get; set; }
+        public List<InteractiveExperienceActionBag> Actions { get; set; }
 
         /// <summary>
         /// Gets or sets the schedules associated with this interactive experience.

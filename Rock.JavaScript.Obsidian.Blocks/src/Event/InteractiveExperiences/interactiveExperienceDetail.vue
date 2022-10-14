@@ -29,6 +29,10 @@
             <EditPanel v-model="interactiveExperienceEditBag" :options="options" @propertyChanged="onPropertyChanged" />
         </template>
     </DetailBlock>
+
+    <ActionsPanel v-if="isActionListVisible"
+                  v-model="interactiveExperienceActions"
+                  :name="interactiveExperienceViewBag!.name!" />
 </template>
 
 <script setup lang="ts">
@@ -38,6 +42,7 @@
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import ActionsPanel from "./InteractiveExperienceDetail/actionsPanel.partial.vue";
     import EditPanel from "./InteractiveExperienceDetail/editPanel.partial.vue";
     import ViewPanel from "./InteractiveExperienceDetail/viewPanel.partial.vue";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -58,6 +63,7 @@
 
     const interactiveExperienceViewBag = ref(config.entity);
     const interactiveExperienceEditBag = ref<InteractiveExperienceBag>({} as InteractiveExperienceBag);
+    const interactiveExperienceActions = ref(interactiveExperienceViewBag.value?.actions ?? []);
 
     const entityTypeGuid = EntityType.InteractiveExperience;
 
@@ -152,6 +158,10 @@
 
     const options = computed((): InteractiveExperienceDetailOptionsBag => {
         return config.options ?? {};
+    });
+
+    const isActionListVisible = computed((): boolean => {
+        return !blockError.value && panelMode.value === DetailPanelMode.View && !!interactiveExperienceViewBag.value;
     });
 
     // #endregion
@@ -263,6 +273,7 @@
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
                 interactiveExperienceViewBag.value = result.data;
+                interactiveExperienceActions.value = interactiveExperienceViewBag.value.actions ?? [];
 
                 return true;
             }

@@ -22,6 +22,7 @@
 //
 
 import { InteractiveExperiencePushNotificationType } from "@Obsidian/Enums/Event/interactiveExperiencePushNotificationType";
+import { InteractiveExperienceActionBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionBag";
 import { InteractiveExperienceScheduleBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceScheduleBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -76,7 +77,7 @@ export type InteractiveExperienceBag = {
     description?: string | null;
 
     /** Gets or sets the InteractiveExperienceActions  for this Interactive Experience. */
-    actions?: ListItemBag[] | null;
+    actions?: InteractiveExperienceActionBag[] | null;
 
     /** Gets or sets the schedules associated with this interactive experience. */
     schedules?: InteractiveExperienceScheduleBag[] | null;

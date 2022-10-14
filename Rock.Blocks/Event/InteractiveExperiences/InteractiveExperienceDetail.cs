@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Event.InteractiveExperiences;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail;
@@ -93,7 +94,10 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <returns>The options that provide additional details to the block.</returns>
         private InteractiveExperienceDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new InteractiveExperienceDetailOptionsBag();
+            var options = new InteractiveExperienceDetailOptionsBag
+            {
+                ActionTypes = GetAvailableActionTypes()
+            };
 
             return options;
         }
@@ -185,6 +189,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 ActionSecondaryButtonColor = entity.ActionSecondaryButtonColor,
                 ActionSecondaryButtonTextColor = entity.ActionSecondaryButtonTextColor,
                 ActionTextColor = entity.ActionTextColor,
+                Actions = entity.InteractiveExperienceActions?.Select( a => GetActionBag( a ) ).ToList(),
                 AudienceAccentColor = entity.AudienceAccentColor,
                 AudienceBackgroundColor = entity.AudienceBackgroundColor,
                 AudienceBackgroundImageBinaryFile = entity.AudienceBackgroundImageBinaryFile.ToListItemBag(),
@@ -193,7 +198,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 AudienceSecondaryColor = entity.AudienceSecondaryColor,
                 AudienceTextColor = entity.AudienceTextColor,
                 Description = entity.Description,
-                //InteractiveExperienceActions = entity.InteractiveExperienceActions.ToListItemBagList(),
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 NoActionHeaderImageBinaryFile = entity.NoActionHeaderImageBinaryFile.ToListItemBag(),
@@ -309,11 +313,20 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             box.IfValidProperty( nameof( box.Entity.AudienceTextColor ),
                 () => entity.AudienceTextColor = box.Entity.AudienceTextColor );
 
+            string actionError = null;
+
+            var actionsOk = box.IfValidProperty( nameof( box.Entity.Actions ),
+                () => UpdateActions( entity, box.Entity.Actions, rockContext, out actionError ),
+                true );
+
+            if ( !actionsOk )
+            {
+                errorMessage = actionError;
+                return false;
+            }
+
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
-
-            //box.IfValidProperty( nameof( box.Entity.InteractiveExperienceActions ),
-            //    () => entity.InteractiveExperienceActions = box.Entity./* TODO: Unknown property type 'ICollection<InteractiveExperienceAction>' for conversion to bag. */ );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
@@ -626,6 +639,121 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             }
 
             return true;
+        }
+
+        private static InteractiveExperienceActionBag GetActionBag( InteractiveExperienceAction action )
+        {
+            return new InteractiveExperienceActionBag
+            {
+                Guid = action.Guid,
+                ActionType = action.ActionEntityType.ToListItemBag(),
+                IsMultipleSubmissionsAllowed = action.IsMultipleSubmissionAllowed,
+                IsModerationRequired = action.IsModerationRequired,
+                IsResponseAnonymous = action.IsResponseAnonymous,
+                ResponseVisualizer = null,
+                AttributeValues = action.GetPublicAttributeValuesForEdit( null, false )
+            };
+        }
+
+        private static bool UpdateActions( InteractiveExperience interactiveExperience, List<InteractiveExperienceActionBag> actionBags, RockContext rockContext, out string errorMessage )
+        {
+            var experienceActionService = new InteractiveExperienceActionService( rockContext );
+            var incomingActionGuids = actionBags?.Select( a => a.Guid ).ToList() ?? new List<Guid>();
+
+            errorMessage = null;
+
+            // Delete any existing actions that have been removed.
+            foreach ( var action in interactiveExperience.InteractiveExperienceActions.ToList() )
+            {
+                if ( !incomingActionGuids.Contains( action.Guid ) )
+                {
+                    if ( !experienceActionService.CanDelete( action, out errorMessage ) )
+                    {
+                        return false;
+                    }
+
+                    interactiveExperience.InteractiveExperienceActions.Remove( action );
+                    experienceActionService.Delete( action );
+                }
+            }
+
+            // Add or update any actions that were newly added.
+            if ( actionBags != null && actionBags.Count > 0 )
+            {
+                foreach ( var actionBag in actionBags )
+                {
+                    var action = interactiveExperience.InteractiveExperienceActions.FirstOrDefault( a => a.Guid == actionBag.Guid );
+
+                    if ( action == null )
+                    {
+                        action = new InteractiveExperienceAction
+                        {
+                            Guid = actionBag.Guid
+                        };
+
+                        interactiveExperience.InteractiveExperienceActions.Add( action );
+                    }
+
+                    var actionEntityTypeId = actionBag.ActionType.GetEntityId<EntityType>( rockContext );
+
+                    if ( !actionEntityTypeId.HasValue )
+                    {
+                        errorMessage = $"Invalid action type '${actionBag.ActionType.Text}' specified.";
+                        return false;
+                    }
+
+                    var visualizerEntityTypeId = actionBag.ResponseVisualizer.GetEntityId<EntityType>( rockContext );
+
+                    if ( !visualizerEntityTypeId.HasValue )
+                    {
+                        errorMessage = $"Invalid visualizer type '${actionBag.ResponseVisualizer.Text}' specified.";
+                        return false;
+                    }
+
+                    action.ActionEntityTypeId = actionEntityTypeId.Value;
+                    action.IsMultipleSubmissionAllowed = actionBag.IsMultipleSubmissionsAllowed;
+                    action.IsModerationRequired = actionBag.IsModerationRequired;
+                    action.IsResponseAnonymous = actionBag.IsResponseAnonymous;
+                    action.ResponseVisualEntityTypeId = visualizerEntityTypeId.Value;
+
+                    action.LoadAttributes( rockContext );
+
+                    action.SetPublicAttributeValues( actionBag.AttributeValues, null, false );
+                }
+            }
+
+            return true;
+        }
+
+        private static List<InteractiveExperienceActionTypeBag> GetAvailableActionTypes()
+        {
+            var actionTypes = new List<InteractiveExperienceActionTypeBag>();
+
+            foreach ( var component in ActionTypeContainer.Instance.AllComponents )
+            {
+                var actionTypeCache = EntityTypeCache.Get( component.GetType() );
+
+                var actionType = new InteractiveExperienceActionTypeBag
+                {
+                    Guid = actionTypeCache.Guid,
+                    Name = ActionTypeContainer.GetComponentName( component.GetType().FullName ),
+                    IsModerationSupported = component.IsModerationSupported,
+                    IsMultipleSubmissionSupported = component.IsMultipleSubmissionSupported,
+                    IsQuestionSupported = component.IsQuestionSupported
+                };
+
+                var action = new InteractiveExperienceAction
+                {
+                    ActionEntityTypeId = actionTypeCache.Id
+                };
+
+                action.LoadAttributes( null );
+                actionType.Attributes = action.GetPublicAttributesForEdit( null, false );
+
+                actionTypes.Add( actionType );
+            }
+
+            return actionTypes;
         }
 
         #endregion

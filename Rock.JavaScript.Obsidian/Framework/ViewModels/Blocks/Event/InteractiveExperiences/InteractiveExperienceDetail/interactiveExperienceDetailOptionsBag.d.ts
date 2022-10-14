@@ -21,5 +21,9 @@
 // </copyright>
 //
 
+import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
+
 export type InteractiveExperienceDetailOptionsBag = {
+    /** Gets or sets the action types that are available. */
+    actionTypes?: InteractiveExperienceActionTypeBag[] | null;
 };

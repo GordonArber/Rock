@@ -24,23 +24,35 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/**
- * A bag that represents a single schedule and the one or more campuses
- * that are associated with the schedule.
- */
-export type InteractiveExperienceScheduleBag = {
-    /** Gets or sets the unique identifier of this schedule. */
+/** Identifies a single action configured for use with an interactive experience. */
+export type InteractiveExperienceActionBag = {
+    /** Gets or sets the unique identifier of this action instance. */
     guid?: Guid | null;
 
-    /** Gets or sets the schedule. */
-    schedule?: ListItemBag | null;
+    /** Gets or sets the type of action. */
+    actionType?: ListItemBag | null;
 
-    /** Gets or sets the campuses that are tied to this schedule. */
-    campuses?: ListItemBag[] | null;
+    /**
+     * Gets or sets a value indicating whether moderation is required
+     * for this action.
+     */
+    isModerationRequired: boolean;
 
-    /** Gets or sets the data view to use for filtering. */
-    dataView?: ListItemBag | null;
+    /**
+     * Gets or sets a value indicating whether multiple submissions are
+     * allowed for this action.
+     */
+    isMultipleSubmissionsAllowed: boolean;
 
-    /** Gets or sets the group to use for filtering. */
-    group?: ListItemBag | null;
+    /**
+     * Gets or sets a value indicating whether this action should record
+     * responses anonymously.
+     */
+    isResponseAnonymous: boolean;
+
+    /** Gets or sets the response visualizer used to display responses. */
+    responseVisualizer?: ListItemBag | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
 };

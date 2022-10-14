@@ -77,6 +77,8 @@
     <Compile Include="Blocks\CustomSettingsBox.cs" />
     <Compile Include="Blocks\DetailBlockBox.cs" />
     <Compile Include="Blocks\Engagement\StepFlowBox.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceActionBag.cs" />
+    <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceActionTypeBag.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceBag.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceDetailOptionsBag.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceScheduleBag.cs" />

@@ -22,25 +22,28 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /**
- * A bag that represents a single schedule and the one or more campuses
- * that are associated with the schedule.
+ * Identifies a single action type that can be used to configure actions
+ * for an experience by the individual.
  */
-export type InteractiveExperienceScheduleBag = {
-    /** Gets or sets the unique identifier of this schedule. */
+export type InteractiveExperienceActionTypeBag = {
+    /** Gets or sets the unique identifier for this type of action. */
     guid?: Guid | null;
 
-    /** Gets or sets the schedule. */
-    schedule?: ListItemBag | null;
+    /** Gets or sets the display name for this type of action. */
+    name?: string | null;
 
-    /** Gets or sets the campuses that are tied to this schedule. */
-    campuses?: ListItemBag[] | null;
+    /** Gets or sets a value indicating whether this type supports question text. */
+    isQuestionSupported: boolean;
 
-    /** Gets or sets the data view to use for filtering. */
-    dataView?: ListItemBag | null;
+    /** Gets or sets a value indicating whether this type supports moderation. */
+    isModerationSupported: boolean;
 
-    /** Gets or sets the group to use for filtering. */
-    group?: ListItemBag | null;
+    /** Gets or sets a value indicating whether this type allows multiple submissions. */
+    isMultipleSubmissionSupported: boolean;
+
+    /** Gets or sets the attributes that are available on this action type. */
+    attributes?: Record<string, PublicAttributeBag> | null;
 };

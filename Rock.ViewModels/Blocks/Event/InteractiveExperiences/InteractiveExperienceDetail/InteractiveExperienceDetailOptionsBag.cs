@@ -15,9 +15,16 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail
 {
     public class InteractiveExperienceDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the action types that are available.
+        /// </summary>
+        /// <value>The action types that are available.</value>
+        public List<InteractiveExperienceActionTypeBag> ActionTypes { get; set; }
     }
 }
