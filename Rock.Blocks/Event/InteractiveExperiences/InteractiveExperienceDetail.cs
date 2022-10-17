@@ -178,6 +178,11 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 return null;
             }
 
+            if ( entity.InteractiveExperienceActions != null && entity.InteractiveExperienceActions.Count > 0 )
+            {
+                entity.InteractiveExperienceActions.LoadAttributes();
+            }
+
             return new InteractiveExperienceBag
             {
                 IdKey = entity.IdKey,
@@ -189,7 +194,11 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 ActionSecondaryButtonColor = entity.ActionSecondaryButtonColor,
                 ActionSecondaryButtonTextColor = entity.ActionSecondaryButtonTextColor,
                 ActionTextColor = entity.ActionTextColor,
-                Actions = entity.InteractiveExperienceActions?.Select( a => GetActionBag( a ) ).ToList(),
+                Actions = entity.InteractiveExperienceActions
+                    ?.OrderBy( a => a.Order )
+                    .ThenBy( a => a.Id )
+                    .Select( a => GetActionBag( a ) )
+                    .ToList(),
                 AudienceAccentColor = entity.AudienceAccentColor,
                 AudienceBackgroundColor = entity.AudienceBackgroundColor,
                 AudienceBackgroundImageBinaryFile = entity.AudienceBackgroundImageBinaryFile.ToListItemBag(),
@@ -649,46 +658,78 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         private static bool IsActionAttributeIncluded( AttributeCache attribute )
         {
-            return attribute.Key != "Order" && attribute.Key != "IsActive";
+            return attribute.Key != "Order" && attribute.Key != "Active";
         }
 
-        private static bool AddOrUpdateAction( InteractiveExperience interactiveExperience, InteractiveExperienceActionBag actionBag, RockContext rockContext, out string errorMessage )
+        private static bool AddOrUpdateActionFromBox( InteractiveExperience interactiveExperience, ValidPropertiesBox<InteractiveExperienceActionBag> box, RockContext rockContext, out string errorMessage )
         {
             var experienceActionService = new InteractiveExperienceActionService( rockContext );
 
             errorMessage = null;
 
-            var action = interactiveExperience.InteractiveExperienceActions.FirstOrDefault( a => a.Guid == actionBag.Guid );
+            if ( !box.IsValidProperty( nameof( box.Bag.Guid ) ) )
+            {
+                errorMessage = "Action must specify the Guid property.";
+                return false;
+            }
+
+            var action = interactiveExperience.InteractiveExperienceActions.FirstOrDefault( a => a.Guid == box.Bag.Guid );
 
             if ( action == null )
             {
                 action = new InteractiveExperienceAction
                 {
-                    Guid = actionBag.Guid
+                    Guid = box.Bag.Guid
                 };
 
                 interactiveExperience.InteractiveExperienceActions.Add( action );
             }
 
-            var actionEntityTypeId = actionBag.ActionType.GetEntityId<EntityType>( rockContext );
-
-            if ( !actionEntityTypeId.HasValue )
+            if ( box.IsValidProperty( nameof( box.Bag.ActionType ) ) )
             {
-                errorMessage = $"Invalid action type '${actionBag.ActionType.Text}' specified.";
-                return false;
+                var actionEntityTypeId = box.Bag.ActionType.GetEntityId<EntityType>( rockContext );
+
+                if ( !actionEntityTypeId.HasValue )
+                {
+                    errorMessage = $"Invalid action type '${box.Bag.ActionType.Text}' specified.";
+                    return false;
+                }
+
+                action.ActionEntityTypeId = actionEntityTypeId.Value;
             }
 
-            var visualizerEntityTypeId = actionBag.ResponseVisualizer.GetEntityId<EntityType>( rockContext );
+            box.IfValidProperty( nameof( box.Bag.IsMultipleSubmissionsAllowed ),
+                () => action.IsMultipleSubmissionAllowed = box.Bag.IsMultipleSubmissionsAllowed );
 
-            action.ActionEntityTypeId = actionEntityTypeId.Value;
-            action.IsMultipleSubmissionAllowed = actionBag.IsMultipleSubmissionsAllowed;
-            action.IsModerationRequired = actionBag.IsModerationRequired;
-            action.IsResponseAnonymous = actionBag.IsResponseAnonymous;
-            action.ResponseVisualEntityTypeId = visualizerEntityTypeId;
+            box.IfValidProperty( nameof( box.Bag.IsModerationRequired ),
+                () => action.IsModerationRequired = box.Bag.IsModerationRequired );
 
-            action.LoadAttributes( rockContext );
+            box.IfValidProperty( nameof( box.Bag.IsResponseAnonymous ),
+                () => action.IsResponseAnonymous = box.Bag.IsResponseAnonymous );
 
-            action.SetPublicAttributeValues( actionBag.AttributeValues, null, false );
+            if ( box.IsValidProperty( nameof( box.Bag.ResponseVisualizer ) ) )
+            {
+                var visualizerEntityTypeId = box.Bag.ResponseVisualizer.GetEntityId<EntityType>( rockContext );
+
+                action.ResponseVisualEntityTypeId = visualizerEntityTypeId;
+            }
+
+            if ( action.Id == 0 )
+            {
+                var lastOrder = experienceActionService.Queryable()
+                    .Where( a => a.InteractiveExperienceId == interactiveExperience.Id )
+                    .Select( a => ( int? ) a.Order )
+                    .Max();
+
+                action.Order = lastOrder.HasValue ? lastOrder.Value + 1 : 0;
+            }
+
+            if ( box.IsValidProperty( nameof( box.Bag.AttributeValues ) ) )
+            {
+                action.LoadAttributes( rockContext );
+
+                action.SetPublicAttributeValues( box.Bag.AttributeValues, null, false );
+            }
 
             return true;
         }
@@ -722,7 +763,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 actionTypes.Add( actionType );
             }
 
-            return actionTypes;
+            return actionTypes.OrderBy( at => at.Name ).ToList();
         }
 
         #endregion
@@ -932,37 +973,112 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             }
         }
 
+        /// <summary>
+        /// Creates or updates the action contained in the box.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the interactive experience this action belongs to.</param>
+        /// <param name="box">The box that contains the information about the action.</param>
+        /// <returns>An instance of <see cref="InteractiveExperienceActionBag"/> that represents the action.</returns>
         [BlockAction]
-        public BlockActionResult SaveAction( string idKey, DetailBlockBox<InteractiveExperienceActionBag, InteractiveExperienceDetailOptionsBag> box )
+        public BlockActionResult SaveAction( string idKey, ValidPropertiesBox<InteractiveExperienceActionBag> box )
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new InteractiveExperienceService( rockContext );
-
                 if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
                 }
 
                 // Update the entity instance from the information in the bag.
-                if ( !AddOrUpdateAction( entity, box.Entity, rockContext, out var updateMessage ) )
+                if ( !AddOrUpdateActionFromBox( entity, box, rockContext, out var updateMessage ) )
                 {
                     return ActionBadRequest( updateMessage ?? "Invalid data." );
                 }
 
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+
+                    var editedAction = entity.InteractiveExperienceActions.SingleOrDefault( a => a.Guid == box.Bag.Guid );
+
+                    if ( editedAction.Attributes != null )
+                    {
+                        editedAction.SaveAttributeValues( rockContext );
+                    }
+                } );
 
                 // Using a second context isn't normal, but we need to ensure we get
                 // a proxy object back if we created a new action rather than
                 // the cached non-proxy version.
                 using ( var freshRockContext = new RockContext() )
                 {
-                    var freshAction = new InteractiveExperienceActionService( freshRockContext ).Get( box.Entity.Guid );
+                    var freshAction = new InteractiveExperienceActionService( freshRockContext ).Get( box.Bag.Guid );
 
                     freshAction.LoadAttributes( freshRockContext );
 
                     return ActionOk( GetActionBag( freshAction ) );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Reorders the actions for the interactive experience so that the
+        /// specified action is directly before the other action.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the interactive experience that these actions belong to.</param>
+        /// <param name="actionGuid">The action unique identifier of the action to be moved.</param>
+        /// <param name="beforeActionGuid">The action unique identifier of the action that it should be moved before; or <c>null</c> to move it to the end.</param>
+        /// <returns>An empty 200 OK result if it was moved or an error response if it could not be moved.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderAction( string idKey, Guid actionGuid, Guid? beforeActionGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
+                {
+                    return actionError;
+                }
+
+                entity.InteractiveExperienceActions
+                    .ToList()
+                    .ReorderEntity( actionGuid.ToString(), beforeActionGuid?.ToString() );
+
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Deletes the action from the interactive experience.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the interactive experience that contains the action.</param>
+        /// <param name="actionGuid">The unique identifier of the action to be deleted.</param>
+        /// <returns>A 200 OK response if the action was deleted or an error response if it could not be deleted.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteAction( string idKey, Guid actionGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var actionService = new InteractiveExperienceActionService( rockContext );
+
+                if ( !TryGetEntityForEditAction( idKey, rockContext, out var entity, out var actionError ) )
+                {
+                    return actionError;
+                }
+
+                var action = entity.InteractiveExperienceActions.SingleOrDefault( a => a.Guid == actionGuid );
+
+                if ( action == null )
+                {
+                    return ActionNotFound( "The specified action was not found." );
+                }
+
+                actionService.Delete( action );
+
+                rockContext.SaveChanges();
+
+                return ActionOk();
             }
         }
 

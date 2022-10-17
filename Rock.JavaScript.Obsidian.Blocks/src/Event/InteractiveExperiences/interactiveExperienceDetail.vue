@@ -33,6 +33,7 @@
     <ActionsPanel v-if="isActionListVisible"
                   v-model="interactiveExperienceActions"
                   :name="interactiveExperienceViewBag!.name!"
+                  :interactiveExperienceIdKey="interactiveExperienceViewBag!.idKey!"
                   :actionTypes="actionTypes" />
 </template>
 

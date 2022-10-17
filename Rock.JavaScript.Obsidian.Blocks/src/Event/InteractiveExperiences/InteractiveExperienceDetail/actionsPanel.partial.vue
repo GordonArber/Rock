@@ -10,8 +10,8 @@
             </template>
         </SectionHeader>
 
-        <div v-drag-source="dragOptions"
-             v-drag-target="dragOptions"
+        <div v-dragSource="dragOptions"
+             v-dragTarget="dragOptions"
              class="actions-list">
             <div v-for="(action, index) in internalValue" class="action-item" :key="action.guid!">
                 <div>{{ index + 1 }}</div>
@@ -30,13 +30,58 @@
                     <div class="subtitle text-sm text-muted">Subtitle: {{ getActionTypeName(action) }}</div>
                 </div>
                 <div>
-                    <a href="#" @click.prevent="onActionRemoveClick(action)">
+                    <a href="#" class="action-icon" @click.prevent="onEditActionClick(action)">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                </div>
+                <div>
+                    <a href="#" class="action-icon action-icon-danger" @click.prevent="onActionRemoveClick(action)">
                         <i class="fa fa-times"></i>
                     </a>
                 </div>
             </div>
         </div>
     </Panel>
+
+    <Modal v-model="isModalVisible"
+           :title="modalTitle"
+           saveText="Save"
+           @save="onActionSave">
+        <Alert v-if="modalErrorMessage"
+               alertType="warning">
+            {{ modalErrorMessage }}
+        </Alert>
+
+        <DropDownList v-model="actionType"
+                      label="Action Type"
+                      rules="required"
+                      :items="actionTypeItems" />
+
+        <AttributeValuesContainer v-model="attributeValues"
+                                  :attributes="attributes"
+                                  isEditMode />
+
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox v-model="requiresModeration"
+                          label="Requires Moderation" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox v-model="allowMultipleSubmissions"
+                          label="Allow Multiple Submissions" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox v-model="anonymousResponses"
+                          label="Anonymous Responses" />
+            </div>
+        </div>
+
+        <DropDownList v-model="responseVisual"
+                      label="Response Visual"
+                      :items="responseVisualItems" />
+    </Modal>
 </template>
 
 <style scoped>
@@ -68,6 +113,7 @@
 .action-item > *:last-child {
     border-right: 1px solid #c4c4c4;
     border-radius: 0px 8px 8px 0px;
+    padding-right: 16px;
 }
 
 .action-item > .action-item-icon {
@@ -96,17 +142,41 @@
 .action-item .reorder-handle {
     cursor: grab;
 }
+
+.action-item .action-icon {
+    color: var(--text-color);
+    display: none;
+}
+
+.action-item:hover .action-icon {
+    display: initial;
+}
+
+.action-item:hover .action-icon.action-icon-danger {
+    color: var(--brand-danger);
+}
 </style>
 
 <script setup lang="ts">
+    import Alert from "@Obsidian/Controls/alert.vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import Modal from "@Obsidian/Controls/modal";
     import Panel from "@Obsidian/Controls/panel";
     import SectionHeader from "@Obsidian/Controls/sectionHeader";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { setPropertiesBagBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { InteractiveExperienceActionBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionBag";
     import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref } from "vue";
+    import { Guid } from "@Obsidian/Types";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
 
     const props = defineProps({
         /** An array of actions that are currently configured. */
@@ -117,6 +187,12 @@
 
         /** The name of the experience currently displayed. */
         name: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The identifier key of the interactive experience these actions are for. */
+        interactiveExperienceIdKey: {
             type: String as PropType<string>,
             required: true
         },
@@ -134,30 +210,19 @@
 
     // #region Values
 
-    const internalValue = ref<InteractiveExperienceActionBag[]>([
-        {
-            guid: "one",
-            actionType: {
-                value: "5ffe1f8f-5f0b-4b34-9c3f-1706d9093210",
-                text: "Test123",
-            },
-            title: "Test",
-            isModerationRequired: false,
-            isMultipleSubmissionsAllowed: false,
-            isResponseAnonymous: false
-        },
-        {
-            guid: "two",
-            isModerationRequired: false,
-            isMultipleSubmissionsAllowed: false,
-            isResponseAnonymous: false
-        },
-        {
-            guid: "three",
-            isModerationRequired: false,
-            isMultipleSubmissionsAllowed: false,
-            isResponseAnonymous: false
-        }]); //useVModelPassthrough(props, "modelValue", emit);
+    const invokeBlockAction = useInvokeBlockAction();
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const isModalVisible = ref(false);
+    const modalTitle = ref("");
+    const modalErrorMessage = ref("");
+    const existingActionGuid = ref<Guid | null>(null);
+    const actionType = ref("");
+    const requiresModeration = ref(false);
+    const allowMultipleSubmissions = ref(false);
+    const anonymousResponses = ref(false);
+    const responseVisual = ref("");
+    const attributeValues = ref<Record<string, string>>({});
 
     // #endregion
 
@@ -171,14 +236,49 @@
         return `The actions below are configured for the ${props.name} experience.`;
     });
 
+    const actionTypeItems = computed((): ListItemBag[] => {
+        return props.actionTypes.map(at => ({
+            value: at.guid,
+            text: at.name
+        }));
+    });
+
+    const responseVisualItems = computed((): ListItemBag[] => {
+        return [];
+    });
+
+    const attributes = computed((): Record<string, PublicAttributeBag> => {
+        const type = props.actionTypes.find(at => areEqual(at.guid, actionType.value));
+
+        if (!type) {
+            return {};
+        }
+
+        return type.attributes ?? {};
+    });
+
     // #endregion
 
     // #region Functions
 
+    /**
+     * Gets the name of the action type that the action is using.
+     *
+     * @param action The action whose type name is being requested.
+     *
+     * @returns The name of the action type or an empty string if not found.
+     */
     function getActionTypeName(action: InteractiveExperienceActionBag): string {
         return props.actionTypes.find(at => areEqual(at.guid, action.actionType?.value))?.name ?? "";
     }
 
+    /**
+     * Gets the icon CSS class to use for the requested action.
+     *
+     * @param action The aciton whose icon class is being requested.
+     *
+     * @returns The CSS class value to use to display the icon.
+     */
     function getActionTypeIconClass(action: InteractiveExperienceActionBag): string {
         return props.actionTypes.find(at => areEqual(at.guid, action.actionType?.value))?.iconCssClass ?? "";
     }
@@ -187,18 +287,144 @@
 
     // #region Event Handlers
 
+    /**
+     * Event handler for when the Add button is clicked. Begin the process of
+     * adding a new action to the experience.
+     */
     function onAddActionClick(): void {
-        /* */
+        actionType.value = "";
+        requiresModeration.value = false;
+        allowMultipleSubmissions.value = false;
+        anonymousResponses.value = false;
+        responseVisual.value = "";
+        attributeValues.value = {};
+
+        existingActionGuid.value = null;
+        modalTitle.value = "Add Action";
+        isModalVisible.value = true;
     }
 
-    function onActionRemoveClick(action: InteractiveExperienceActionBag): void {
-        /* */
+    /**
+     * Event handler for when an existing action's edit button has been clicked.
+     * Begin the process of editing the action.
+     *
+     * @param action The action that should be edited.
+     */
+    function onEditActionClick(action: InteractiveExperienceActionBag): void {
+        actionType.value = action.actionType?.value ?? "";
+        requiresModeration.value = action.isModerationRequired;
+        allowMultipleSubmissions.value = action.isMultipleSubmissionsAllowed;
+        anonymousResponses.value = action.isResponseAnonymous;
+        responseVisual.value = action.responseVisualizer?.value ?? "";
+        attributeValues.value = action.attributeValues ?? {};
+
+        existingActionGuid.value = action.guid ?? null;
+        modalTitle.value = "Edit Action";
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Event handler for when the Save button in the modal is clicked and the
+     * action should be saved. Send the request to the server and then update
+     * the list of known actions.
+     */
+    async function onActionSave(): Promise<void> {
+        modalErrorMessage.value = "";
+
+        const box: ValidPropertiesBox<InteractiveExperienceActionBag> = {};
+
+        setPropertiesBagBoxValue(box, "guid", existingActionGuid.value ?? newGuid());
+        setPropertiesBagBoxValue(box, "actionType", { value: actionType.value });
+        setPropertiesBagBoxValue(box, "isModerationRequired", requiresModeration.value);
+        setPropertiesBagBoxValue(box, "isMultipleSubmissionsAllowed", allowMultipleSubmissions.value);
+        setPropertiesBagBoxValue(box, "isResponseAnonymous", anonymousResponses.value);
+        setPropertiesBagBoxValue(box, "attributeValues", attributeValues.value);
+
+        const result = await invokeBlockAction<InteractiveExperienceActionBag>("SaveAction", {
+            idKey: props.interactiveExperienceIdKey,
+            box: box
+        });
+
+        if (!result.isSuccess || !result.data) {
+            modalErrorMessage.value = result.errorMessage ?? "Unknown error while trying to save action.";
+
+            return;
+        }
+
+        const action = result.data;
+        const existingActionIndex = internalValue.value.findIndex(a => areEqual(a.guid, action.guid));
+
+        if (existingActionIndex !== -1) {
+            const newValue = [...internalValue.value];
+
+            newValue.splice(existingActionIndex, 1, action);
+
+            internalValue.value = newValue;
+        }
+        else {
+            internalValue.value = [...internalValue.value, action];
+        }
+
+        isModalVisible.value = false;
+    }
+
+    /**
+     * Event handler for when the remove button for an action is clicked.
+     * Confirm with the individual that they really wanted to remove the
+     * action and then remove it from the server.
+     *
+     * @param action The action that is to be removed.
+     */
+    async function onActionRemoveClick(action: InteractiveExperienceActionBag): Promise<void> {
+        if (!await confirmDelete("Action")) {
+            return;
+        }
+
+        const result = await invokeBlockAction<void>("DeleteAction", {
+            idKey: props.interactiveExperienceIdKey,
+            actionGuid: action.guid
+        });
+
+        if (!result.isSuccess) {
+            alert(result.errorMessage || "Unable to delete the action.");
+        }
+        else {
+            const index = internalValue.value.findIndex(a => areEqual(a.guid, action.guid));
+
+            if (index !== -1) {
+                const newValue = [...internalValue.value];
+
+                newValue.splice(index, 1);
+
+                internalValue.value = newValue;
+            }
+        }
+    }
+
+    /**
+     * Event handler for when the person has dragged one of the actions to
+     * reorder it in the action list.
+     *
+     * @param action The action that was dragged.
+     * @param beforeAction The action it should be placed before, or null if at the end.
+     */
+    async function onActionReorder(action: InteractiveExperienceActionBag, beforeAction: InteractiveExperienceActionBag | null): Promise<void> {
+        // Force an update so the detail block updates the value.
+        internalValue.value = [...internalValue.value];
+
+        const result = await invokeBlockAction<void>("ReorderAction", {
+            idKey: props.interactiveExperienceIdKey,
+            actionGuid: action.guid,
+            beforeActionGuid: beforeAction?.guid ?? null
+        });
+
+        if (!result.isSuccess) {
+            alert(result.errorMessage || "Unable to re-order actions, you might need to reload the page.");
+            return;
+        }
     }
 
     // #endregion
 
-    const dragOptions = useDragReorder(internalValue, () => {
-        // Force an update.
-        internalValue.value = [...internalValue.value];
-    });
+    const dragOptions = useDragReorder(internalValue, onActionReorder);
 </script>
