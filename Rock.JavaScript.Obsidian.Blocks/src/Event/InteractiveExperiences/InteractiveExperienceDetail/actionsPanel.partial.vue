@@ -62,12 +62,12 @@
                                   isEditMode />
 
         <div class="row">
-            <div class="col-md-4">
+            <div v-if="isRequiresModerationVisible" class="col-md-4">
                 <CheckBox v-model="requiresModeration"
                           label="Requires Moderation" />
             </div>
 
-            <div class="col-md-4">
+            <div v-if="isMultipleSubmissionsVisible" class="col-md-4">
                 <CheckBox v-model="allowMultipleSubmissions"
                           label="Allow Multiple Submissions" />
             </div>
@@ -247,14 +247,20 @@
         return [];
     });
 
+    const selectedActionType = computed((): InteractiveExperienceActionTypeBag | null => {
+        return props.actionTypes.find(at => areEqual(at.guid, actionType.value)) ?? null;
+    });
+
     const attributes = computed((): Record<string, PublicAttributeBag> => {
-        const type = props.actionTypes.find(at => areEqual(at.guid, actionType.value));
+        return selectedActionType.value?.attributes ?? {};
+    });
 
-        if (!type) {
-            return {};
-        }
+    const isRequiresModerationVisible = computed((): boolean => {
+        return selectedActionType.value?.isModerationSupported === true;
+    });
 
-        return type.attributes ?? {};
+    const isMultipleSubmissionsVisible = computed((): boolean => {
+        return selectedActionType.value?.isMultipleSubmissionSupported === true;
     });
 
     // #endregion

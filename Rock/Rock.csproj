@@ -873,6 +873,7 @@
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
     <Compile Include="Field\IEntityReferenceFieldType.cs" />
