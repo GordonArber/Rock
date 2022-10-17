@@ -159,4 +159,15 @@ export interface IFieldType {
      * @param configurationValues The configuration of the field type to use when formatting the value.
      */
     getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string;
+
+    /**
+     * Determines if the value matches the filter value for this field type.
+     * 
+     * @param filterValue The comparison value specified by the filter.
+     * @param configurationValues The configuration of the field type to use when formatting the value.
+     * @param value The value to be compared with this filter value.
+     *
+     * @returns True if the value matches the comparison value; otherwise false.
+     */
+    doesFilterMatchValue(filterValue: ComparisonValue, configurationValues: Record<string, string>, value: string | undefined | null): boolean;
 }
