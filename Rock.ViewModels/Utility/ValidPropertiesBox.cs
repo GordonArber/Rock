@@ -17,17 +17,25 @@
 
 using System.Collections.Generic;
 
-namespace Rock.ViewModels.Blocks
+namespace Rock.ViewModels.Utility
 {
     /// <summary>
-    /// Interface IValidPropertiesBox
+    /// A generic valid properties bag that uses "Bag" as the main property name.
     /// </summary>
-    public interface IValidPropertiesBox
+    /// <typeparam name="TPropertyBag">The type of the property bag.</typeparam>
+    public class ValidPropertiesBox<TPropertyBag> : IValidPropertiesBox
+        where TPropertyBag : class
     {
         /// <summary>
-        /// Gets the valid properties.
+        /// Gets or sets the bag that contains the properties.
+        /// </summary>
+        /// <value>The bag that contains the properties.</value>
+        public TPropertyBag Bag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the valid properties.
         /// </summary>
         /// <value>The valid properties.</value>
-        List<string> ValidProperties { get; }
+        public List<string> ValidProperties { get; set; }
     }
 }

@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace Rock.ViewModels.Blocks
     /// </summary>
     /// <typeparam name="TEntityBag">The type of the bag Entity.</typeparam>
     /// <typeparam name="TOptions">The type of the bag options.</typeparam>
-    /// <seealso cref="Rock.ViewModels.Blocks.IValidPropertiesBox" />
+    /// <seealso cref="Rock.ViewModels.Utility.IValidPropertiesBox" />
     public class DetailBlockBox<TEntityBag, TOptions> : IValidPropertiesBox
         where TOptions : new()
     {
