@@ -1290,6 +1290,7 @@ $(document).ready(function() {
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                     filterControl.FilteredEntityTypeName = filteredEntityTypeName;
+                    filterControl.EnhanceFilterTypeForLongLists = true;
                     if ( filter.EntityTypeId.HasValue )
                     {
                         var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
