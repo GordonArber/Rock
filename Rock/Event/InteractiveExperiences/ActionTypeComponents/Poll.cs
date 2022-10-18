@@ -37,7 +37,6 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         Key = AttributeKey.Question )]
 
     [ValueListField( "Answers",
-        fieldTypeClass: null,
         IsRequired = true,
         AllowHtml = true, // We HTML escape the text, so it is safe to allow < and > characters.
         Order = 1,

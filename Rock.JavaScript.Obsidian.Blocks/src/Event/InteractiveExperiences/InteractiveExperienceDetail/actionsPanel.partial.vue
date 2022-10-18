@@ -59,7 +59,8 @@
 
         <AttributeValuesContainer v-model="attributeValues"
                                   :attributes="attributes"
-                                  isEditMode />
+                                  isEditMode
+                                  :showCategoryLabel="false" />
 
         <div class="row">
             <div v-if="isRequiresModerationVisible" class="col-md-4">
