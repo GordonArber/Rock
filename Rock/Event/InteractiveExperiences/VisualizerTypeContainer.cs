@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -39,7 +38,6 @@ namespace Rock.Event.InteractiveExperiences
         /// </summary>
         private static readonly Lazy<VisualizerTypeContainer> _instance =
             new Lazy<VisualizerTypeContainer>( () => new VisualizerTypeContainer() );
-
 
         #endregion
 
@@ -70,12 +68,27 @@ namespace Rock.Event.InteractiveExperiences
 
         #endregion
 
+        #region Methods
+
         /// <summary>
         /// Forces a reloading of all the components
         /// </summary>
         public override void Refresh()
         {
             base.Refresh();
+
+            // Create any attributes that need to be created
+            var actionEntityTypeId = EntityTypeCache.Get<InteractiveExperienceAction>().Id;
+
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( var visualizerComponent in AllComponents )
+                {
+                    var visualizerComponentType = visualizerComponent.GetType();
+                    var visualzierComponentEntityTypeId = EntityTypeCache.Get( visualizerComponentType ).Id;
+                    ActionTypeContainer.UpdateAttributes( visualizerComponentType, actionEntityTypeId, "visualizer", nameof( InteractiveExperienceAction.ResponseVisualEntityTypeId ), visualzierComponentEntityTypeId.ToString(), rockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -130,5 +143,7 @@ namespace Rock.Event.InteractiveExperiences
 
             return GetComponentName( component.GetType().FullName );
         }
+
+        #endregion
     }
 }

@@ -43,7 +43,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
 
         private static class AttributeKey
         {
-            public const string Question = "Question";
+            public const string Question = "actionQuestion";
         }
 
         #endregion

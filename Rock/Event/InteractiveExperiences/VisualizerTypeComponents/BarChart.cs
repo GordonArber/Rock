@@ -17,6 +17,8 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
+using Rock.Attribute;
+
 namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
 {
     /// <summary>
@@ -27,8 +29,22 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
     [Export( typeof( VisualizerTypeComponent ) )]
     [ExportMetadata( "ComponentName", "Bar Chart" )]
 
+    [CustomDropdownListField( "Orientation",
+        DefaultValue = "horizontal",
+        ListSource = "horizontal^Horizontal,vertical^Vertical",
+        IsRequired = true,
+        Key = AttributeKey.Orientation )]
+
     [Rock.SystemGuid.EntityTypeGuid( "b1dfd377-9ef7-407f-9097-6206b98aec0d" )]
     internal class BarChart : VisualizerTypeComponent
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string Orientation = "visualizerOrientation";
+        }
+
+        #endregion
     }
 }

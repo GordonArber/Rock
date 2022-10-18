@@ -22,12 +22,12 @@
 //
 
 import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { InteractiveExperienceVisualizerTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceVisualizerTypeBag";
 
 export type InteractiveExperienceDetailOptionsBag = {
     /** Gets or sets the action types that are available. */
     actionTypes?: InteractiveExperienceActionTypeBag[] | null;
 
     /** Gets or sets the visualizer types that are available. */
-    visualizerTypes?: ListItemBag[] | null;
+    visualizerTypes?: InteractiveExperienceVisualizerTypeBag[] | null;
 };

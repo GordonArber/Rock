@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -26,6 +27,16 @@ using Rock.Web.Cache;
 
 namespace Rock.Event.InteractiveExperiences
 {
+    /**
+     * 10/18/2022 - DSH
+     * 
+     * Attributes for InteractiveExperienceActions are a little weird. We actually
+     * put attributes from two different component types on the one entity. Because of
+     * that we enforce that each component type starts with a specific prefix to
+     * help us identify which attributes are which. The available prefixes are
+     * "action" for ActionTypeComponent and "visualizer" for VisualizerTypeComponent.
+     */
+
     /// <summary>
     /// MEF Container class for Interactive Experience Action Type Components.
     /// </summary>
@@ -38,7 +49,6 @@ namespace Rock.Event.InteractiveExperiences
         /// </summary>
         private static readonly Lazy<ActionTypeContainer> _instance =
             new Lazy<ActionTypeContainer>( () => new ActionTypeContainer() );
-
 
         #endregion
 
@@ -69,6 +79,90 @@ namespace Rock.Event.InteractiveExperiences
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// Uses reflection to find any <see cref="FieldAttribute" /> attributes
+        /// for the specified type and will create and/or update a
+        /// <see cref="Rock.Model.Attribute" /> record for each attribute defined.
+        /// This is a custom variation of the standard one in <see cref="Helper.UpdateAttributes(Type, int?, string, string, RockContext)"/>
+        /// that handles filtering by prefix.
+        /// </summary>
+        /// <param name="type">The type (should be a <see cref="IHasAttributes" /> object).</param>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="keyPrefix">The prefix that attribute keys must have in order to be included.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if any attributes were created/updated.</returns>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        internal static bool UpdateAttributes( Type type, int? entityTypeId, string keyPrefix, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext )
+        {
+            bool attributesUpdated = false;
+            bool attributesDeleted = false;
+
+            if ( type == null )
+            {
+                return false;
+            }
+
+            var entityProperties = new List<FieldAttribute>();
+
+            // Add any property attributes that were defined for the entity
+            var customFieldAttributes = type.GetCustomAttributes( typeof( FieldAttribute ), true )
+                .Cast<FieldAttribute>()
+                .Where( a => a.Key.StartsWith( keyPrefix ) );
+
+            foreach ( var customAttribute in customFieldAttributes )
+            {
+                entityProperties.Add( customAttribute );
+            }
+
+            rockContext = rockContext ?? new RockContext();
+
+            // Create any attributes that need to be created
+            foreach ( var entityProperty in entityProperties )
+            {
+                try
+                {
+                    attributesUpdated = Helper.UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( string.Format( "Could not update an entity attribute ( Entity Type Id: {0}; Property Name: {1} ). ", entityTypeId, entityProperty.Name ), ex ), null );
+                }
+            }
+
+            // Remove any old attributes
+            try
+            {
+                var attributeService = new Model.AttributeService( rockContext );
+                var existingKeys = entityProperties.Select( a => a.Key ).ToList();
+
+                foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
+                {
+                    if ( !existingKeys.Contains( a.Key ) && a.Key.StartsWith( keyPrefix ) )
+                    {
+                        attributeService.Delete( a );
+                        attributesDeleted = true;
+                    }
+                }
+
+                if ( attributesDeleted )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( "Could not delete one or more old attributes.", ex ), null );
+            }
+
+            return attributesUpdated;
+        }
+
         /// <summary>
         /// Forces a reloading of all the components
         /// </summary>
@@ -85,7 +179,7 @@ namespace Rock.Event.InteractiveExperiences
                 {
                     var actionComponentType = actionComponent.GetType();
                     var actionComponentEntityTypeId = EntityTypeCache.Get( actionComponentType ).Id;
-                    Rock.Attribute.Helper.UpdateAttributes( actionComponentType, actionEntityTypeId, nameof( InteractiveExperienceAction.ActionEntityTypeId ), actionComponentEntityTypeId.ToString(), rockContext );
+                    UpdateAttributes( actionComponentType, actionEntityTypeId, "action", nameof( InteractiveExperienceAction.ActionEntityTypeId ), actionComponentEntityTypeId.ToString(), rockContext );
                 }
             }
         }
@@ -142,5 +236,7 @@ namespace Rock.Event.InteractiveExperiences
 
             return GetComponentName( component.GetType().FullName );
         }
+
+        #endregion
     }
 }

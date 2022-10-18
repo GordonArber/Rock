@@ -58,7 +58,7 @@
                       :items="actionTypeItems" />
 
         <AttributeValuesContainer v-model="attributeValues"
-                                  :attributes="attributes"
+                                  :attributes="actionAttributes"
                                   isEditMode
                                   :showCategoryLabel="false" />
 
@@ -82,6 +82,12 @@
         <DropDownList v-model="responseVisual"
                       label="Response Visual"
                       :items="responseVisualItems" />
+
+        <AttributeValuesContainer v-model="attributeValues"
+                                  :attributes="visualizerAttributes"
+                                  isEditMode
+                                  :showCategoryLabel="false" />
+
     </Modal>
 </template>
 
@@ -174,10 +180,11 @@
     import { InteractiveExperienceActionBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionBag";
     import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { Guid } from "@Obsidian/Types";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { InteractiveExperienceVisualizerTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceVisualizerTypeBag";
 
     const props = defineProps({
         /** An array of actions that are currently configured. */
@@ -258,8 +265,16 @@
         return props.actionTypes.find(at => areEqual(at.value, actionType.value)) ?? null;
     });
 
-    const attributes = computed((): Record<string, PublicAttributeBag> => {
+    const actionAttributes = computed((): Record<string, PublicAttributeBag> => {
         return selectedActionType.value?.attributes ?? {};
+    });
+
+    const selectedVisualizerType = computed((): InteractiveExperienceVisualizerTypeBag | null => {
+        return props.visualizerTypes.find(at => areEqual(at.value, responseVisual.value)) ?? null;
+    });
+
+    const visualizerAttributes = computed((): Record<string, PublicAttributeBag> => {
+        return selectedVisualizerType.value?.attributes ?? {};
     });
 
     const isRequiresModerationVisible = computed((): boolean => {
@@ -294,6 +309,37 @@
      */
     function getActionTypeIconClass(action: InteractiveExperienceActionBag): string {
         return props.actionTypes.find(at => areEqual(at.value, action.actionType?.value))?.iconCssClass ?? "";
+    }
+
+    /**
+     * Updates the attribute values with any missing default values from the
+     * currently selected action type and visualizer type.
+     */
+    function updateDefaultAttributeValues(): void {
+        const newValues = { ...attributeValues.value };
+        let isChanged = false;
+
+        if (selectedActionType.value && selectedActionType.value.defaultAttributeValues) {
+            for (const key in selectedActionType.value.defaultAttributeValues) {
+                if (!newValues[key]) {
+                    newValues[key] = selectedActionType.value.defaultAttributeValues[key];
+                    isChanged = true;
+                }
+            }
+        }
+
+        if (selectedVisualizerType.value && selectedVisualizerType.value.defaultAttributeValues) {
+            for (const key in selectedVisualizerType.value.defaultAttributeValues) {
+                if (!newValues[key]) {
+                    newValues[key] = selectedVisualizerType.value.defaultAttributeValues[key];
+                    isChanged = true;
+                }
+            }
+        }
+
+        if (isChanged) {
+            attributeValues.value = newValues;
+        }
     }
 
     // #endregion
@@ -440,5 +486,11 @@
 
     // #endregion
 
+    watch([actionType, responseVisual], () => {
+        updateDefaultAttributeValues();
+    });
+
     const dragOptions = useDragReorder(internalValue, onActionReorder);
+
+    updateDefaultAttributeValues();
 </script>

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -60,5 +59,11 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         /// The attributes that are available on this action type.
         /// </value>
         public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default attribute values.
+        /// </summary>
+        /// <value>The default attribute values.</value>
+        public Dictionary<string, string> DefaultAttributeValues { get; set; }
     }
 }

@@ -24,26 +24,11 @@
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /**
- * Identifies a single action type that can be used to configure actions
- * for an experience by the individual.
+ * Identifies a single visualizer type that can be used to configure
+ * visualizers for an action by the individual.
  */
-export type InteractiveExperienceActionTypeBag = {
-    /**
-     * Gets or sets the icon CSS class that will visually represent this
-     * action type.
-     */
-    iconCssClass?: string | null;
-
-    /** Gets or sets a value indicating whether this type supports question text. */
-    isQuestionSupported: boolean;
-
-    /** Gets or sets a value indicating whether this type supports moderation. */
-    isModerationSupported: boolean;
-
-    /** Gets or sets a value indicating whether this type allows multiple submissions. */
-    isMultipleSubmissionSupported: boolean;
-
-    /** Gets or sets the attributes that are available on this action type. */
+export type InteractiveExperienceVisualizerTypeBag = {
+    /** Gets or sets the attributes that are available on this visualizer type. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the default attribute values. */

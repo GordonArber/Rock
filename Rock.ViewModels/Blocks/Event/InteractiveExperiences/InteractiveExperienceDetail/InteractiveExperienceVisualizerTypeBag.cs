@@ -21,18 +21,24 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail
 {
-    public class InteractiveExperienceDetailOptionsBag
+    /// <summary>
+    /// Identifies a single visualizer type that can be used to configure
+    /// visualizers for an action by the individual.
+    /// </summary>
+    public class InteractiveExperienceVisualizerTypeBag : ListItemBag
     {
         /// <summary>
-        /// Gets or sets the action types that are available.
+        /// Gets or sets the attributes that are available on this visualizer type.
         /// </summary>
-        /// <value>The action types that are available.</value>
-        public List<InteractiveExperienceActionTypeBag> ActionTypes { get; set; }
+        /// <value>
+        /// The attributes that are available on this visualizer type.
+        /// </value>
+        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
         /// <summary>
-        /// Gets or sets the visualizer types that are available.
+        /// Gets or sets the default attribute values.
         /// </summary>
-        /// <value>The visualizer types that are available.</value>
-        public List<InteractiveExperienceVisualizerTypeBag> VisualizerTypes { get; set; }
+        /// <value>The default attribute values.</value>
+        public Dictionary<string, string> DefaultAttributeValues { get; set; }
     }
 }

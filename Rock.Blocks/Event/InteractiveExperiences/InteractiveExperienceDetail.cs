@@ -639,6 +639,11 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             return true;
         }
 
+        /// <summary>
+        /// Gets the action bag for the specified action.
+        /// </summary>
+        /// <param name="action">The action to be converted to a bag.</param>
+        /// <returns>A new instance of <see cref="InteractiveExperienceActionBag"/> that represents <paramref name="action"/>.</returns>
         private static InteractiveExperienceActionBag GetActionBag( InteractiveExperienceAction action )
         {
             var actionEntityCache = EntityTypeCache.Get( action.ActionEntityTypeId );
@@ -653,15 +658,49 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 IsModerationRequired = action.IsModerationRequired,
                 IsResponseAnonymous = action.IsResponseAnonymous,
                 ResponseVisualizer = action.ResponseVisualEntityType.ToListItemBag(),
-                AttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsActionAttributeIncluded )
+                AttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsAttributeValueIncluded )
             };
         }
 
+        /// <summary>
+        /// Determines whether if the attribute is an action attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute to be checked.</param>
+        /// <returns><c>true</c> if the attribute is an action attribute; otherwise, <c>false</c>.</returns>
         private static bool IsActionAttributeIncluded( AttributeCache attribute )
         {
-            return attribute.Key != "Order" && attribute.Key != "Active";
+            return attribute.Key.StartsWith( "action" );
         }
 
+        /// <summary>
+        /// Determines whether if the attribute is an visualizer attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute to be checked.</param>
+        /// <returns><c>true</c> if the attribute is an visualizer attribute; otherwise, <c>false</c>.</returns>
+        private static bool IsVisualizerAttributeIncluded( AttributeCache attribute )
+        {
+            return attribute.Key.StartsWith( "visualizer" );
+        }
+
+        /// <summary>
+        /// Determines whether the attribute value associated with the attribute
+        /// should be included in the bag.
+        /// </summary>
+        /// <param name="attribute">The attribute the value is for.</param>
+        /// <returns><c>true</c> if the attribute value should be included; otherwise, <c>false</c>.</returns>
+        private static bool IsAttributeValueIncluded( AttributeCache attribute )
+        {
+            return IsActionAttributeIncluded( attribute ) || IsVisualizerAttributeIncluded( attribute );
+        }
+
+        /// <summary>
+        /// Adds a new or updates an existing action to the interactive experience.
+        /// </summary>
+        /// <param name="interactiveExperience">The interactive experience to add or update the action on.</param>
+        /// <param name="box">The box that contains the action bag.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessage">On return will contain any error message generated.</param>
+        /// <returns><c>true</c> if the action was added or updated, <c>false</c> otherwise.</returns>
         private static bool AddOrUpdateActionFromBox( InteractiveExperience interactiveExperience, ValidPropertiesBox<InteractiveExperienceActionBag> box, RockContext rockContext, out string errorMessage )
         {
             var experienceActionService = new InteractiveExperienceActionService( rockContext );
@@ -735,6 +774,10 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             return true;
         }
 
+        /// <summary>
+        /// Gets the available action types that can be selected.
+        /// </summary>
+        /// <returns>A collection of <see cref="InteractiveExperienceActionTypeBag"/> objects that represent that action types.</returns>
         private static List<InteractiveExperienceActionTypeBag> GetAvailableActionTypes()
         {
             var actionTypes = new List<InteractiveExperienceActionTypeBag>();
@@ -760,6 +803,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 action.LoadAttributes( null );
                 actionType.Attributes = action.GetPublicAttributesForEdit( null, false, IsActionAttributeIncluded );
+                actionType.DefaultAttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsVisualizerAttributeIncluded );
 
                 actionTypes.Add( actionType );
             }
@@ -767,19 +811,32 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             return actionTypes.OrderBy( at => at.Text ).ToList();
         }
 
-        private static List<ListItemBag> GetAvailableVisualizerTypes()
+        /// <summary>
+        /// Gets the available visualizer types that can be selected.
+        /// </summary>
+        /// <returns>A collection of <see cref="InteractiveExperienceVisualizerTypeBag"/> objects that represent that visualizer types.</returns>
+        private static List<InteractiveExperienceVisualizerTypeBag> GetAvailableVisualizerTypes()
         {
-            var visualizerTypes = new List<ListItemBag>();
+            var visualizerTypes = new List<InteractiveExperienceVisualizerTypeBag>();
 
             foreach ( var component in VisualizerTypeContainer.Instance.AllComponents )
             {
                 var visualizerTypeCache = EntityTypeCache.Get( component.GetType() );
 
-                var visualizerType = new ListItemBag
+                var visualizerType = new InteractiveExperienceVisualizerTypeBag
                 {
                     Value = visualizerTypeCache.Guid.ToString(),
                     Text = VisualizerTypeContainer.GetComponentName( component )
                 };
+
+                var action = new InteractiveExperienceAction
+                {
+                    ResponseVisualEntityTypeId = visualizerTypeCache.Id
+                };
+
+                action.LoadAttributes( null );
+                visualizerType.Attributes = action.GetPublicAttributesForEdit( null, false, IsVisualizerAttributeIncluded );
+                visualizerType.DefaultAttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsVisualizerAttributeIncluded );
 
                 visualizerTypes.Add( visualizerType );
             }
