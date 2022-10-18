@@ -22,7 +22,7 @@ using Rock.Model;
 namespace Rock.Event.InteractiveExperiences
 {
     /// <summary>
-    /// Base class for achievement components
+    /// Base class for interactive experience action type components
     /// </summary>
     internal abstract class ActionTypeComponent : Rock.Extension.Component
     {

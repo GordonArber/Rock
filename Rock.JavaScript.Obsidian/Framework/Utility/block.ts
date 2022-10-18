@@ -163,7 +163,7 @@ export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings
  * @param propertyName The name of the property on the bag to set.
  * @param value The new value of the property.
  */
- export function setPropertiesBagBoxValue<T extends ValidPropertiesBox<"bag">, S extends NonNullable<T["bag"]>, K extends ChildKeys<T, "bag">>(box: T, propertyName: K, value: S[K]): void {
+ export function setPropertiesBoxValue<T extends ValidPropertiesBox<"bag">, S extends NonNullable<T["bag"]>, K extends ChildKeys<T, "bag">>(box: T, propertyName: K, value: S[K]): void {
     if (!box.bag) {
         box.bag = {} as Record<string, unknown>;
     }

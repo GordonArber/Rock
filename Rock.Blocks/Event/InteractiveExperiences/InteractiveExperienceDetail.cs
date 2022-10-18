@@ -96,7 +96,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         {
             var options = new InteractiveExperienceDetailOptionsBag
             {
-                ActionTypes = GetAvailableActionTypes()
+                ActionTypes = GetAvailableActionTypes(),
+                VisualizerTypes = GetAvailableVisualizerTypes()
             };
 
             return options;
@@ -651,7 +652,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 IsMultipleSubmissionsAllowed = action.IsMultipleSubmissionAllowed,
                 IsModerationRequired = action.IsModerationRequired,
                 IsResponseAnonymous = action.IsResponseAnonymous,
-                ResponseVisualizer = null,
+                ResponseVisualizer = action.ResponseVisualEntityType.ToListItemBag(),
                 AttributeValues = action.GetPublicAttributeValuesForEdit( null, false, IsActionAttributeIncluded )
             };
         }
@@ -744,8 +745,8 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
                 var actionType = new InteractiveExperienceActionTypeBag
                 {
-                    Guid = actionTypeCache.Guid,
-                    Name = ActionTypeContainer.GetComponentName( component ),
+                    Value = actionTypeCache.Guid.ToString(),
+                    Text = ActionTypeContainer.GetComponentName( component ),
                     IconCssClass = component.IconCssClass,
                     IsModerationSupported = component.IsModerationSupported,
                     IsMultipleSubmissionSupported = component.IsMultipleSubmissionSupported,
@@ -763,7 +764,27 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 actionTypes.Add( actionType );
             }
 
-            return actionTypes.OrderBy( at => at.Name ).ToList();
+            return actionTypes.OrderBy( at => at.Text ).ToList();
+        }
+
+        private static List<ListItemBag> GetAvailableVisualizerTypes()
+        {
+            var visualizerTypes = new List<ListItemBag>();
+
+            foreach ( var component in VisualizerTypeContainer.Instance.AllComponents )
+            {
+                var visualizerTypeCache = EntityTypeCache.Get( component.GetType() );
+
+                var visualizerType = new ListItemBag
+                {
+                    Value = visualizerTypeCache.Guid.ToString(),
+                    Text = VisualizerTypeContainer.GetComponentName( component )
+                };
+
+                visualizerTypes.Add( visualizerType );
+            }
+
+            return visualizerTypes.OrderBy( at => at.Text ).ToList();
         }
 
         #endregion

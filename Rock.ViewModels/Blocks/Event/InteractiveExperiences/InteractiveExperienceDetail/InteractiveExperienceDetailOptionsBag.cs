@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceDetail
 {
     public class InteractiveExperienceDetailOptionsBag
@@ -26,5 +28,11 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         /// </summary>
         /// <value>The action types that are available.</value>
         public List<InteractiveExperienceActionTypeBag> ActionTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the visualizer types that are available.
+        /// </summary>
+        /// <value>The visualizer types that are available.</value>
+        public List<ListItemBag> VisualizerTypes { get; set; }
     }
 }

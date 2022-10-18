@@ -26,20 +26,8 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
     /// Identifies a single action type that can be used to configure actions
     /// for an experience by the individual.
     /// </summary>
-    public class InteractiveExperienceActionTypeBag
+    public class InteractiveExperienceActionTypeBag : ListItemBag
     {
-        /// <summary>
-        /// Gets or sets the unique identifier for this type of action.
-        /// </summary>
-        /// <value>The unique identifier for this type of action.</value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the display name for this type of action.
-        /// </summary>
-        /// <value>The display name for this type of action.</value>
-        public string Name { get; set; }
-
         /// <summary>
         /// Gets or sets the icon CSS class that will visually represent this
         /// action type.

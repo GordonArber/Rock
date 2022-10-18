@@ -876,6 +876,9 @@
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponent.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\BarChart.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeContainer.cs" />
     <Compile Include="Field\IEntityReferenceFieldType.cs" />
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />

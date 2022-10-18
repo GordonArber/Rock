@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /**
@@ -29,12 +28,6 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
  * for an experience by the individual.
  */
 export type InteractiveExperienceActionTypeBag = {
-    /** Gets or sets the unique identifier for this type of action. */
-    guid?: Guid | null;
-
-    /** Gets or sets the display name for this type of action. */
-    name?: string | null;
-
     /**
      * Gets or sets the icon CSS class that will visually represent this
      * action type.
@@ -52,4 +45,13 @@ export type InteractiveExperienceActionTypeBag = {
 
     /** Gets or sets the attributes that are available on this action type. */
     attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the value. */
+    value?: string | null;
+
+    /** Gets or sets the text. */
+    text?: string | null;
+
+    /** Gets or sets the category for this item. */
+    category?: string | null;
 };

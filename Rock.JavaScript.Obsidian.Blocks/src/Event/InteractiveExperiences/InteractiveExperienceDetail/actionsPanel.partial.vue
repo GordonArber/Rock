@@ -168,7 +168,7 @@
     import SectionHeader from "@Obsidian/Controls/sectionHeader";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { setPropertiesBagBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { InteractiveExperienceActionBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionBag";
@@ -201,6 +201,12 @@
         /** The action types that are supported by the server. */
         actionTypes: {
             type: Array as PropType<InteractiveExperienceActionTypeBag[]>,
+            default: []
+        },
+
+        /** The visualizer types that are supported by the server. */
+        visualizerTypes: {
+            type: Array as PropType<ListItemBag[]>,
             default: []
         }
     });
@@ -239,17 +245,17 @@
 
     const actionTypeItems = computed((): ListItemBag[] => {
         return props.actionTypes.map(at => ({
-            value: at.guid,
-            text: at.name
+            value: at.value,
+            text: at.text
         }));
     });
 
     const responseVisualItems = computed((): ListItemBag[] => {
-        return [];
+        return props.visualizerTypes;
     });
 
     const selectedActionType = computed((): InteractiveExperienceActionTypeBag | null => {
-        return props.actionTypes.find(at => areEqual(at.guid, actionType.value)) ?? null;
+        return props.actionTypes.find(at => areEqual(at.value, actionType.value)) ?? null;
     });
 
     const attributes = computed((): Record<string, PublicAttributeBag> => {
@@ -276,7 +282,7 @@
      * @returns The name of the action type or an empty string if not found.
      */
     function getActionTypeName(action: InteractiveExperienceActionBag): string {
-        return props.actionTypes.find(at => areEqual(at.guid, action.actionType?.value))?.name ?? "";
+        return props.actionTypes.find(at => areEqual(at.value, action.actionType?.value))?.text ?? "";
     }
 
     /**
@@ -287,7 +293,7 @@
      * @returns The CSS class value to use to display the icon.
      */
     function getActionTypeIconClass(action: InteractiveExperienceActionBag): string {
-        return props.actionTypes.find(at => areEqual(at.guid, action.actionType?.value))?.iconCssClass ?? "";
+        return props.actionTypes.find(at => areEqual(at.value, action.actionType?.value))?.iconCssClass ?? "";
     }
 
     // #endregion
@@ -340,12 +346,13 @@
 
         const box: ValidPropertiesBox<InteractiveExperienceActionBag> = {};
 
-        setPropertiesBagBoxValue(box, "guid", existingActionGuid.value ?? newGuid());
-        setPropertiesBagBoxValue(box, "actionType", { value: actionType.value });
-        setPropertiesBagBoxValue(box, "isModerationRequired", requiresModeration.value);
-        setPropertiesBagBoxValue(box, "isMultipleSubmissionsAllowed", allowMultipleSubmissions.value);
-        setPropertiesBagBoxValue(box, "isResponseAnonymous", anonymousResponses.value);
-        setPropertiesBagBoxValue(box, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(box, "guid", existingActionGuid.value ?? newGuid());
+        setPropertiesBoxValue(box, "actionType", { value: actionType.value });
+        setPropertiesBoxValue(box, "isModerationRequired", requiresModeration.value);
+        setPropertiesBoxValue(box, "isMultipleSubmissionsAllowed", allowMultipleSubmissions.value);
+        setPropertiesBoxValue(box, "isResponseAnonymous", anonymousResponses.value);
+        setPropertiesBoxValue(box, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(box, "responseVisualizer", responseVisual.value ? { value: responseVisual.value } : null);
 
         const result = await invokeBlockAction<InteractiveExperienceActionBag>("SaveAction", {
             idKey: props.interactiveExperienceIdKey,

@@ -34,7 +34,8 @@
                   v-model="interactiveExperienceActions"
                   :name="interactiveExperienceViewBag!.name!"
                   :interactiveExperienceIdKey="interactiveExperienceViewBag!.idKey!"
-                  :actionTypes="actionTypes" />
+                  :actionTypes="actionTypes"
+                  :visualizerTypes="visualizerTypes" />
 </template>
 
 <script setup lang="ts">
@@ -54,6 +55,7 @@
     import { InteractiveExperienceBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceBag";
     import { InteractiveExperienceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceDetailOptionsBag";
     import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<DetailBlockBox<InteractiveExperienceBag, InteractiveExperienceDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -169,6 +171,10 @@
 
     const actionTypes = computed((): InteractiveExperienceActionTypeBag[] => {
         return config.options?.actionTypes ?? [];
+    });
+
+    const visualizerTypes = computed((): ListItemBag[] => {
+        return config.options?.visualizerTypes ?? [];
     });
 
     // #endregion

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -27,17 +28,17 @@ using Rock.Web.Cache;
 namespace Rock.Event.InteractiveExperiences
 {
     /// <summary>
-    /// MEF Container class for Interactive Experience Action Type Components.
+    /// MEF Container class for Interactive Experience Visualizer Type Components.
     /// </summary>
-    internal class ActionTypeContainer : Container<ActionTypeComponent, IComponentData>
+    internal class VisualizerTypeContainer : Container<VisualizerTypeComponent, IComponentData>
     {
         #region Fields
 
         /// <summary>
         /// Singleton instance
         /// </summary>
-        private static readonly Lazy<ActionTypeContainer> _instance =
-            new Lazy<ActionTypeContainer>( () => new ActionTypeContainer() );
+        private static readonly Lazy<VisualizerTypeContainer> _instance =
+            new Lazy<VisualizerTypeContainer>( () => new VisualizerTypeContainer() );
 
 
         #endregion
@@ -50,13 +51,13 @@ namespace Rock.Event.InteractiveExperiences
         /// <value>
         /// The instance.
         /// </value>
-        public static ActionTypeContainer Instance => _instance.Value;
+        public static VisualizerTypeContainer Instance => _instance.Value;
 
         /// <summary>
-        /// Gets all action type components that have been found in the system.
+        /// Gets all visualizer type components that have been found in the system.
         /// </summary>
-        /// <value>All action type components that have been found in the system.</value>
-        public IEnumerable<ActionTypeComponent> AllComponents => Components.Values.Select( v => v.Value );
+        /// <value>All visualizer type components that have been found in the system.</value>
+        public IEnumerable<VisualizerTypeComponent> AllComponents => Components.Values.Select( v => v.Value );
 
         /// <summary>
         /// Gets or sets the MEF components.
@@ -64,8 +65,8 @@ namespace Rock.Event.InteractiveExperiences
         /// <value>
         /// The MEF components.
         /// </value>
-        [ImportMany( typeof( ActionTypeComponent ) )]
-        protected override IEnumerable<Lazy<ActionTypeComponent, IComponentData>> MEFComponents { get; set; }
+        [ImportMany( typeof( VisualizerTypeComponent ) )]
+        protected override IEnumerable<Lazy<VisualizerTypeComponent, IComponentData>> MEFComponents { get; set; }
 
         #endregion
 
@@ -75,27 +76,14 @@ namespace Rock.Event.InteractiveExperiences
         public override void Refresh()
         {
             base.Refresh();
-
-            // Create any attributes that need to be created
-            var actionEntityTypeId = EntityTypeCache.Get<InteractiveExperienceAction>().Id;
-
-            using ( var rockContext = new RockContext() )
-            {
-                foreach ( var actionComponent in AllComponents )
-                {
-                    var actionComponentType = actionComponent.GetType();
-                    var actionComponentEntityTypeId = EntityTypeCache.Get( actionComponentType ).Id;
-                    Rock.Attribute.Helper.UpdateAttributes( actionComponentType, actionEntityTypeId, nameof( InteractiveExperienceAction.ActionEntityTypeId ), actionComponentEntityTypeId.ToString(), rockContext );
-                }
-            }
         }
 
         /// <summary>
         /// Gets the component with the matching Entity Type Name.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
-        /// <returns>An instance of <see cref="ActionTypeComponent"/> or <c>null</c> if it was not found.</returns>
-        public static ActionTypeComponent GetComponent( string entityType )
+        /// <returns>An instance of <see cref="VisualizerTypeComponent"/> or <c>null</c> if it was not found.</returns>
+        public static VisualizerTypeComponent GetComponent( string entityType )
         {
             return Instance.GetComponentByEntity( entityType );
         }
@@ -103,8 +91,8 @@ namespace Rock.Event.InteractiveExperiences
         /// <summary>
         /// Gets the component matching the specified type.
         /// </summary>
-        /// <returns>An instance of <see cref="ActionTypeComponent"/> or <c>null</c> if it was not found.</returns>
-        public static ActionTypeComponent GetComponent<T>()
+        /// <returns>An instance of <see cref="VisualizerTypeComponent"/> or <c>null</c> if it was not found.</returns>
+        public static VisualizerTypeComponent GetComponent<T>()
         {
             return GetComponent( typeof( T ).FullName );
         }
@@ -133,7 +121,7 @@ namespace Rock.Event.InteractiveExperiences
         /// </summary>
         /// <param name="component">The component whose name is to be determined.</param>
         /// <returns>A <see cref="string"/> that represents the name of the component or an empty string if not found.</returns>
-        public static string GetComponentName( ActionTypeComponent component )
+        public static string GetComponentName( VisualizerTypeComponent component )
         {
             if ( component == null )
             {
