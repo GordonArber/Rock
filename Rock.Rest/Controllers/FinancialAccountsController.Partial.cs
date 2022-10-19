@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,7 +38,7 @@ namespace Rock.Rest.Controllers
         /// <param name="searchTerm">The searchTerm.</param>
         /// <returns>IQueryable&lt;AccountTreeViewItem&gt;.</returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetChildrenBySearchTerm/{activeOnly}/{displayPublicName}/{searchTerm}" )]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildrenBySearchTerm" )]
         [Rock.SystemGuid.RestActionGuid( "21BF6409-CC65-4562-BD1A-F9FEEC1634F3" )]
         public IQueryable<AccountTreeViewItem> GetChildrenBySearchTerm( bool activeOnly, bool displayPublicName, string searchTerm )
         {
@@ -95,7 +95,7 @@ namespace Rock.Rest.Controllers
         /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}" )]
         [Rock.SystemGuid.RestActionGuid( "5C21D8B8-5C68-42CA-BF19-80050C8FF2A4" )]
         public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly )
         {
@@ -111,7 +111,7 @@ namespace Rock.Rest.Controllers
         /// <param name="countsType"></param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}" )]
         [Rock.SystemGuid.RestActionGuid( "976BDF2A-92E6-4902-A84D-BE7CB25A3824" )]
         public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
         {
@@ -124,7 +124,7 @@ namespace Rock.Rest.Controllers
         /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
         /// <returns>IQueryable&lt;TreeViewItem&gt;.</returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetInactive/{displayPublicName}" )]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetInactive" )]
         [Rock.SystemGuid.RestActionGuid( "4B08E38F-0C6A-41B1-9C52-DEB40028927F" )]
         public IQueryable<AccountTreeViewItem> GetInactive( bool displayPublicName )
         {
