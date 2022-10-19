@@ -146,11 +146,12 @@ namespace Rock.Model
         {
             var now = RockDateTime.Now;
 
-            // Look for schedules that started between 6 days ago and now. This
-            // is pretty generous and will handle odd-ball cases of a schedule
-            // that crosses the midnight boundary.
-            return schedule.GetScheduledStartTimes( now.Date.AddDays( -6 ), now )
+            // Look for a schedule that started sometime between midnight today
+            // and the current time. The cast to DateTime? ensures we get a null
+            // value back, otherwise we get a 1/1/0001 date if nothing found.
+            return schedule.GetScheduledStartTimes( now.Date, now )
                 .Where( dt => dt >= now && dt.AddMinutes( schedule.DurationInMinutes ) < now )
+                .Select( dt => ( DateTime? ) dt )
                 .FirstOrDefault();
         }
     }
