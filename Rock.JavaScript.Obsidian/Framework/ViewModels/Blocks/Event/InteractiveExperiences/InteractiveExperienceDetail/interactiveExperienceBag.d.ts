@@ -43,6 +43,9 @@ export type InteractiveExperienceBag = {
     /** Gets or sets the primary button text color of the action. */
     actionPrimaryButtonTextColor?: string | null;
 
+    /** Gets or sets the InteractiveExperienceActions  for this Interactive Experience. */
+    actions?: InteractiveExperienceActionBag[] | null;
+
     /** Gets or sets the secondary button color of the action. */
     actionSecondaryButtonColor?: string | null;
 
@@ -51,6 +54,12 @@ export type InteractiveExperienceBag = {
 
     /** Gets or sets the text color of the action. */
     actionTextColor?: string | null;
+
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the accent color for the audience. */
     audienceAccentColor?: string | null;
@@ -76,11 +85,8 @@ export type InteractiveExperienceBag = {
     /** Gets or sets the Description of the Rock.Model.InteractiveExperience */
     description?: string | null;
 
-    /** Gets or sets the InteractiveExperienceActions  for this Interactive Experience. */
-    actions?: InteractiveExperienceActionBag[] | null;
-
-    /** Gets or sets the schedules associated with this interactive experience. */
-    schedules?: InteractiveExperienceScheduleBag[] | null;
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the IsActive flag for the Rock.Model.InteractiveExperience. */
     isActive: boolean;
@@ -106,6 +112,9 @@ export type InteractiveExperienceBag = {
     /** Gets or sets the push notification type. */
     pushNotificationType: InteractiveExperiencePushNotificationType;
 
+    /** Gets or sets the schedules associated with this interactive experience. */
+    schedules?: InteractiveExperienceScheduleBag[] | null;
+
     /** Gets or sets the welcome header image binary file. */
     welcomeHeaderImageBinaryFile?: ListItemBag | null;
 
@@ -114,13 +123,4 @@ export type InteractiveExperienceBag = {
 
     /** Gets or sets the welcome title. */
     welcomeTitle?: string | null;
-
-    /** Gets or sets the identifier key of this entity. */
-    idKey?: string | null;
-
-    /** Gets or sets the attributes. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
 };

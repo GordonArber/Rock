@@ -29,12 +29,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * that are associated with the schedule.
  */
 export type InteractiveExperienceScheduleBag = {
-    /** Gets or sets the unique identifier of this schedule. */
-    guid?: Guid | null;
-
-    /** Gets or sets the schedule. */
-    schedule?: ListItemBag | null;
-
     /** Gets or sets the campuses that are tied to this schedule. */
     campuses?: ListItemBag[] | null;
 
@@ -43,4 +37,10 @@ export type InteractiveExperienceScheduleBag = {
 
     /** Gets or sets the group to use for filtering. */
     group?: ListItemBag | null;
+
+    /** Gets or sets the unique identifier of this schedule. */
+    guid?: Guid | null;
+
+    /** Gets or sets the schedule. */
+    schedule?: ListItemBag | null;
 };

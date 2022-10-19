@@ -28,14 +28,20 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
  * for an experience by the individual.
  */
 export type InteractiveExperienceActionTypeBag = {
+    /** Gets or sets the attributes that are available on this action type. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the category for this item. */
+    category?: string | null;
+
+    /** Gets or sets the default attribute values. */
+    defaultAttributeValues?: Record<string, string> | null;
+
     /**
      * Gets or sets the icon CSS class that will visually represent this
      * action type.
      */
     iconCssClass?: string | null;
-
-    /** Gets or sets a value indicating whether this type supports question text. */
-    isQuestionSupported: boolean;
 
     /** Gets or sets a value indicating whether this type supports moderation. */
     isModerationSupported: boolean;
@@ -43,18 +49,12 @@ export type InteractiveExperienceActionTypeBag = {
     /** Gets or sets a value indicating whether this type allows multiple submissions. */
     isMultipleSubmissionSupported: boolean;
 
-    /** Gets or sets the attributes that are available on this action type. */
-    attributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the default attribute values. */
-    defaultAttributeValues?: Record<string, string> | null;
-
-    /** Gets or sets the value. */
-    value?: string | null;
+    /** Gets or sets a value indicating whether this type supports question text. */
+    isQuestionSupported: boolean;
 
     /** Gets or sets the text. */
     text?: string | null;
 
-    /** Gets or sets the category for this item. */
-    category?: string | null;
+    /** Gets or sets the value. */
+    value?: string | null;
 };

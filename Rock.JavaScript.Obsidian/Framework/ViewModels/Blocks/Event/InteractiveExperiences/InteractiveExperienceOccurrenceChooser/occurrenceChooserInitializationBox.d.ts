@@ -24,20 +24,20 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type OccurrenceChooserInitializationBox = {
-    /** Gets or sets the name of the experience. */
-    experienceName?: string | null;
-
-    /** Gets or sets the occurrences that are available to be chosen. */
-    occurrences?: ListItemBag[] | null;
-
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.
      */
     errorMessage?: string | null;
 
+    /** Gets or sets the name of the experience. */
+    experienceName?: string | null;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
+
+    /** Gets or sets the occurrences that are available to be chosen. */
+    occurrences?: ListItemBag[] | null;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;

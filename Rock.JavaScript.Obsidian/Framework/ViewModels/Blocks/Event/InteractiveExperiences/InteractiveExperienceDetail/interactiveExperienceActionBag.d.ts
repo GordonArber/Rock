@@ -26,14 +26,14 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Identifies a single action configured for use with an interactive experience. */
 export type InteractiveExperienceActionBag = {
-    /** Gets or sets the unique identifier of this action instance. */
-    guid?: Guid | null;
-
-    /** Gets or sets the title of this action. */
-    title?: string | null;
-
     /** Gets or sets the type of action. */
     actionType?: ListItemBag | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the unique identifier of this action instance. */
+    guid?: Guid | null;
 
     /**
      * Gets or sets a value indicating whether moderation is required
@@ -56,6 +56,6 @@ export type InteractiveExperienceActionBag = {
     /** Gets or sets the response visualizer used to display responses. */
     responseVisualizer?: ListItemBag | null;
 
-    /** Gets or sets the attribute values. */
-    attributeValues?: Record<string, string> | null;
+    /** Gets or sets the title of this action. */
+    title?: string | null;
 };

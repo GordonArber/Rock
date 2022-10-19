@@ -28,21 +28,21 @@ import { Guid } from "@Obsidian/Types";
  * a campus.
  */
 export type CampusPickerItemBag = {
-    /** Gets or sets a value indicating whether this campus is active. */
-    isActive: boolean;
+    /** Gets or sets the campus status. */
+    campusStatus?: Guid | null;
 
     /** Gets or sets the type of campus. */
     campusType?: Guid | null;
 
-    /** Gets or sets the campus status. */
-    campusStatus?: Guid | null;
+    /** Gets or sets the category for this item. */
+    category?: string | null;
 
-    /** Gets or sets the value. */
-    value?: string | null;
+    /** Gets or sets a value indicating whether this campus is active. */
+    isActive: boolean;
 
     /** Gets or sets the text. */
     text?: string | null;
 
-    /** Gets or sets the category for this item. */
-    category?: string | null;
+    /** Gets or sets the value. */
+    value?: string | null;
 };
