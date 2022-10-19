@@ -104,7 +104,7 @@
             return "";
         }
 
-        return `<ul>${schedules.map(s => getScheduleHtml(s))}</ul>`;
+        return `<ul>${schedules.map(s => getScheduleHtml(s)).join("")}</ul>`;
     }
 
     /**
