@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Event
 
         private Control _hostedPaymentInfoControl;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -238,7 +238,8 @@ namespace RockWeb.Blocks.Event
         private RegistrationTemplate _registrationTemplate = null;
 
         private List<RegistrantInfo> RegistrantsState { get; set; }
-        #endregion
+
+        #endregion Properties
 
         #region Control Methods
 
@@ -294,38 +295,7 @@ namespace RockWeb.Blocks.Event
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlRegistrationDetail );
 
-            bool enableACH = false;
-            bool enableCreditCard = true;
-            if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
-            {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
-                phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
-                this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
-            }
-
-            if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
-            {
-                ( _hostedPaymentInfoControl as IHostedGatewayPaymentControlTokenEvent ).TokenReceived += _hostedPaymentInfoControl_TokenReceived;
-            }
-        }
-
-        /// <summary>
-        /// Handles the TokenReceived event of the _hostedPaymentInfoControl control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void _hostedPaymentInfoControl_TokenReceived( object sender, HostedGatewayPaymentControlTokenEventArgs e )
-        {
-            if ( !e.IsValid )
-            {
-                nbPaymentTokenError.Text = e.ErrorMessage;
-                nbPaymentTokenError.Visible = true;
-            }
-            else
-            {
-                nbPaymentTokenError.Visible = false;
-                lbSubmitPayment_Click( sender, e );
-            }
+            InitializeFinancialGatewayControls();
         }
 
         /// <summary>
@@ -376,7 +346,7 @@ namespace RockWeb.Blocks.Event
             return base.SaveViewState();
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Edit Events
 
@@ -687,7 +657,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Edit Events
 
         #region Registration Detail Events
 
@@ -947,6 +917,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        #endregion Registration Detail Events
+
+        #region Payment Buttons Events
+
         protected void lbAddPayment_Click( object sender, EventArgs e )
         {
             if ( Registration != null )
@@ -1083,7 +1057,7 @@ namespace RockWeb.Blocks.Event
             SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier.PaymentList );
         }
 
-        #endregion
+        #endregion Payment Buttons Events
 
         #region Registrant Events
 
@@ -1328,7 +1302,7 @@ namespace RockWeb.Blocks.Event
             NavigateToLinkedPage( "RegistrantPage", "RegistrantId", 0, "RegistrationId", RegistrationId );
         }
 
-        #endregion
+        #endregion Registrant Events
 
         #region Payment Details Events
 
@@ -1354,9 +1328,7 @@ namespace RockWeb.Blocks.Event
             dvpCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
         }
 
-        #endregion
-
-        #region Methods
+        #endregion Payment Details Events
 
         #region Load/Save Methods
 
@@ -1442,7 +1414,7 @@ namespace RockWeb.Blocks.Event
             return null;
         }
 
-        #endregion
+        #endregion Load/Save Methods
 
         #region Display Methods
 
@@ -1765,9 +1737,45 @@ namespace RockWeb.Blocks.Event
             ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteRegistrationScript", deleteScript, true );
         }
 
-        #endregion
+        #endregion Display Methods
 
-        #region Payment
+        #region Payment / Hosted Gateway
+
+        private void InitializeFinancialGatewayControls()
+        {
+            bool enableACH = false;
+            bool enableCreditCard = true;
+            if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
+            {
+                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
+                phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
+                this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+            }
+
+            if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
+            {
+                ( _hostedPaymentInfoControl as IHostedGatewayPaymentControlTokenEvent ).TokenReceived += _hostedPaymentInfoControl_TokenReceived;
+            }
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the _hostedPaymentInfoControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _hostedPaymentInfoControl_TokenReceived( object sender, HostedGatewayPaymentControlTokenEventArgs e )
+        {
+            if ( !e.IsValid )
+            {
+                nbPaymentTokenError.Text = e.ErrorMessage;
+                nbPaymentTokenError.Visible = true;
+            }
+            else
+            {
+                nbPaymentTokenError.Visible = false;
+                lbSubmitPayment_Click( sender, e );
+            }
+        }
 
         /// <summary>
         /// Processes the payment.
@@ -1985,7 +1993,7 @@ namespace RockWeb.Blocks.Event
             return true;
         }
 
-        #endregion
+        #endregion Payment
 
         #region Payment Details
 
@@ -2085,7 +2093,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Payment Details
 
         #region Registration Detail Methods
 
@@ -2125,7 +2133,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Registration Detail Methods
 
         #region Dynamic Controls
 
@@ -2264,7 +2272,8 @@ namespace RockWeb.Blocks.Event
                 lbAddPayment.Visible = true;
 
                 lbProcessPayment.Visible = this.RegistrationTemplate.FinancialGateway != null;
-                if ( !( this.RegistrationTemplate.FinancialGateway is IHostedGatewayComponent ) )
+                var isHostedGateway = this.FinancialGatewayComponent?.GetSupportedHostedGatewayModes( this.RegistrationTemplate.FinancialGateway ).Contains( HostedGatewayMode.Hosted ) ?? false;
+                if ( !isHostedGateway )
                 {
                     lbProcessPayment.Enabled = false;
                     lbProcessPaymentButtonTooltipWrapper.Attributes["title"] = "The payment gateway used by this event's registration template does not support making payments here.";
@@ -2852,9 +2861,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
-
-        #endregion
+        #endregion Dynamic Controls
 
         #region Support Classes and Enumerations
 
@@ -2867,6 +2874,6 @@ namespace RockWeb.Blocks.Event
             PaymentProcess
         }
 
-        #endregion
+        #endregion Support Classes and Enumerations
     }
 }
