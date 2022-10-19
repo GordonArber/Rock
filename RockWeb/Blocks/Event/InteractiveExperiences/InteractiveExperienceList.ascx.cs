@@ -43,6 +43,11 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
+    [LinkedPage(
+        "Experience Manager Page",
+        Key = AttributeKey.ExperienceManagerPage,
+        Order = 1 )]
+
     public partial class InteractiveExperienceList : RockBlock
     {
         #region Attribute Keys
@@ -53,6 +58,8 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+
+            public const string ExperienceManagerPage = "ExperienceManagerPage";
         }
 
         #endregion Attribute Keys
@@ -259,6 +266,18 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Command event of the lbShowManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="CommandEventArgs"/> instance containing the event data.</param>
+        protected void lbShowManager_Command( object sender, CommandEventArgs e )
+        {
+            var experienceId = e.CommandArgument.ToStringSafe().AsInteger();
+
+            NavigateToLinkedPage( AttributeKey.ExperienceManagerPage, "InteractiveExperienceId", experienceId );
+        }
+
         #endregion
 
         #region Methods
@@ -297,6 +316,8 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
                 qry = qry.Where( s => s.IsActive == true );
             }
 
+            var now = RockDateTime.Now;
+
             var experiences = qry.ToList()
                 .Select( ie => new
                 {
@@ -305,6 +326,7 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
                     NextStartDateTime = GetNextStartDateTime( ie ),
                     ActionCount = ie.InteractiveExperienceActions.Count(),
                     Campus = GetCampusText( ie ),
+                    HasOccurrences = ie.HasActiveOccurrencesForDate( now ),
                     ie.IsActive
                 } )
                 .AsQueryable();
@@ -324,20 +346,31 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
             gExperienceList.DataBind();
         }
 
-        private static DateTime? GetNextStartDateTime( InteractiveExperience ie )
+        /// <summary>
+        /// Gets the next start date time for an experience across all of its schedules.
+        /// </summary>
+        /// <param name="experience">The interactive experience to determine the next start date of.</param>
+        /// <returns>A <see cref="DateTime"/> representing the next start date and time or <c>null</c> if one is not available.</returns>
+        private static DateTime? GetNextStartDateTime( InteractiveExperience experience )
         {
-            return ie.InteractiveExperienceSchedules
+            return experience.InteractiveExperienceSchedules
                 .Select( ies => ies.Schedule.GetNextStartDateTime( RockDateTime.Now ) )
                 .Where( d => d.HasValue )
                 .OrderBy( d => d )
                 .FirstOrDefault();
         }
 
-        private static string GetCampusText( InteractiveExperience ie )
+        /// <summary>
+        /// Gets the text to display for the campus cell.
+        /// </summary>
+        /// <param name="experience">The interactive experience.</param>
+        /// <returns>A string that represents which campuses this experience is for.</returns>
+        private static string GetCampusText( InteractiveExperience experience )
         {
-            var campusIds = ie.InteractiveExperienceSchedules
+            var campusIds = experience.InteractiveExperienceSchedules
                 .SelectMany( ies => ies.InteractiveExperienceScheduleCampuses )
                 .Select( iesc => iesc.CampusId )
+                .Distinct()
                 .ToList();
 
             if ( !campusIds.Any() )

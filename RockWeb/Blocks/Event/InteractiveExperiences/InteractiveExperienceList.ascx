@@ -26,7 +26,13 @@
                             <Rock:RockBoundField DataField="ActionCount" HeaderText="Actions" SortExpression="ActionCount" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
-                            <Rock:LinkButtonField CssClass="btn btn-default btn-sm" Text="&lt;i class=&quot;fa fa-desktop&quot;&gt;&lt;/i&gt;" />
+                            <Rock:RockTemplateField HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand">
+                                <ItemTemplate>
+                                    <asp:LinkButton ID="lbShowManager" runat="server" CssClass="btn btn-default btn-sm" ToolTip="Open Experience Manager" Visible='<%# Eval( "HasOccurrences" ) %>' OnCommand="lbShowManager_Command" CommandArgument='<%# Eval( "Id" ) %>'>
+                                        <i class="fa fa-desktop"></i>
+                                    </asp:LinkButton>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="gExperienceList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>
