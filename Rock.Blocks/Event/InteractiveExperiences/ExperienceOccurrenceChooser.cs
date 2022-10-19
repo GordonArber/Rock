@@ -31,13 +31,13 @@ using Rock.Web.Cache;
 namespace Rock.Blocks.Event.InteractiveExperiences
 {
     /// <summary>
-    /// Displays a list of experience occurrences for the user to pick from.
+    /// Displays a list of interactive experience occurrences for the user to pick from.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
 
-    [DisplayName( "Interactive Experience Occurrence Chooser" )]
+    [DisplayName( "Experience Occurrence Chooser" )]
     [Category( "Event" )]
-    [Description( "Displays a list of experience occurrences for the user to pick from." )]
+    [Description( "Displays a list of interactive experience occurrences for the user to pick from." )]
     [IconCssClass( "fa fa-question" )]
 
     #region Block Attributes
@@ -51,7 +51,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
     [Rock.SystemGuid.EntityTypeGuid( "08c31c15-7328-4759-b530-49c9d342cdb7" )]
     [Rock.SystemGuid.BlockTypeGuid( "b8be65ec-04cc-4423-944e-b6b30f6eb38c" )]
-    public class InteractiveExperienceOccurrenceChooser : RockObsidianBlockType
+    public class ExperienceOccurrenceChooser : RockObsidianBlockType
     {
         #region Keys
 

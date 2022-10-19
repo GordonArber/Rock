@@ -70,7 +70,7 @@
     <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Event\InteractiveExperiences\InteractiveExperienceDetail.cs" />
-    <Compile Include="Event\InteractiveExperiences\InteractiveExperienceOccurrenceChooser.cs" />
+    <Compile Include="Event\InteractiveExperiences\ExperienceOccurrenceChooser.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />

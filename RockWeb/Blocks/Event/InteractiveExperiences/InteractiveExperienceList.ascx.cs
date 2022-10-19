@@ -45,8 +45,8 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         Order = 0 )]
 
     [LinkedPage(
-        "Experience Manager Page",
-        Key = AttributeKey.ExperienceManagerPage,
+        "Occurrence Chooser Page",
+        Key = AttributeKey.OccurrenceChooserPage,
         Order = 1 )]
 
     public partial class InteractiveExperienceList : RockBlock
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         {
             public const string DetailPage = "DetailPage";
 
-            public const string ExperienceManagerPage = "ExperienceManagerPage";
+            public const string OccurrenceChooserPage = "OccurrenceChooserPage";
         }
 
         #endregion Attribute Keys
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         {
             var experienceId = e.CommandArgument.ToStringSafe();
 
-            NavigateToLinkedPage( AttributeKey.ExperienceManagerPage, new Dictionary<string, string>
+            NavigateToLinkedPage( AttributeKey.OccurrenceChooserPage, new Dictionary<string, string>
             {
                 [PageParameterKey.InteractiveExperienceId] = experienceId
             } );

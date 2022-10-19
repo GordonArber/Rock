@@ -79,11 +79,11 @@
     import Alert from "@Obsidian/Controls/alert.vue";
     import Panel from "@Obsidian/Controls/panel";
     import SectionHeader from "@Obsidian/Controls/sectionHeader";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { OccurrenceChooserInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceOccurrenceChooser/occurrenceChooserInitializationBox";
+    import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { OccurrenceChooserInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceOccurrenceChooser/occurrenceChooserInitializationBox";
     import { computed, ref } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { NavigationUrlKey } from "./InteractiveExperienceOccurrenceChooser/types";
+    import { NavigationUrlKey } from "./ExperienceOccurrenceChooser/types";
 
     const config = useConfigurationValues<OccurrenceChooserInitializationBox>();
 
@@ -134,4 +134,6 @@
 
         window.location.href = getOccurrenceLink(occurrences.value[0]);
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>
