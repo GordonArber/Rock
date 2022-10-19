@@ -106,6 +106,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                     return box;
                 }
 
+                box.ExperienceName = experience.Name;
                 box.SecurityGrantToken = GetSecurityGrantToken();
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Occurrences = occurrences;

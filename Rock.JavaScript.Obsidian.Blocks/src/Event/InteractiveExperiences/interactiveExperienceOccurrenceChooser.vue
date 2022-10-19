@@ -5,11 +5,10 @@
         {{ blockErrorMessage }}
     </Alert>
 
-    <Panel v-else-if="isPanelVisible" type="block" title="Multiple Occurrences">
-        <SectionHeader title="Multiple Occurrences"
-                       description="There are multiple experience occurrences happening right now. Please select the one you would like to manage." />
+    <Panel v-else-if="isPanelVisible" type="block" :title="experienceName">
+        <SectionHeader description="There are multiple experience occurrences happening right now. Please select the one you would like to manage." />
 
-        <div v-for="occurrence in occurrences" class="occurrence-item clickable" @click="onOccurrenceClick(occurrence)">
+        <a v-for="occurrence in occurrences" class="occurrence-item" :href="getOccurrenceLink(occurrence)">
             <div class="occurrence-item-icon">
                 <span class="icon">
                     <i class="fa fa-calendar-alt"></i>
@@ -25,7 +24,7 @@
                     <i class="fa fa-arrow-circle-right"></i>
                 </span>
             </div>
-        </div>
+        </a>
     </Panel>
 </template>
 
@@ -34,6 +33,8 @@
     display: flex;
     align-items: stretch;
     margin-bottom: 12px;
+    color: var(--text-color);
+    border-radius: 8px;
 }
 
 .occurrence-item > * {
@@ -102,31 +103,27 @@
         return config.occurrences ?? [];
     });
 
+    const experienceName = computed((): string => {
+        return config.experienceName ?? "Experience";
+    });
+
     // #endregion
 
     // #region Functions
 
-    // #endregion
-
-    // #region Event Handlers
-
-    /**
-     * Event handler for when the person clicks on one of the occurrences.
-     * Navigate to the manager page for this occurrence.
-     *
-     * @param occurrence The occurrence to be managed.
-     */
-    function onOccurrenceClick(occurrence: ListItemBag): void {
+    function getOccurrenceLink(occurrence: ListItemBag): string {
         const urlTemplate = config.navigationUrls?.[NavigationUrlKey.ExperienceManagerPage];
 
         if (!urlTemplate || !occurrence.value) {
-            return;
+            return "#";
         }
 
-        const url = urlTemplate.replace("((Id))", occurrence.value);
-
-        window.location.href = url;
+        return urlTemplate.replace("((Id))", occurrence.value);
     }
+
+    // #endregion
+
+    // #region Event Handlers
 
     // #endregion
 
@@ -134,6 +131,7 @@
     // replaced with a server-side redirect once that is possible.
     if (occurrences.value.length === 1) {
         isPanelVisible.value = false;
-        onOccurrenceClick(occurrences.value[0]);
+
+        window.location.href = getOccurrenceLink(occurrences.value[0]);
     }
 </script>

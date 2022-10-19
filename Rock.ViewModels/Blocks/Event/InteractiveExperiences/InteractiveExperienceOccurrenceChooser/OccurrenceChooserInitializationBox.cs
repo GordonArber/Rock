@@ -15,11 +15,7 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Rock.ViewModels.Utility;
 
@@ -27,6 +23,12 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
 {
     public class OccurrenceChooserInitializationBox : BlockBox
     {
+        /// <summary>
+        /// Gets or sets the name of the experience.
+        /// </summary>
+        /// <value>The name of the experience.</value>
+        public string ExperienceName { get; set; }
+
         /// <summary>
         /// Gets or sets the occurrences that are available to be chosen.
         /// </summary>

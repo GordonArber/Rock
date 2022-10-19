@@ -24,6 +24,9 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type OccurrenceChooserInitializationBox = {
+    /** Gets or sets the name of the experience. */
+    experienceName?: string | null;
+
     /** Gets or sets the occurrences that are available to be chosen. */
     occurrences?: ListItemBag[] | null;
 
