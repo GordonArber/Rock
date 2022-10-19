@@ -1010,13 +1010,6 @@ namespace RockWeb.Blocks.Event
                     {
                         string errorMessage = string.Empty;
 
-                        /* DEBUG - When debugging, you might have to randomize the amount so that the Gateway doesn't think
-                           it is a duplicate payment
-                         
-                        pmtAmount = pmtAmount + ( new Random().Next( 100 ) / 10.0M );
-                         
-                        */
-
                         if ( !ProcessPayment( !phManualDetails.Visible, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
                         {
                             throw new Exception( errorMessage );
