@@ -62,15 +62,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the form field.
-        /// </summary>
-        /// <returns></returns>
-        public AttributeCache GetFormField()
-        {
-            return AttributeCache.Get( FormFieldId );
-        }
-
-        /// <summary>
         /// Get the attribute id
         /// </summary>
         /// <returns></returns>
@@ -134,7 +125,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 var field = GetRegistrationTemplateFormField();
-                var attribute = GetAttributeCache() ?? GetFormField();
+                var attribute = GetAttributeCache();
 
                 if ( attribute != null )
                 {
@@ -154,7 +145,7 @@ namespace Rock.Web.UI.Controls
             private set
             {
                 var field = GetRegistrationTemplateFormField();
-                var attribute = GetAttributeCache() ?? GetFormField();
+                var attribute = GetAttributeCache();
 
                 if ( attribute != null )
                 {
@@ -241,7 +232,7 @@ namespace Rock.Web.UI.Controls
             foreach ( var fieldVisibilityWrapper in fieldVisibilityWrappers.Values )
             {
                 var field = fieldVisibilityWrapper.GetRegistrationTemplateFormField();
-                var fieldAttribute = fieldVisibilityWrapper.GetFormField();
+                var fieldAttribute = fieldVisibilityWrapper.GetAttributeCache();
 
                 var fieldAttributeId = field?.AttributeId ?? fieldAttribute?.Id;
                 if ( fieldAttributeId.HasValue )
