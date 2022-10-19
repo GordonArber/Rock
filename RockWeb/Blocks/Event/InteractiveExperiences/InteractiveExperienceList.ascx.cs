@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -235,7 +236,12 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gExperienceList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.InteractiveExperienceId, e.RowKeyId );
+            var experienceId = e.RowKeyValue.ToStringSafe();
+
+            NavigateToLinkedPage( AttributeKey.DetailPage, new Dictionary<string, string>
+            {
+                [PageParameterKey.InteractiveExperienceId] = experienceId
+            } );
         }
 
         /// <summary>
@@ -273,9 +279,12 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         /// <param name="e">The <see cref="CommandEventArgs"/> instance containing the event data.</param>
         protected void lbShowManager_Command( object sender, CommandEventArgs e )
         {
-            var experienceId = e.CommandArgument.ToStringSafe().AsInteger();
+            var experienceId = e.CommandArgument.ToStringSafe();
 
-            NavigateToLinkedPage( AttributeKey.ExperienceManagerPage, "InteractiveExperienceId", experienceId );
+            NavigateToLinkedPage( AttributeKey.ExperienceManagerPage, new Dictionary<string, string>
+            {
+                [PageParameterKey.InteractiveExperienceId] = experienceId
+            } );
         }
 
         #endregion
@@ -321,7 +330,7 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
             var experiences = qry.ToList()
                 .Select( ie => new
                 {
-                    ie.Id,
+                    Id = ie.IdKey,
                     ie.Name,
                     NextStartDateTime = GetNextStartDateTime( ie ),
                     ActionCount = ie.InteractiveExperienceActions.Count(),

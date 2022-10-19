@@ -150,7 +150,7 @@ namespace Rock.Model
             // and the current time. The cast to DateTime? ensures we get a null
             // value back, otherwise we get a 1/1/0001 date if nothing found.
             return schedule.GetScheduledStartTimes( now.Date, now )
-                .Where( dt => dt >= now && dt.AddMinutes( schedule.DurationInMinutes ) < now )
+                .Where( dt => dt <= now && dt.AddMinutes( schedule.DurationInMinutes ) > now )
                 .Select( dt => ( DateTime? ) dt )
                 .FirstOrDefault();
         }

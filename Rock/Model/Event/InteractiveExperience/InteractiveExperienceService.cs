@@ -36,17 +36,31 @@ namespace Rock.Model
             {
                 var experienceScheduleService = new InteractiveExperienceScheduleService( rockContext );
 
-                // Load the experience schedule and the calendar schedule.
-                var experienceSchedules = experienceScheduleService.Queryable()
+                // Query the schedules attached to a campus.
+                var campusSchedulesQry = experienceScheduleService.Queryable()
                     .Where( ies => ies.InteractiveExperienceId == interactiveExperienceId
                         && ies.InteractiveExperience.IsActive )
                     .SelectMany( ies => ies.InteractiveExperienceScheduleCampuses )
                     .Select( iesc => new
                     {
                         ExperienceScheduleId = iesc.InteractiveExperienceScheduleId,
-                        iesc.CampusId
+                        CampusId = ( int? ) iesc.CampusId
+                    } );
+
+                // Query the schedules without a campus and then union with
+                // those that do have campuses.
+                var experienceSchedules = experienceScheduleService.Queryable()
+                    .Where( ies => ies.InteractiveExperienceId == interactiveExperienceId
+                        && ies.InteractiveExperience.IsActive
+                        && !ies.InteractiveExperienceScheduleCampuses.Any() )
+                    .Select( ies => new
+                    {
+                        ExperienceScheduleId = ies.Id,
+                        CampusId = ( int? ) null
                     } )
+                    .Union( campusSchedulesQry )
                     .ToList();
+
 
                 var occurrenceIds = new List<int>();
 
