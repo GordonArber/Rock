@@ -5,17 +5,6 @@
 
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" OnSaveSchedule="sbSchedule_SaveSchedule" />
-
-        <div class="row">
-            <div class="col-md-6">
-                <pre><asp:Literal ID="ltSchedule" runat="server" /></pre>
-            </div>
-            <div class="col-md-6">
-                <pre><asp:Literal ID="ltDates" runat="server" /></pre>
-            </div>
-        </div>
-
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">

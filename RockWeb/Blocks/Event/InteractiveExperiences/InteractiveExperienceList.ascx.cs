@@ -353,25 +353,5 @@ namespace RockWeb.Blocks.Event.InteractiveExperiences
         }
 
         #endregion
-
-        protected void sbSchedule_SaveSchedule( object sender, EventArgs e )
-        {
-            ltSchedule.Text = sbSchedule.iCalendarContent;
-            ltDates.Text = string.Empty;
-
-            var schedule = new Schedule
-            {
-                iCalendarContent = sbSchedule.iCalendarContent
-            };
-
-            ltDates.Text = schedule.FriendlyScheduleText + "\r\n\r\n";
-
-            var dates = InetCalendarHelper.GetOccurrences( sbSchedule.iCalendarContent, DateTime.MinValue, DateTime.MaxValue, null )
-                .Where( a => a.Period != null && a.Period.StartTime != null )
-                .Select( a => a.Period.StartTime.Value )
-                .OrderBy( a => a ).ToList();
-
-            ltDates.Text += dates.Select( d => d.ToString() ).JoinStrings( "\r\n" );
-        }
     }
 }
