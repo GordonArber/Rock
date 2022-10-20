@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceOccurrenceChooser
+namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.ExperienceOccurrenceChooser
 {
     public class OccurrenceChooserInitializationBox : BlockBox
     {

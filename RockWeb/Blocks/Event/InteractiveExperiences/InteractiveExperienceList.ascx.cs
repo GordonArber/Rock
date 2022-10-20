@@ -35,7 +35,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Event.InteractiveExperiences
 {
     [DisplayName( "Interactive Experience List" )]
-    [Category( "Event" )]
+    [Category( "Event > Interactive Experiences" )]
     [Description( "List Interactive Experiences" )]
     [BlockTypeGuid( "1BC8542B-D2C8-4496-BB5C-EFF4C0E6AE9D" )]
 

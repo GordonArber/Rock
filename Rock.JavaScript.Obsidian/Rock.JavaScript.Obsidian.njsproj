@@ -109,6 +109,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\Steps\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceOccurrenceChooser\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
@@ -471,6 +472,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\stepFlowGetDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\stepFlowInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\experienceManagerInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceActionTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceBag.d.ts" />

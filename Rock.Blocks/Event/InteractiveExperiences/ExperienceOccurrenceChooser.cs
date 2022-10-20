@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperienceOccurrenceChooser;
+using Rock.ViewModels.Blocks.Event.InteractiveExperiences.ExperienceOccurrenceChooser;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -36,7 +36,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
 
     [DisplayName( "Experience Occurrence Chooser" )]
-    [Category( "Event" )]
+    [Category( "Event > Interactive Experiences" )]
     [Description( "Displays a list of interactive experience occurrences for the user to pick from." )]
     [IconCssClass( "fa fa-question" )]
 

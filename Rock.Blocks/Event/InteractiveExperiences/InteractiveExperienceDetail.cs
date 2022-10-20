@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
 
     [DisplayName( "Interactive Experience Detail" )]
-    [Category( "Event" )]
+    [Category( "Event > Interactive Experiences" )]
     [Description( "Displays the details of a particular interactive experience." )]
     [IconCssClass( "fa fa-question" )]
 
