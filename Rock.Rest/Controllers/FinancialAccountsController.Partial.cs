@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.PerformanceData;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
@@ -31,6 +33,21 @@ namespace Rock.Rest.Controllers
     public partial class FinancialAccountsController
     {
         /// <summary>
+        /// Gets the children. Please consider this endpoint obsolete as of v 1.14.1, use ~api/FinancialAccounts/GetChildrenBySearchTerm instead
+        /// </summary>
+        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
+        /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
+        /// <param name="searchTerm">The searchTerm.</param>
+        /// <returns>IQueryable&lt;AccountTreeViewItem&gt;.</returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildrenBySearchTerm/{activeOnly}/{displayPublicName}/{searchTerm}" )]
+        [Rock.SystemGuid.RestActionGuid( "21BF6409-CC65-4562-BD1A-F9FEEC1634F3" )]
+        public IQueryable<AccountTreeViewItem> GetChildrenBySearchTerm( bool activeOnly, bool displayPublicName, string searchTerm )
+        {
+            return GetSearchTermData( activeOnly, displayPublicName, searchTerm );
+        }
+
+        /// <summary>
         /// Gets the children.
         /// </summary>
         /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
@@ -40,7 +57,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildrenBySearchTerm" )]
         [Rock.SystemGuid.RestActionGuid( "21BF6409-CC65-4562-BD1A-F9FEEC1634F3" )]
-        public IQueryable<AccountTreeViewItem> GetChildrenBySearchTerm( bool activeOnly, bool displayPublicName, string searchTerm )
+        public IQueryable<AccountTreeViewItem> GetChildrenBySearchTermV2( bool activeOnly, bool displayPublicName, string searchTerm )
         {
             return GetSearchTermData( activeOnly, displayPublicName, searchTerm );
         }
@@ -89,6 +106,20 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the children. Please consider this endpoint obsolete as of v 1.14.1, use ~api/FinancialAccounts/GetChildren/{id} instead.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
+        [Rock.SystemGuid.RestActionGuid( "5C21D8B8-5C68-42CA-BF19-80050C8FF2A4" )]
+        public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly )
+        {
+            return GetChildrenData( id, activeOnly, true );
+        }
+
+        /// <summary>
         /// Gets the children.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -97,9 +128,35 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}" )]
         [Rock.SystemGuid.RestActionGuid( "5C21D8B8-5C68-42CA-BF19-80050C8FF2A4" )]
-        public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly )
+        public IQueryable<AccountTreeViewItem> GetChildrenV2( int id, bool activeOnly )
         {
             return GetChildrenData( id, activeOnly, true );
+        }
+
+        /// <summary>
+        /// Gets the inactive. Please consider this endpoint obsolete as of v 1.14.1, use ~api/FinancialAccounts/GetInactive instead.
+        /// </summary>
+        /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
+        /// <returns>IQueryable&lt;TreeViewItem&gt;.</returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetInactive/{displayPublicName}" )]
+        [Rock.SystemGuid.RestActionGuid( "4B08E38F-0C6A-41B1-9C52-DEB40028927F" )]
+        public IQueryable<AccountTreeViewItem> GetInactive( bool displayPublicName )
+        {
+            return GetInactiveData( displayPublicName );
+        }
+
+        /// <summary>
+        /// Gets the inactive.
+        /// </summary>
+        /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
+        /// <returns>IQueryable&lt;TreeViewItem&gt;.</returns>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/FinancialAccounts/GetInactive" )]
+        [Rock.SystemGuid.RestActionGuid( "4B08E38F-0C6A-41B1-9C52-DEB40028927F" )]
+        public IQueryable<AccountTreeViewItem> GetInactiveV2( bool displayPublicName )
+        {
+            return GetInactiveData( displayPublicName );
         }
 
         /// <summary>
@@ -116,72 +173,6 @@ namespace Rock.Rest.Controllers
         public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
         {
             return GetChildrenData( id, activeOnly, displayPublicName, countsType );
-        }
-
-        /// <summary>
-        /// Gets the inactive.
-        /// </summary>
-        /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
-        /// <returns>IQueryable&lt;TreeViewItem&gt;.</returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetInactive" )]
-        [Rock.SystemGuid.RestActionGuid( "4B08E38F-0C6A-41B1-9C52-DEB40028927F" )]
-        public IQueryable<AccountTreeViewItem> GetInactive( bool displayPublicName )
-        {
-            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
-
-            IQueryable<FinancialAccount> qry;
-
-            qry = Get().Where( f =>
-                f.ParentAccountId.HasValue == false );
-
-            qry = qry
-                .Where( f => f.IsActive == false );
-
-            var accountList = qry
-                .OrderBy( f => f.Order )
-                .ThenBy( f => f.Name )
-                .ToList();
-
-            var accountTreeViewItems = accountList.Select( a => new AccountTreeViewItem
-            {
-                Id = a.Id.ToString(),
-                Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name ),
-                GlCode = a.GlCode,
-                IsActive = a.IsActive,
-                ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
-            } ).ToList();
-
-            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
-
-            var resultIds = accountList.Select( f => f.Id ).ToList();
-
-            var childrenList = Get()
-                .Where( f =>
-                    f.ParentAccountId.HasValue &&
-                    resultIds.Contains( f.ParentAccountId.Value ) )
-                .Select( f => f.ParentAccountId.Value )
-                .ToList();
-
-            foreach ( var accountTreeViewItem in accountTreeViewItems )
-            {
-                int accountId = int.Parse( accountTreeViewItem.Id );
-                int childrenCount = ( childrenList?.Count( v => v == accountId ) ).GetValueOrDefault( 0 );
-
-                accountTreeViewItem.HasChildren = childrenCount > 0;
-                var lastChildId = ( childrenList?.LastOrDefault() ).GetValueOrDefault( 0 );
-
-                if ( accountTreeViewItem.HasChildren )
-                {
-                    accountTreeViewItem.CountInfo = childrenCount;
-                    accountTreeViewItem.ParentId = accountId.ToString();
-
-                }
-
-                accountTreeViewItem.IconCssClass = "fa fa-file-o";
-            }
-
-            return accountTreeViewItems.AsQueryable();
         }
 
         #region Methods
@@ -326,6 +317,64 @@ namespace Rock.Rest.Controllers
                 if ( accountTreeViewItem.HasChildren )
                 {
                     accountTreeViewItem.CountInfo = childrenCount;
+                }
+
+                accountTreeViewItem.IconCssClass = "fa fa-file-o";
+            }
+
+            return accountTreeViewItems.AsQueryable();
+        }
+
+        private IQueryable<AccountTreeViewItem> GetInactiveData( bool displayPublicName )
+        {
+            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
+
+            IQueryable<FinancialAccount> qry;
+
+            qry = Get().Where( f =>
+                f.ParentAccountId.HasValue == false );
+
+            qry = qry
+                .Where( f => f.IsActive == false );
+
+            var accountList = qry
+                .OrderBy( f => f.Order )
+                .ThenBy( f => f.Name )
+                .ToList();
+
+            var accountTreeViewItems = accountList.Select( a => new AccountTreeViewItem
+            {
+                Id = a.Id.ToString(),
+                Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name ),
+                GlCode = a.GlCode,
+                IsActive = a.IsActive,
+                ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
+            } ).ToList();
+
+            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
+
+            var resultIds = accountList.Select( f => f.Id ).ToList();
+
+            var childrenList = Get()
+                .Where( f =>
+                    f.ParentAccountId.HasValue &&
+                    resultIds.Contains( f.ParentAccountId.Value ) )
+                .Select( f => f.ParentAccountId.Value )
+                .ToList();
+
+            foreach ( var accountTreeViewItem in accountTreeViewItems )
+            {
+                int accountId = int.Parse( accountTreeViewItem.Id );
+                int childrenCount = ( childrenList?.Count( v => v == accountId ) ).GetValueOrDefault( 0 );
+
+                accountTreeViewItem.HasChildren = childrenCount > 0;
+                var lastChildId = ( childrenList?.LastOrDefault() ).GetValueOrDefault( 0 );
+
+                if ( accountTreeViewItem.HasChildren )
+                {
+                    accountTreeViewItem.CountInfo = childrenCount;
+                    accountTreeViewItem.ParentId = accountId.ToString();
+
                 }
 
                 accountTreeViewItem.IconCssClass = "fa fa-file-o";
