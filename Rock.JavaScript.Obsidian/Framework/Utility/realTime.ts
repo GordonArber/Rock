@@ -21,14 +21,20 @@ import { loadJavaScriptAsync } from "./page";
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/** A generic set a server functions with no type checking. */
 export type GenericServerFunctions = {
     [name: string]: (...args: unknown[]) => unknown;
 };
 
+/** A set of specific server functions that conform to an interface. */
 export type ServerFunctions<T> = {
     [K in keyof T]: T[K] extends Function ? T[K] : never;
 };
 
+/**
+ * An object that allows RealTime communication between the browser and the Rock
+ * server over a specific topic.
+ */
 export interface ITopic<TServer extends ServerFunctions<TServer> = GenericServerFunctions> {
     /**
      * Allows messages to be sent to the server. Any property access is treated
@@ -41,10 +47,6 @@ export interface ITopic<TServer extends ServerFunctions<TServer> = GenericServer
      * all topics, but that should not be relied on staying that way in the future.
      */
     get connectionId(): string | null;
-    /**
-     * Connects to the topic so that the backend knows of our presense.
-     */
-    connect(): Promise<void>;
 
     /**
      * Registers a handler to be called when a message with the given name
@@ -63,6 +65,12 @@ interface IRockRealTimeStatic {
 let libraryObject: IRockRealTimeStatic | null = null;
 let libraryPromise: Promise<boolean> | null = null;
 
+/**
+ * Gets the real time object from window.Rock.RealTime. If it is not available
+ * then an exception will be thrown.
+ *
+ * @returns An instance of IRockRealTimeStatic.
+ */
 async function getRealTimeObject(): Promise<IRockRealTimeStatic> {
     if (libraryObject) {
         return libraryObject;
@@ -81,6 +89,15 @@ async function getRealTimeObject(): Promise<IRockRealTimeStatic> {
     return libraryObject;
 }
 
+/**
+ * Connects to a specific topic in the Rock RealTime system and returns an
+ * instance to a proxy that handles sending to and receiving messages from
+ * that specific topic.
+ *
+ * @param identifier The identifier of the topic to be connected to.
+ *
+ * @returns A proxy to handle communication with the topic.
+ */
 export async function getTopic<TServer extends ServerFunctions<TServer>>(identifier: string): Promise<ITopic<TServer>> {
     const realTime = await getRealTimeObject();
 
