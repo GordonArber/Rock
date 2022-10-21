@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
+using Microsoft.Data.OData;
 
 namespace Rock.Rest
 {
@@ -101,15 +102,45 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// return false, if it detects if the SelectExpand would throw an exception,
+        /// probably due to unsupported v3 syntax.
+        /// </summary>
+        /// <param name="queryOptions">The query options.</param>
+        private bool SelectExpandIsValid( ODataQueryOptions queryOptions )
+        {
+            try
+            {
+                // Check if it is valid by seeing if it throws an exception.
+                // There doesn't appear to something like an "bool IsValid", so
+                // we'll just have to check for an exception
+                var checkExpandClause = queryOptions?.SelectExpand?.SelectExpandClause;
+            }
+            catch ( ODataException )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Return true if the Request has OData V3 Syntax that were made obsolete in V4
         /// </summary>
         /// <param name="queryOptions">The query options.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private bool RequestUriHasObsoleteV3Syntax( ODataQueryOptions queryOptions )
         {
             var rawFilter = queryOptions?.Filter?.RawValue ?? string.Empty;
             var selectExpandRawExpand = queryOptions?.SelectExpand?.RawExpand ?? string.Empty;
             var selectExpandRawSelect = queryOptions?.SelectExpand?.RawSelect ?? string.Empty;
+
+            if ( selectExpandRawSelect.IsNotNullOrWhiteSpace() )
+            {
+                if ( !SelectExpandIsValid( queryOptions ) )
+                {
+                    return true;
+                }
+            }
+
             if ( rawFilter.IsNullOrWhiteSpace() && selectExpandRawExpand.IsNullOrWhiteSpace() && selectExpandRawSelect.IsNullOrWhiteSpace() )
             {
                 return false;
@@ -171,11 +202,15 @@ namespace Rock.Rest
             var originalUrl = queryOptions.Request.RequestUri.OriginalString;
             var rawFilter = queryOptions?.Filter?.RawValue;
             var selectExpandRawExpand = queryOptions?.SelectExpand?.RawExpand;
-            //var selectExpandRawSelect = queryOptions?.SelectExpand?.RawSelect;
+            var selectExpandRawSelect = queryOptions?.SelectExpand?.RawSelect;
 
             string updatedUrl = ParseRawFilterFromOriginalUrl( originalUrl, rawFilter );
-            updatedUrl = ParseSelectExpandFromOriginalUrl( updatedUrl, selectExpandRawExpand, SelectExpandType.Expand );
-            //updatedUrl = ParseSelectExpandFromOriginalUrl( updatedUrl, selectExpandRawSelect, SelectExpandType.Select );
+            updatedUrl = ParseExpandClauseFromOriginalUrl( updatedUrl, selectExpandRawExpand );
+            bool selectSyntaxThrowsException = selectExpandRawSelect.IsNotNullOrWhiteSpace() && !SelectExpandIsValid( queryOptions );
+            if ( selectSyntaxThrowsException )
+            {
+                updatedUrl = ParseSelectClauseFromOriginalUrl( selectSyntaxThrowsException, queryOptions, updatedUrl );
+            }
 
             var convertedRequest = new HttpRequestMessage( queryOptions.Request.Method, updatedUrl );
             foreach ( var origProperty in queryOptions.Request.Properties )
@@ -193,13 +228,52 @@ namespace Rock.Rest
             return convertedODataQueryOptions;
         }
 
-        internal enum SelectExpandType
+        private static string ParseSelectClauseFromOriginalUrl( bool selectSyntaxThrowsException, ODataQueryOptions queryOptions, string originalUrl )
         {
-            //Select,
-            Expand,
+            if ( !selectSyntaxThrowsException )
+            {
+                return originalUrl;
+            }
+
+            /* 10-21-2022 MDP
+              
+             OData v3 'nested' $select work quite a bit different in ODataV4. OData v3 had something you
+             might call the "slash-slash" syntax. OData now wants the nested select to be nested in the
+             $expand clause (which kinda makes more sense). It's possible that later version of
+             the Microsoft.AspNet.OData packages will support "slash-slash" syntax again, so we will
+             only remove invalid $select clauses if they raise an exception.
+             again
+
+             Examples
+               - Not nested, these will work in both OData V3 and V4
+                 - ~api\GroupMember?$select=Id,PersonId 
+                 - ~api\People?$select=Id,FirstName,LastName
+              - Still Not nested even it does include a navigation property, these will work in both OData V3 and V4.
+                 - ~api\GroupMember?$expand=Person&$select=Id,PersonId,Person 
+                 - ~api\People?$expand=PhoneNumbers&$select=Id,FirstName,LastName,PhoneNumbers
+                 
+
+              - Nested, these will work in v3 but not v4
+                 - ~api\GroupMember?$expand=Members/Person$select=Id,Members/Person/LastName
+                 - ~api\People?$expand=PhoneNumbers&$select=Id,FirstName,LastName,PhoneNumbers
+             
+             */
+
+
+            // Remove the $select clause from the original URL if it is causing an exception
+            // this will result in return the full object data instead of just the fields
+            // that were specified, but at least they will get what they need.
+            // If they need a nested $select, they can use the odata v4 syntax
+            var rawSelect = queryOptions?.SelectExpand?.RawSelect;
+            string replaceUnencoded = rawSelect;
+            string replaceEncoded = Uri.EscapeDataString( rawSelect );
+            string replaceWith = "";
+            var updatedUrl = originalUrl.Replace( replaceUnencoded, replaceWith );
+            updatedUrl = updatedUrl.Replace( replaceEncoded, replaceWith );
+            return updatedUrl;
         }
 
-        internal static string ParseSelectExpandFromOriginalUrl( string originalUrl, string rawSelectExpand, SelectExpandType selectExpandType )
+        internal static string ParseExpandClauseFromOriginalUrl( string originalUrl, string rawSelectExpand )
         {
             if ( rawSelectExpand.IsNullOrWhiteSpace() || !rawSelectExpand.Contains( '/' ) )
             {
@@ -218,30 +292,22 @@ namespace Rock.Rest
             var remainingParts = selectExpandParts.Skip( 1 ).ToArray();
             foreach ( var part in remainingParts )
             {
-                if ( selectExpandType == SelectExpandType.Expand )
-                {
-                    updatedRawSelectExpandBuilder.Append( $"($expand={part})" );
-                }
-                /*
-                else if ( selectExpandType == SelectExpandType.Select )
-                {
-                    updatedRawSelectExpandBuilder.Append( $"($select={part})" );
-                }*/
+                updatedRawSelectExpandBuilder.Append( $"($expand={part})" );
             }
 
             var updatedUrl = originalUrl;
 
             var updatedRawSelectExpand = updatedRawSelectExpandBuilder.ToString();
-            var expandSelectParam = selectExpandType.ConvertToString( false ).ToLower();
+            var expandParam = "expand";
 
             // if the original is Encoded
-            var replaceEncoded = expandSelectParam + "=" + Uri.EscapeDataString( originalRawSelectExpand );
-            var replaceWithEncoded = expandSelectParam + "=" + Uri.EscapeDataString( updatedRawSelectExpand );
+            var replaceEncoded = expandParam + "=" + Uri.EscapeDataString( originalRawSelectExpand );
+            var replaceWithEncoded = expandParam + "=" + Uri.EscapeDataString( updatedRawSelectExpand );
             updatedUrl = updatedUrl.Replace( replaceEncoded, replaceWithEncoded );
 
             // if the original is Not Encoded
-            var replaceNotEncoded = expandSelectParam + "=" + originalRawSelectExpand;
-            var replaceWithNotEncoded = expandSelectParam + "=" + updatedRawSelectExpand;
+            var replaceNotEncoded = expandParam + "=" + originalRawSelectExpand;
+            var replaceWithNotEncoded = expandParam + "=" + updatedRawSelectExpand;
             updatedUrl = updatedUrl.Replace( replaceNotEncoded, replaceWithNotEncoded );
 
             return updatedUrl;
