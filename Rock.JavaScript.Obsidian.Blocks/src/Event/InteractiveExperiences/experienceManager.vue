@@ -11,7 +11,7 @@
                                 :items="navigationTabs" />
         </template>
 
-        <div>some other content.</div>
+        <LiveEventTab v-show="isLiveEventTab" />
     </Panel>
 </template>
 
@@ -21,13 +21,14 @@
 
 <script setup lang="ts">
     import Alert from "@Obsidian/Controls/alert.vue";
+    import LiveEventTab from "./ExperienceManager/liveEventTab.partial.vue";
     import Panel from "@Obsidian/Controls/panel";
+    import PanelNavigationBar from "./ExperienceManager/panelNavigationBar.partial.vue";
     import { useConfigurationValues, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { ExperienceManagerInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/ExperienceManager/experienceManagerInitializationBox";
     import { computed, ref } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { NavigationUrlKey } from "./ExperienceManager/types";
-    import PanelNavigationBar from "./ExperienceManager/panelNavigationBar.vue";
 
     const config = useConfigurationValues<ExperienceManagerInitializationBox>();
 
@@ -42,6 +43,18 @@
 
     const panelTitle = computed((): string => {
         return `Experience Manager: ${config.experienceName}`;
+    });
+
+    const isLiveEventTab = computed((): boolean => {
+        return selectedTab.value === "Live Event";
+    });
+
+    const isModerationTab = computed((): boolean => {
+        return selectedTab.value === "Moderation";
+    });
+
+    const isLiveQuestionsTab = computed((): boolean => {
+        return selectedTab.value === "Live Questions";
     });
 
     // #endregion
