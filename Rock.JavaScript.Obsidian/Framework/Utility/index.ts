@@ -18,6 +18,7 @@ export * as ObjectUtils from "./objectUtils";
 export * as Page from "./page";
 export * as Popover from "./popover";
 export * as PromiseUtils from "./promiseUtils";
+export * as RealTime from "./realTime";
 export * as RockDateTime from "./rockDateTime";
 export * as InternetCalendar from "./internetCalendar";
 export * as SlidingDateRange from "./slidingDateRange";

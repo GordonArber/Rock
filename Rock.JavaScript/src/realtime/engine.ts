@@ -4,7 +4,7 @@ import mitt, { Emitter, EventType } from "mitt";
  * General functionality for any RealTime engine.
  */
 export abstract class Engine {
-    protected readonly emitter: Emitter<Record<EventType, unknown[]>>;
+    private readonly emitter: Emitter<Record<EventType, unknown[]>>;
     private isStarting: boolean = false;
     private startResolve!: (() => void);
     private startReject!: ((reason: unknown) => void);
@@ -83,5 +83,16 @@ export abstract class Engine {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- It's going to be up to caller to ensure they use the right handler arguments.
     public on(topicIdentifier: string, messageName: string, handler: (...args: any[]) => void): void {
         this.emitter.on(`${topicIdentifier}-${messageName}`, (eventArgs: unknown[]) => handler(...eventArgs));
+    }
+
+    /**
+     * Emits the event for the topic and message name.
+     * 
+     * @param topicIdentifier The identifier of the topic that the message was received from.
+     * @param messageName The name of the message that was received.
+     * @param eventArgs The arguments that were sent with the message.
+     */
+    protected emit(topicIdentifier: string, messageName: string, eventArgs: unknown[]): void {
+        this.emitter.emit(`${topicIdentifier}-${messageName}`, eventArgs);
     }
 }

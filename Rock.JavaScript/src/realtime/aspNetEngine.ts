@@ -48,7 +48,7 @@ export class AspNetEngine extends Engine {
      * @param messageParams The parameters to the message.
      */
     private onMessage(topicIdentifier: string, messageName: string, messageParams: unknown[]): void {
-        this.emitter.emit(`${topicIdentifier}-${messageName}`, messageParams);
+        this.emit(topicIdentifier, messageName, messageParams);
     }
 
     /** @inheritdoc */
