@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Add a new one-time or scheduled transaction
     /// </summary>
-    [DisplayName( "Utility Transaction Entry " )]
+    [DisplayName( "Utility Payment Entry " )]
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
 
@@ -815,8 +815,8 @@ namespace RockWeb.Blocks.Finance
 
         private void InitializeFinancialGatewayControls()
         {
-            bool enableACH = false;
-            bool enableCreditCard = true;
+            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
@@ -845,7 +845,7 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 nbPaymentTokenError.Visible = false;
-                btnConfirmationNext_Click( sender, e );
+                btnPaymentInfoNext_Click( sender, e );
             }
         }
 
@@ -2782,7 +2782,8 @@ namespace RockWeb.Blocks.Finance
 
             tdTotalConfirm.Description = paymentInfo.Amount.FormatAsCurrency();
 
-            tdPaymentMethodConfirm.Description = paymentInfo.CurrencyTypeValue.Description;
+            // TODO
+            tdPaymentMethodConfirm.Description = paymentInfo.CurrencyTypeValue?.Description;
 
             tdAccountNumberConfirm.Description = paymentInfo.MaskedNumber;
             tdAccountNumberConfirm.Visible = !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber );
@@ -3255,7 +3256,7 @@ namespace RockWeb.Blocks.Finance
 
             tdTotalReceipt.Description = paymentInfo.Amount.FormatAsCurrency();
 
-            //tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
+            // TODO?? tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
 
             string acctNumber = paymentInfo.MaskedNumber;
             if ( string.IsNullOrWhiteSpace( acctNumber ) && paymentDetail != null && !string.IsNullOrWhiteSpace( paymentDetail.AccountNumberMasked ) )

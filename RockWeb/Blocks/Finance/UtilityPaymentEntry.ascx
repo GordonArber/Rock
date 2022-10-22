@@ -180,13 +180,10 @@
 
                                             <Rock:NotificationBox ID="nbPaymentTokenError" runat="server" NotificationBoxType="Validation" Visible="false" />
 
-                                            <div class="navigation actions">
+                                            
 
-                                                <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
-                               	                    Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
-                                                --%>
-                                                <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right" DataLoadingText="Processing..." />
-                                            </div>
+                                            
+                                            
                                         </asp:Panel>
 
                                     </div>
@@ -208,7 +205,11 @@
 
                         <div class="actions clearfix">
                             <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();">Previous</a>
-                            <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
+
+                             <%-- NOTE: btnPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
+                               	Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
+                            --%>
+                            <asp:LinkButton ID="btnPaymentInfoNext"  runat="server" Text="Next" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right" />
                         </div>
                     </div>
                 </div>
