@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -223,7 +224,14 @@ namespace Rock.Lava.Fluid
                 return defaultValue;
             }
 
-            return value.ToRealObjectValue();
+            var rawValue = value.ToRealObjectValue();
+            // If the value is wrapped to prevent Fluid from changing the type, unwrap it and return the original value.
+            if ( rawValue is FluidRawValueProxy wrapper )
+            {
+                rawValue = wrapper.Value;
+            }
+
+            return rawValue;
         }
 
         /// <summary>
@@ -240,6 +248,15 @@ namespace Rock.Lava.Fluid
             }
 
             var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
+
+            // If the value is a collection, Fluid will attempt to wrap the contained items
+            // and the original type information is lost.
+            // Private fields are not referenced in templates, so they do not need to be converted by Fluid.
+            // To prevent this behavior, wrap the object in a proxy.
+            if ( value is IEnumerable && !( value is string ) )
+            {
+                value = new FluidRawValueProxy( value );
+            }
 
             if ( scope == LavaContextRelativeScopeSpecifier.Current )
             {
@@ -315,5 +332,25 @@ namespace Rock.Lava.Fluid
 
             return dictionary;
         }
+
+        #region Helper Classes
+
+        /// <summary>
+        /// An internal proxy for a value that should be stored in the Fluid Context without any modification.
+        /// Some unproxied value types are stored in a modified form by the Fluid framework to ensure they
+        /// can be more easily referenced from a template. This can cause unwanted results when storing and retrieving
+        /// values that are intended for internal use only.
+        /// </summary>
+        internal class FluidRawValueProxy
+        {
+            public FluidRawValueProxy( object value )
+            {
+                Value = value;
+            }
+
+            public object Value { get; private set; }
+        }
+
+        #endregion
     }
 }
