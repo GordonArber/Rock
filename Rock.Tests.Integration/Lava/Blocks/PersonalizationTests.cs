@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using Http.TestLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -29,8 +30,6 @@ using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
 {
-    #region Personalize Block
-
     /// <summary>
     /// Tests for the Personalize Lava block.
     /// </summary>
@@ -40,7 +39,7 @@ namespace Rock.Tests.Integration.Lava
         private const string SegmentAllMenGuid = "A8B006AF-1531-42B5-AD9A-570F97C8EFC1";
         private const string SegmentSmallGroupGuid = "F189099D-B1B7-4067-BD28-D354110AAB1D";
         private const string SegmentTestInactiveGuid = "E5DBC839-1E16-4430-81A6-9EDEF9422B4F";
-        
+
         private const string FilterMobileDeviceGuid = "F4F31B2A-F525-4E52-8A6E-ECA1E1EBD75B";
         private const string FilterQueryParameterInactiveGuid = "45AA8BAF-78F2-4220-93C7-0ADC7CB8CADD";
         private const string FilterQueryParameter1Guid = "674BD50E-DA57-495F-B2EC-B16BC34BE2FA";
@@ -53,9 +52,6 @@ namespace Rock.Tests.Integration.Lava
             var rockContext = new RockContext();
 
             // Create Personalization Segments.
-            //var personService = new PersonService( rockContext );
-            //var person = personService.GetByGuids( new List<Guid> { TestGuids.TestPeople.TedDecker.AsGuid() } ).FirstOrDefault();
-
             var personalizationService = new PersonalizationSegmentService( rockContext );
 
             var segmentAllMen = personalizationService.Get( SegmentAllMenGuid.AsGuid() );
@@ -200,6 +196,8 @@ namespace Rock.Tests.Integration.Lava
 
             return pap;
         }
+
+        #region Personalize Block
 
         [TestMethod]
         public void PersonalizeBlock_WithPersonInContext_UsesContextPersonNotCurrentVisitor()
@@ -758,7 +756,136 @@ No match!
 
         #endregion
 
+        #region AddSegment Filter
+
+        [TestMethod]
+        public void AddSegmentFilter_InHttpContextWithValidSegment_AddsPersonSegmentToCookie()
+        {
+            var template1 = @"
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+Block 1.
+{% endpersonalize %}
+{{ CurrentPerson | AddSegment:'IN_SMALL_GROUP,ALL_MEN' }}
+";
+            var template2 = @"
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+Block 2.
+{% endpersonalize %}
+";
+
+            var renderOptions = new LavaTestRenderOptions
+            {
+                LavaEngineTypes = new List<Type> { typeof( FluidEngine ) }
+            };
+
+            var simulator = new RockHttpSimulator();
+            using ( var request = simulator.SimulateRequest( new Uri( "http://rock.rocksolidchurchdemo.com" ) ) )
+            {
+                AssertOutputForPerson( template1 + template2,
+                    "Block 2.",
+                    TestGuids.TestPeople.AlishaMarble,
+                    renderOptions );
+
+                // Verify that the personalization cookie exists in the response.
+                var cookies = simulator.Context.Response.Cookies;
+                var segmentCookie = cookies[".ROCK_SEGMENT_FILTERS"];
+                Assert.IsNotNull( segmentCookie, "Cookie not created" );
+
+                // Test that the new segment is available when the second template is rendered
+                // in the same HttpContext. Cookies are preserved because we are using the same simulated HttpRequest.
+                AssertOutputForPerson( template2,
+                    "Block 2.",
+                    TestGuids.TestPeople.AlishaMarble,
+                    options: renderOptions );
+            }
+        }
+
+        [TestMethod]
+        public void AddSegmentFilter_NoHttpContextWithValidSegment_AddsPersonSegmentToRenderContext()
+        {
+            var template1 = @"
+{% personalize segment:'IN_SMALL_GROUP' matchtype:'any' %}
+Block 1.
+{% endpersonalize %}
+{{ CurrentPerson | AddSegment:'IN_SMALL_GROUP' }}
+";
+            var template2 = @"
+{% personalize segment:'IN_SMALL_GROUP' matchtype:'any' %}
+Block 2.
+{% endpersonalize %}
+";
+
+            // Verify that the added segment is available within the same render context.
+            AssertOutputForPersonAndRequest( template1 + template2,
+                "Block 2.",
+                TestGuids.TestPeople.AlishaMarble );
+
+            // Verify that the added segment is not available in a subsequent render context.
+            AssertOutputForPersonAndRequest( template2,
+                string.Empty,
+                TestGuids.TestPeople.AlishaMarble );
+        }
+
+        [TestMethod]
+        public void AddSegmentFilter_ForInvalidSegmentKey_IsNotAdded()
+        {
+            var input = @"
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+Block 1.
+{% endpersonalize %}
+{{ CurrentPerson | AddSegment:'INVALID_SEGMENT' }}
+{% personalize segment:'INVALID_SEGMENT' matchtype:'all' %}
+Block 2.
+{% endpersonalize %}
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+Block 3.
+{% endpersonalize %}
+";
+            var expectedOutput = @"Block 1. Block 3.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                TestGuids.TestPeople.TedDecker );
+        }
+
+        [TestMethod]
+        public void AddSegmentFilter_ForExistingSegmentKey_HasNoEffect()
+        {
+            var input = @"
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+Block 1.
+{% endpersonalize %}
+{{ CurrentPerson | AddSegment:'ALL_MEN' }}
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+Block 2.
+{% endpersonalize %}
+";
+            var expectedOutput = @"Block 1. Block 2.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                TestGuids.TestPeople.TedDecker );
+        }
+
+        #endregion
+
         private void AssertOutputForPersonAndRequest( string inputTemplate, string expectedOutput, string personGuid = "", string inputUrl = "", LavaTestRenderOptions options = null )
+        {
+            if ( !string.IsNullOrWhiteSpace( inputUrl ) )
+            {
+                var simulator = new HttpSimulator();
+                using ( var request = simulator.SimulateRequest( new Uri( inputUrl ) ) )
+                {
+                    AssertOutputForPerson( inputTemplate, expectedOutput, personGuid, options );
+                }
+            }
+            else
+            {
+                AssertOutputForPerson( inputTemplate, expectedOutput, personGuid, options );
+            }
+        }
+
+        private void AssertOutputForPerson( string inputTemplate, string expectedOutput, string personGuid = "", LavaTestRenderOptions options = null )
         {
             if ( options == null )
             {
@@ -781,20 +908,7 @@ No match!
                 mergeValues["CurrentPerson"] = person;
             }
 
-            options = new LavaTestRenderOptions() { MergeFields = mergeValues, IgnoreWhiteSpace = true };
-
-            if ( !string.IsNullOrWhiteSpace( inputUrl ) )
-            {
-                var simulator = new HttpSimulator();
-                using ( var request = simulator.SimulateRequest( new Uri( inputUrl ) ) )
-                {
-                    TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
-                }
-            }
-            else
-            {
-                TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
-            }
+            TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
         }
     }
 }
