@@ -951,7 +951,7 @@ $hamburger-spacing: 4px;
   display: inline-block;
   width: $hamburger-width;
   height: ($hamburger-height * 3) + ($hamburger-spacing * 2);
-  color: var(--color-primary);
+  color: var(--base-secondary);
 }
 
 .hamburger-icon {

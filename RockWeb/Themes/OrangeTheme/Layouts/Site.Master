@@ -84,13 +84,9 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                         <div class="hamburger-icon"></div>
                     </div>
                 </button>
-                <Rock:Lava ID="hlHomeCorner" runat="server">
-                    <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner no-logo"></a>
-                </Rock:Lava>
 
                 <div id="fixed-header" class="header-content" role="navigation">
                     <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                    <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
 
                     <!-- Page Title -->
                     <section id="secPageTitle" class="page-title-display" runat="server">
@@ -101,9 +97,13 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                         </div>
                     </section>
 
+                    <!-- Header Zone -->
+                    <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
+
                 </div>
             </nav>
 
+            
             <nav class="navbar-default navbar-static-side" role="navigation">
                 <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
             </nav>

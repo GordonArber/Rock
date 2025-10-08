@@ -44,7 +44,7 @@
                     "name": "Secondary Color",
                     "variable": "base-secondary",
                     "description": "The secondary color used to highlight screen elements, such as the main button.",
-                    "default": "#83758f"
+                    "default": "#ffffffb3"
                 },
                 {
                     "type": "color",
