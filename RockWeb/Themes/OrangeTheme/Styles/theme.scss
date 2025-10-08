@@ -243,7 +243,7 @@ $navbar-element-height: 40px;
   display: flex;
   margin-bottom: 0;
   color: var(--color-interface-softest);
-  background-color: var(--color-interface-softest);
+  background-color: var(--base-interface-strongest);
   border-bottom: 1px solid var(--color-interface-soft);
   min-height: 52px;
 
@@ -910,6 +910,31 @@ $navbar-element-height: 40px;
   }
 }
 
+// Brand/project name
+.navbar-brand {
+  float:          unset;
+  height:         unset;
+  padding:        calc(($navbar-height - 20px) * 0.5) calc($grid-gutter-width * 0.5);
+  font-size:      var(--font-size-h5);
+  line-height:    20px;
+
+  &:hover,
+  &:focus {
+    text-decoration:  none;
+  }
+
+  > img {
+    display:          block;
+  }
+
+  @media (min-width: $screen-small) {
+    .navbar > .container &,
+    .navbar > .container-fluid & {
+      margin-left:    calc($grid-gutter-width * -0.5);
+    }
+  }
+}
+
 .navbar-brand-side {
   width: 32px;
   height: 32px;
@@ -1474,7 +1499,7 @@ a.rock-bookmark {
 
 
 .rock-top-header .navbar-zone-header  .zone-content {
-  flex-direction: row-reverse;
+  flex-direction: row;
   justify-content: flex-start;
 }
 

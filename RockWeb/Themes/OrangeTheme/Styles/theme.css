@@ -5242,7 +5242,7 @@ output {
   font-size: var(--font-size-regular);
   line-height: var(--line-height-normal);
   color: var(--color-interface-stronger);
-  background-color: var(--color-interface-softest) !important;
+  background-color: var(--color-interface-softest);
   background-image: none;
   border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-xsmall);
@@ -21930,6 +21930,9 @@ span.data-view-filter-label {
   margin-bottom: var(--spacing-small);
   border: 2px solid var(--color-interface-soft);
 }
+.transaction-image img {
+  width: 100%;
+}
 .transaction-image .fluidbox-ghost {
   cursor: zoom-in;
 }
@@ -32993,7 +32996,7 @@ body.navbar-side-open {
   display: flex;
   margin-bottom: 0;
   color: var(--color-interface-softest);
-  background-color: var(--color-interface-softest);
+  background-color: var(--base-interface-strongest);
   border-bottom: 1px solid var(--color-interface-soft);
   min-height: 52px;
 }
@@ -33571,6 +33574,25 @@ body.navbar-side-open {
   }
 }
 
+.navbar-brand {
+  float: unset;
+  height: unset;
+  padding: 15px 15px;
+  font-size: var(--font-size-h5);
+  line-height: 20px;
+}
+.navbar-brand:hover, .navbar-brand:focus {
+  text-decoration: none;
+}
+.navbar-brand > img {
+  display: block;
+}
+@media (min-width: 768px) {
+  .navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand {
+    margin-left: -15px;
+  }
+}
+
 .navbar-brand-side {
   width: 32px;
   height: 32px;
@@ -34040,7 +34062,7 @@ a.rock-bookmark {
   }
 }
 .rock-top-header .navbar-zone-header .zone-content {
-  flex-direction: row-reverse;
+  flex-direction: row;
   justify-content: flex-start;
 }
 
@@ -34054,7 +34076,7 @@ a.rock-bookmark {
     --base-primary: #FF791D;
     --logo-image: url('/Assets/Images/rock-logo-circle-white.svg');
     --base-link: #006DCC;
-    --base-secondary: #ffffffb3;
+    --base-secondary: #ffffff;
     --base-critical: #ee7725;
     --base-danger: #D70015;
     --base-info: #005DD7;
