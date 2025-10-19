@@ -43,7 +43,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             {
                 if (pageCache.PageDisplayTitle == false || string.IsNullOrWhiteSpace( rockPage.PageTitle ) )
                 {
-                    secPageTitle.Visible = false;
+                    //secPageTitle.Visible = false;
                 }
             }
         }

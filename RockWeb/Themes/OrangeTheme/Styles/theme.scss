@@ -258,12 +258,6 @@ $navbar-element-height: 40px;
   @media (min-width: $screen-small) {
     height: $navbar-top-height;
 
-    .navbar-brand-corner {
-      border-radius:  var(--rounded-large) var(--rounded-large) 0 0;
-      margin-top:     var(--spacing-xsmall);
-      margin-left:    var(--spacing-xsmall);
-    }
-
     .header-content {
       padding: 0;
     }
@@ -333,46 +327,6 @@ $navbar-element-height: 40px;
     border: 1px solid var(--color-interface-softer);
     a {
       color: var(--color-interface-strong);
-    }
-  }
-
-  .navbar-brand-corner {
-    position: fixed;
-    top: 0;
-    display: none;
-    float: left;
-    width: calc($navbarside-width - 8px);
-    height: calc($navbar-top-height - 8px);
-    padding: 40px;
-    color: var(--color-interface-softest);
-    background-color: var(--color-primary);
-    background-size: 45px;
-
-    .nav-open & {
-      background-color: var(--navbarside-background-color);
-    }
-
-    &.no-logo::after {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      content: "";
-      background-image: var(--logo-image);
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: ($navbarside-width * .48);
-    }
-
-    .logo {
-      width: 48px;
-      height: 48px;
-      margin: 10px;
-    }
-
-    @media (min-width: $screen-small) {
-      display: block;
     }
   }
 
@@ -548,65 +502,22 @@ $navbar-element-height: 40px;
 
 }
 
-// Side Nav
-.navbar-static-side {
-  --nav-childpages-bg: var(--navbarside-background-color);
-  position: fixed;
-  top: var(--top-header-height);
-  bottom: 0;
-  left: 0;
-  z-index: 1025;
-  display: none;
-  width: 100%;
-  height: 100%;
-  color: #FFF; /* Hard coded because in dark mode it looks weird with dark color. */
-  background-color: var(--color-primary);
+// Top Nav
+.navbar-zone-navigation {
 
-  .zone-navigation {
-    position: absolute;
-    inset: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    &::-webkit-scrollbar {
-      width: 6px;
-      background-color: transparent
-    }
-    &::-webkit-scrollbar-thumb {
-      width: 6px;
-      background-color: rgba(0,0,0,0.2);
-      border-radius: 10px
-    }
-  }
-
-  .navbar-side {
-    margin-bottom: 84px; // adds space for the admin tool bar and the static top menu item on mobile
+  .navbar-nav {
 
     .nav-item-top {
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      padding: 18px 12px;
-      font-size: 18px;
       margin-top: 0;
       text-align: center;
       line-height: 1;
       cursor: pointer;
       gap: 12px;
       transition: box-shadow .1s linear;
-      border-top: 1px solid #ffffff30;
-
-      // TODO: This is split into a separate selector because it feels buggy when toggled open
-      &.open {
-        .nav-childpages {
-          display: inline-block;
-          box-shadow: var(--popup-box-shadow);
-        }
-        @media (min-width: $screen-xsmall) {
-          .item-title {
-            color: var(--color-interface-stronger);
-          }
-        }
-      }
+      color: var(--color-interface-strongest);
 
       .item-title {
         display: flex;
@@ -617,166 +528,7 @@ $navbar-element-height: 40px;
         font-weight: var(--font-weight-semibold);
         line-height: 1;
         color: var(--color-interface-softer);
-
-        &:after {
-          content: "\f054";
-          font-family: FontAwesome;
-          font-size: 12px;
-          font-weight: 900;
-          margin-left: 12px;
-        }
       }
-
-      &:nth-child(2) {
-        margin-top: 48px;
-      }
-
-      @media (min-width: $screen-small) {
-        height: $navbar-top-height;
-        justify-content: center;
-        font-size: 26px;
-        padding: 24px 12px;
-      }
-    }
-  }
-
-  .navbar-side-open & {
-    display: block;
-  }
-
-  .nav-childpages {
-    display: none;
-    position: fixed;
-    top: calc(48px + var(--top-header-height));
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    display: none;
-    padding: 0 10px 0 var(--spacing-small);
-    overflow-x: hidden;
-    overflow-y: auto;
-    text-align: left;
-    border: 1px solid var(--color-interface-soft);
-    background-color: var(--color-interface-softer);
-    line-height: var(--line-height-normal);
-    font-size: var(--font-size-regular);
-    z-index: 1;
-
-    .item-title {
-      display: inline-block;
-
-      &:after {
-        transform: rotate(90deg);
-      }
-    }
-
-    .nav-item {
-      .nav-link {
-        padding: var(--spacing-xsmall);
-        line-height: 1.4;
-        display: flex;
-        align-items: center;
-        margin: 0;
-        color: var(--color-interface-strong);
-        transition: all ease 0.05s;
-
-        &:last-child{
-            margin-bottom: 0;
-        }
-
-        &:focus {
-          color: var(--color-interface-strong);
-          background-color: var(--color-interface-soft);
-        }
-
-        &:hover {
-          color: var(--color-primary);
-          background-color:  var(--color-primary-soft);
-          border-radius: var(--rounded-medium);
-
-          &::before {
-            width: 8px;
-            padding-left: 8px;
-            margin-right: 6px;
-          }
-        }
-      }
-
-      &.current {
-        .nav-link {
-          font-weight: var(--font-weight-semibold);
-          color: #FFFFFF;
-          background-color: var(--color-primary);
-          border-radius: var(--rounded-medium);
-
-          &::before {
-            width: 8px;
-            padding-left: var(--spacing-xsmall);
-            margin-right: 6px;
-            background-color: var(--color-primary);
-          }
-        }
-      }
-    }
-
-    li {
-      &.title {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: var(--spacing-small);
-        padding: 19px 0;
-        //margin: 0 -20px;
-        //font-size: @font-size-h1;
-        // padding: 24px 20px 27px;
-        font-size: 18px;
-        font-weight: var(--font-weight-light);
-        line-height: 1;
-        color: var(--color-interface-softer);
-
-        @media (min-width: $screen-xsmall) {
-          color: var(--color-interface-strong)
-        }
-
-        i {
-          width: 1.25em;
-          text-align: center;
-          margin-top: 2px;
-        }
-      }
-
-      &.header {
-        padding-top: 11px;
-        padding-left: var(--spacing-xsmall) !important;
-        margin-top: var(--spacing-large);
-        margin-bottom: ($line-height-computed / 2);
-        font-size: var(--font-size-xsmall);
-        font-weight: var(--font-weight-semibold);
-        line-height: 1;
-        color: var(--color-interface-medium);
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        border-top: 1px solid var(--color-interface-soft);
-
-        &:nth-child(2) {
-          margin-top: 0;
-        }
-      }
-
-      // &:last-child {
-        // margin-bottom: 72px; // don't know the margin button is here in the first place why???????
-      // }
-    }
-
-    &::-webkit-scrollbar {
-      width: 10px;
-      background-color: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      width: 10px;
-      background-color: rgba(0,0,0, .2);
-      border-radius: 10px;
     }
   }
 
@@ -798,171 +550,27 @@ $navbar-element-height: 40px;
   @media (min-width: $screen-small) {
     --nav-childpages-bg: var(--color-interface-strong);
     display: block;
-    height: calc(100% - $navbar-top-height) !important; // Overrides collapse if window is resized
-    width: $navbarside-width;
-    top: $navbar-top-height;
-    margin-left:    var(--spacing-xsmall);
-    height:         calc(100% - 88px) !important;
-    border-radius: 0 0 12px 12px;
 
-    & .navbar-side {
-      margin-top: 32px;
-    }
+    .nav-item {
+      .nav-link {
+        padding: var(--spacing-xsmall);
+        line-height: 1.5;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        color: var(--color-interface-strong);
+        transition: all ease 0.05s;
+        font-weight: 400;
 
-    .nav-open & {
-      z-index: 2000;
-      border-radius: 0 0 0 var(--rounded-large);
-    }
-
-    .navbar-side:first-child {
-      margin-bottom: 0; // Remove the extra margin that's needed for mobile.
-    }
-
-    .navbar-side .nav-item-top:nth-child(2) {
-      margin-top: 0px; // Remove the extra margin on the second list item (the first real menu item) down so it's not covered by the navbar-logo
-    }
-
-    .navbar-side .nav-item-top {
-      border: 0;
-      margin: var(--spacing-tiny) var(--spacing-xsmall) var(--spacing-tiny) var(--spacing-xsmall);
-      height: 70px;
-      font-size: 24px;
-      padding: var(--spacing-large) var(--spacing-xsmall);
-
-      &:last-child {
-        border: 0;
-      }
-
-      &.current {
-        background-color: #ffffff30;
-        border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
-        border: 0;
-        &:hover {
-          background-color: transparent;
-          border-radius: var(--rounded-medium) 0 0 var(--rounded-medium);
-        }
-      }
-
-      > .item-title {
-        display: none;
-      }
-
-      &:hover::before {
-        position: absolute;
-        content:"";
-        background-color: #ffffff30;
-        top:0;
-        left:0;
-        height: 100%;
-        width: calc($navbarside-width - 8px);
-        border-radius:    var(--rounded-medium) 0 0 var(--rounded-medium);
-      }
-    }
-
-    .nav-childpages {
-      top: 0;
-      left: calc($navbarside-width + 8px);
-      width: 280px;
-      border-radius: 0 14px 14px 0;
-      margin-top:     var(--spacing-xsmall);
-      margin-bottom:  var(--spacing-xsmall);
-
-      .title {
-        padding-top: var(--spacing-large);
-        padding-bottom: 27px;
-
-        .item-title {
+        &:focus {
           color: var(--color-interface-strong);
-          // display: inline-block;
-          font-size: var(--font-size-h5);
-
-          &:after {
-            display: none;
-          }
         }
 
-        i {
-          display: none;
+        &:hover {
+          text-decoration: underline;
         }
       }
     }
-
-    .navbar-logo {
-      display: none;
-    }
-  }
-}
-
-.navbar-side-open {
-  @media (max-width: $screen-small) {
-    .zone-content > .personal-links,
-    .zone-content > .reminder-links {
-      position: fixed;
-      display: block !important;
-      top: 60px;
-      right: 4px;
-    }
-
-    .zone-content > .reminder-links {
-      right: 44px;
-      z-index: 10;
-    }
-  }
-}
-
-// Brand/project name
-.navbar-brand {
-  float:          unset;
-  height:         unset;
-  padding:        calc(($navbar-height - 20px) * 0.5) calc($grid-gutter-width * 0.5);
-  font-size:      var(--font-size-h5);
-  line-height:    20px;
-
-  &:hover,
-  &:focus {
-    text-decoration:  none;
-  }
-
-  > img {
-    display:          block;
-  }
-
-  @media (min-width: $screen-small) {
-    .navbar > .container &,
-    .navbar > .container-fluid & {
-      margin-left:    calc($grid-gutter-width * -0.5);
-    }
-  }
-}
-
-.navbar-brand-side {
-  width: 32px;
-  height: 32px;
-  color: var(--color-interface-softest) !important;
-  background: transparent !important;
-  padding: 0 !important;
-
-  &.no-logo::after {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    content: "";
-    background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: 32px;
-  }
-
-  .logo {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-  }
-
-  @media (min-width: $screen-small) {
-    display: none;
   }
 }
 
@@ -1007,21 +615,6 @@ $hamburger-spacing: 4px;
 
   &:after {
     top: (($hamburger-height + $hamburger-spacing) * 2);
-  }
-
-  .navbar-side-open & {
-    $y-offset: $hamburger-spacing + $hamburger-height;
-    transform: translate3d(0,$y-offset,0) rotate(45deg);
-
-    &:before {
-      transform: rotate(-45deg) translate3d(calc($hamburger-width / -7),($hamburger-spacing * -1),0);
-      opacity: 0;
-    }
-
-    &:after {
-      $y-offset-minus: $y-offset * -2;
-      transform: translate3d(0,$y-offset-minus,0) rotate(-90deg);
-    }
   }
 }
 
@@ -1074,19 +667,13 @@ a.rock-bookmark {
   color: var(---color-interface-strong);
 }
 
-// These items will only take effect in desktop mode
-@media (min-width: $screen-small) {
-
-  .nav-open {
-    & .rock-top-header .navbar-brand-corner {
-      background-color: var(--color-primary);
-      border-radius: var(--rounded-large) 0 0 0;
-    }
-  }
+// Miscellaneous
+.navbar-brand {
+  height: unset;
+  padding: 8px 8px;
 }
 
 
-// Miscellaneous
 .header + .nav-item {
   margin-top: var(--spacing-tiny);
 }
@@ -1306,11 +893,6 @@ a.rock-bookmark {
     box-shadow: none;
   }
 }
-
-
-
-
-
 
 // .tooltip {
 //   &.top {
