@@ -151,10 +151,6 @@ body.navbar-side-open {
 
   @media (min-width: $screen-medium) {
     padding: 0;
-
-    .page-header {
-
-    }
   }
 }
 
@@ -222,7 +218,7 @@ body.navbar-side-open {
 
 $navbarside-width: 80px;
 $navbar-top-height: 80px;
-$navbar-element-height: 40px;
+$navbar-element-height: 32px;
 
 .page-wrapper {
   // Moved from theme.less and refactor from having its own class to joining this class
@@ -416,15 +412,12 @@ $navbar-element-height: 40px;
       > a {
         display: flex;
         align-items: center;
-        padding: 0 0;
         color: var(--color-interface-strong);
         gap: 0;
+        padding: 0 8px;
 
-        @media (max-width: ($screen-medium - 1)) {
-          padding: 0 8px;
-          .fa-caret-down {
-            display: none;
-          }
+        .fa-caret-down {
+          display: none;
         }
 
         .profile-photo {
@@ -446,12 +439,7 @@ $navbar-element-height: 40px;
         }
 
         span {
-          display: block;
-          color: var(--color-interface-strong);
-          font-weight: var(--font-weight-semibold);
-          @media (max-width: ($screen-small)) {
-            display: none;
-          }
+          display: none;
         }
 
         .fa-caret-down::before {
@@ -481,10 +469,6 @@ $navbar-element-height: 40px;
       }
     }
   }
-
-  // .dropdown-menu {
-  //   border: 0;
-  // }
 
   .header-content {
     display: flex;
@@ -617,47 +601,6 @@ $hamburger-spacing: 4px;
     top: (($hamburger-height + $hamburger-spacing) * 2);
   }
 }
-
-a.rock-bookmark {
-  color: var(--color-interface-strong);
-}
-.rock-bookmark {
-  --size: 32px;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--size);
-  height: var(--size);
-  margin: 0 0 0 var(--spacing-small);
-  font-size: calc(var(--size) * 0.5);
-  background-color: var(--color-interface-softer);
-  border: 1px solid var(--color-interface-soft);
-  border-radius: 999px;
-  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
-
-  &:hover {
-    color: var(--color-interface-stronger);
-  }
-
-  &:focus {
-    box-shadow: var(--input-focus-box-shadow) !important;
-    i {
-      color: var(--color-primary) !important;
-    }
-  }
-
-  @media (min-width: $screen-small) {
-    --size: 40px;
-    padding: 20px;
-  }
-}
-
-// .smartsearch,
-// .smartsearch:focus-within {
-//   background-color: var(--color-interface-softest);
-//   color: var(--color-interface-strong);
-// }
 
 .smartsearch .dropdown .navbar-link {
   color: var(--color-interface-strong);
