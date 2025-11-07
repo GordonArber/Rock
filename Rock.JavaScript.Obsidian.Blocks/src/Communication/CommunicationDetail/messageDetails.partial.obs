@@ -243,7 +243,7 @@
 
     const isEmail = computed((): boolean => {
         return communicationDetail.value?.type === CommunicationType.Email
-            || mediumFilter.value == CommunicationType.Email;
+            || mediumFilter.value === CommunicationType.Email;
     });
 
     const isSms = computed((): boolean => {
@@ -278,7 +278,7 @@
     });
 
     const approvedDateTimeTooltip = computed((): string => {
-        return sendRockDateTime.value?.toASPString("g") ?? "";
+        return approvedRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const fromName = computed((): string => {

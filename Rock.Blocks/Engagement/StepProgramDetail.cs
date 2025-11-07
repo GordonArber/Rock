@@ -273,7 +273,7 @@ namespace Rock.Blocks.Engagement
                 DefaultListView = entity.DefaultListView.ConvertToInt(),
                 CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
                 CompletionFlow = entity.Id > 0 ? ( CompletionFlow? ) entity.CompletionFlow : null,
-                IsDeletable = !entity.IsSystem,
+                IsDeletable = !entity.IsSystem && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 StatusFilterOptions = GetStepStatuses( entity.Id )
                     .Select( s => new ListItemBag
                     {
@@ -310,8 +310,6 @@ namespace Rock.Blocks.Engagement
             }
 
             bag.Kpi = kpi;
-
-            bag.StepFlowConfigurationBag = GetStepFlowConfigBag( entity );
 
             bag.StepTypes = entity.StepTypes.ToListItemBagList();
 
@@ -1898,7 +1896,7 @@ namespace Rock.Blocks.Engagement
                         g.Key.CampusGuid,
                         g.Key.CampusName,
                         g.Key.CampusOrder,
-                        Count = Math.Round( ( double ) g.Count() / g.Key.AvgCampusAttendance, 2 )
+                        Count = Math.Round( ( double ) g.Count() / g.Key.AvgCampusAttendance, 0 )
                     } )
                     .ToList();
 
@@ -1992,45 +1990,6 @@ namespace Rock.Blocks.Engagement
         #endregion Chart Methods
 
         #region Step Flow Methods
-
-        /// <summary>
-        /// Builds the Sankey diagram configuration for a step program, including legend HTML and colors.
-        /// </summary>
-        /// <param name="stepProgram">The step program whose steps are used to generate the configuration.</param>
-        /// <returns>A SankeyDiagramSettingsBag containing the flow legend and settings.</returns>
-        private SankeyDiagramSettingsBag GetStepFlowConfigBag( StepProgram stepProgram )
-        {
-            var lavaNodes = new List<Object>();
-            int order = 0;
-
-            foreach ( StepType step in stepProgram.StepTypes )
-            {
-                lavaNodes.Add( new
-                {
-                    Key = ++order,
-                    StepName = step.Name,
-                    Color = step.HighlightColor.IsNotNullOrWhiteSpace() ? step.HighlightColor : GetNextDefaultColor()
-                } );
-            }
-
-            // The default value
-            string lavaTemplate = "<div class=\"flow-legend\">\n" +
-            "{% for stepItem in Steps %}\n" +
-            "    <div class=\"flow-key\">\n" +
-            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
-            "        <span class=\"step-text\">{{stepItem.StepName}}</span>\n" +
-            "    </div>\n" +
-            "{% endfor %}\n" +
-            "</div>";
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            mergeFields.Add( "Steps", lavaNodes );
-            var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
-
-            return new SankeyDiagramSettingsBag
-            {
-                LegendHtml = legendHtml
-            };
-        }
 
         /// <summary>
         /// Builds an HTML tooltip string describing the flow between two step types.
@@ -2449,14 +2408,24 @@ namespace Rock.Blocks.Engagement
             var nodeResults = new List<SankeyDiagramNodeBag>();
             List<int> startingStepTypeIds = new List<int>();
             int order = 0;
+            var lavaNodes = new List<Object>();
 
-            foreach ( StepTypeCache stepType in stepTypes )
+            foreach ( StepTypeCache stepType in stepTypes.OrderBy( st => st.Order ) )
             {
+                ++order;
+
                 nodeResults.Add( new SankeyDiagramNodeBag
                 {
                     Id = stepType.Id,
-                    Order = ++order,
+                    Order = order,
                     Name = stepType.Name,
+                    Color = stepType.HighlightColor.IsNotNullOrWhiteSpace() ? stepType.HighlightColor : GetNextDefaultColor()
+                } );
+
+                lavaNodes.Add( new
+                {
+                    Key = order,
+                    StepName = stepType.Name,
                     Color = stepType.HighlightColor.IsNotNullOrWhiteSpace() ? stepType.HighlightColor : GetNextDefaultColor()
                 } );
 
@@ -2465,6 +2434,19 @@ namespace Rock.Blocks.Engagement
                     startingStepTypeIds.Add( stepType.Id );
                 }
             }
+
+            // The default value
+            string lavaTemplate = "<div class=\"flow-legend\">\n" +
+            "{% for stepItem in Steps %}\n" +
+            "    <div class=\"flow-key\">\n" +
+            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
+            "        <span class=\"step-text\">{{forloop.index}}. {{stepItem.StepName}}</span>\n" +
+            "    </div>\n" +
+            "{% endfor %}\n" +
+            "</div>";
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "Steps", lavaNodes );
+            var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
 
             var parameters = GetStepFlowParameters( maxLevels, dateRange, startingStepTypeIds );
             var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
@@ -2493,7 +2475,8 @@ namespace Rock.Blocks.Engagement
             return ActionOk( new StepFlowGetDataBag
             {
                 Edges = flowEdgeResults,
-                Nodes = nodeResults
+                Nodes = nodeResults,
+                LegendHtml = legendHtml
             } );
         }
 

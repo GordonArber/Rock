@@ -59,7 +59,7 @@ th {
       > td {
         padding:        var(--spacing-xsmall);
         line-height:    var(--line-height-normal);
-        vertical-align: top;
+        vertical-align: middle;
         border-top:     1px solid var(--color-interface-soft);
       }
     }
@@ -584,6 +584,15 @@ tr.row-highlight {
   }
   .grid-table {
     border: 0 !important;
+
+    // If there is no table footer, round the bottom corners of the last row, first and last cell to match the rounded grid panel.
+    &:not(:has(tfoot)) tr:last-child,
+    &:not(:has(tfoot)) tr:last-child > td:first-child {
+      border-bottom-left-radius: var(--rounded-medium);
+    }
+    &:not(:has(tfoot)) tr:last-child > td:last-child {
+      border-bottom-right-radius: var(--rounded-medium);
+    }
   }
 
   tfoot > tr:last-child {
@@ -668,7 +677,7 @@ tr.row-highlight {
     &:focus,
     &:hover,
     &:active {
-      background-color: var(--color-danger-softer); // TODO darken ui softest it by 10%
+      background-color: var(--color-interface-softer); // TODO darken ui softest it by 10%
     }
   }
 
@@ -687,7 +696,7 @@ tr.row-highlight {
     &:active:focus {
       color:        var(--color-danger-strong);
       background:   var(--color-danger-soft);
-      border-color: var(--color-danger-strnog);
+      border-color: var(--color-danger-strong);
     }
   }
 }

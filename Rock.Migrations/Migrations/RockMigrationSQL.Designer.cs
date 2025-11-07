@@ -1846,6 +1846,51 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This procedure takes a communication list (group) or communication and returns all of the
+        ///		recipients along with the data needed to determine if the individual can recieve an email,
+        ///		sms or push notification.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		All of the fields needed to drive the communication wizard.
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;ListId&apos; datatype=&apos;int&apos;&gt;The group id of the communication list or the communication id.&lt;/param&gt;
+        ///	&lt;param name=&apos;ListType&apos; datatype=&apos;int&apos;&gt;1 = Communicati [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202510221632361_UpdateCommunicationEntryWizardToExcludeArchivedCommunicationListMembers_spCommunicationRecipientDetails {
+            get {
+                return ResourceManager.GetString("_202510221632361_UpdateCommunicationEntryWizardToExcludeArchivedCommunicationList" +
+                        "Members_spCommunicationRecipientDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported configurations
+        ///        of the Group Placement block in Rock RMS. It supports filtering by template, instance, groups,
+        ///        and entity sets.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement people for group placements.
+        ///    &lt;/returns&gt;
+        ///
+        ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacement" +
+                        "People", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {
