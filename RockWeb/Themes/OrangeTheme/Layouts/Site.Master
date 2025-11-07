@@ -88,16 +88,17 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 <div id="fixed-header" class="header-content" role="navigation">
                     <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
 
-                    <!-- Navigation Zone -->
-                    <div class="navbar-zone-navigation"><Rock:Zone Name="Navigation" runat="server" /></div>
+                    <!-- Header Navigation Zone -->
+                    <div class="navbar-zone-navigation"><Rock:Zone Name="HeaderNavigation" runat="server" /></div>
 
                     <!-- Header Zone -->
                     <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
                 </div>
             </nav>
 
+            <!-- Sidebare Navigation Zone -->
             <nav class="navbar-default navbar-static-side" role="navigation">
-                <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
+                <Rock:Zone Name="SidebarNavigation" CssClass="zone-navigation" runat="server" />
             </nav>
 
             <div id="content-wrapper">
