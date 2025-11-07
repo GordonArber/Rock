@@ -96,6 +96,10 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 </div>
             </nav>
 
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
+            </nav>
+
             <div id="content-wrapper">
                 <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
