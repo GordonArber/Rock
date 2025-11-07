@@ -1,73 +1,100 @@
 function BindNavEvents() {
+
   $(document).ready(function() {
     const bodyElement = $('body');
+    const sidebar = $('.navbar-static-side');
+    const contentWrapper = $('#content-wrapper');
 
-    // if the window is greater than 768px then use the custom hover events
-    navMouseEvents();
+    // Initialize sidebar as hidden on desktop
+    if ($(window).width() >= 480) { // $screen-small equivalent
+      sidebar.css('display', 'none');
+      contentWrapper.css('margin-left', '0');
+    }
 
-    // on resize, run the navMouseEvents function
-    $(window).on("resize", function() {
-      navMouseEvents();
+    // Hamburger click - use inline styles to override CSS
+    $('.navbar-toggle-side-left').off('click').on('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if ($(window).width() >= 480) {
+        // Desktop behavior - use inline styles to override !important CSS
+        if (sidebar.css('display') === 'none') {
+          sidebar.css('display', 'block');
+          contentWrapper.css('margin-left', '88px');
+          bodyElement.addClass('navbar-side-open').removeClass('navbar-side-close');
+        } else {
+          sidebar.css('display', 'none');
+          contentWrapper.css('margin-left', '0');
+          bodyElement.addClass('navbar-side-close').removeClass('navbar-side-open');
+        }
+      } else {
+        // Mobile behavior - use classes
+        if (bodyElement.hasClass('navbar-side-open')) {
+          bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
+        } else {
+          bodyElement.addClass('navbar-side-open').removeClass('navbar-side-close');
+        }
+      }
     });
 
+    // Menu item clicks
     $('.navbar-side > li.has-children').on("click", function(e) {
       const isOpen = $(this).hasClass('open');
-      if ($(e.target).closest('.title').length || $(window).width() > 768) {
-        $('.navbar-side > li').removeClass('open');
-      }
+
+      $('.navbar-side > li').removeClass('open');
+
       if (!isOpen) {
-        $('.navbar-side > li').removeClass('open');
         bodyElement.addClass('nav-open');
         $('.navbar-static-side').addClass('open-secondary-nav');
         $(this).addClass('open');
       } else {
-        $('.navbar-side > li').removeClass('open');
         bodyElement.removeClass('nav-open');
         $('.navbar-static-side').removeClass('open-secondary-nav');
       }
     });
 
+    // Click outside to close
     $('#content-wrapper').on("click", function() {
       bodyElement.removeClass('nav-open');
       $('.navbar-static-side').removeClass('open-secondary-nav');
       $('.navbar-side li').removeClass('open');
     });
 
-    // show/hide sidebar nav
-    $('.navbar-static-side').on("show.bs.collapse hide.bs.collapse", function(e) {
-      e.preventDefault();
-      if ($('.navbar-static-side').is(':visible')) {
-        bodyElement
-          .addClass('navbar-side-close')
-          .removeClass('navbar-side-open');
+    // Handle window resize
+    $(window).on('resize', function() {
+      if ($(window).width() < 480) {
+        // On mobile, remove inline styles and use classes
+        sidebar.css('display', '');
+        contentWrapper.css('margin-left', '');
       } else {
-        bodyElement
-          .addClass('navbar-side-open')
-          .removeClass('navbar-side-close');
+        // On desktop, check if sidebar should be visible
+        if (bodyElement.hasClass('navbar-side-open')) {
+          sidebar.css('display', 'block');
+          contentWrapper.css('margin-left', '88px');
+        } else {
+          sidebar.css('display', 'none');
+          contentWrapper.css('margin-left', '0');
+        }
       }
     });
 
-    // Because the header naturally closes addClass navbar-side-open when a modal is open
+    // Rest of your existing code...
     if ($('#fixed-header').length) {
       if ( $('#fixed-header').find('.modal.in').length ) {
         bodyElement.addClass('navbar-side-open');
-        // Listen for modal close
         $('#fixed-header').find('.modal.in').on('hidden.bs.modal', function (e) {
           bodyElement.removeClass('navbar-side-open');
         })
       }
     }
 
-    topHeaderOffset()
+    topHeaderOffset();
 
     var topHeader = $('.rock-top-header');
-    // create a new resize observer to watch for changes in the top header height
     var topHeaderResizeObserver = new ResizeObserver(function(entries) {
-      topHeaderOffset()
+      topHeaderOffset();
     });
-    // start observing the top header element
     topHeaderResizeObserver.observe(topHeader[0]);
-
   });
 }
 
@@ -95,8 +122,10 @@ function navMouseEvents() {
   const navbarFixedTop = $('.navbar-fixed-top');
   const bodyElement = $('body');
 
+  // Only add hover effects on larger screens as an enhancement
   if ($(window).width() > 768) {
-    navbarSideLi.on("mouseenter.sidenav", function() {
+    // Use a different namespace to avoid conflicts with click events
+    navbarSideLi.on("mouseenter.hover-enhance", function() {
       const $this = $(this);
       if ($this.data('navUnHoverTimeout')) {
         clearTimeout($this.data('navUnHoverTimeout'));
@@ -104,46 +133,55 @@ function navMouseEvents() {
       } else if (!$this.data('navHoverTimeout')) {
         const openLi = navbarSide.find('li.open');
         if (openLi.length > 0) {
+          // If something is already open via click, switch on hover
           navbarSideLi.removeClass('open');
           navbarStaticSide.addClass('open-secondary-nav');
           $this.addClass('open');
           $this.removeData('navHoverTimeout');
         } else {
+          // Delay before opening on hover to avoid accidental triggers
           $this.data('navHoverTimeout', setTimeout(function() {
-            if ($(document).height() > $(window).height()) {
-              const scrollWidth = window.innerWidth - document.documentElement.clientWidth; //window.innerWidth - document.documentElement.clientWidth;
-              bodyElement.css('padding-right', scrollWidth);
-              navbarFixedTop.css('right', scrollWidth);
-            }
+            // Only add hover-open class, don't interfere with click-based open
+            if (!$this.hasClass('open')) {
+              if ($(document).height() > $(window).height()) {
+                const scrollWidth = window.innerWidth - document.documentElement.clientWidth;
+                bodyElement.css('padding-right', scrollWidth);
+                navbarFixedTop.css('right', scrollWidth);
+              }
 
-            $this.addClass('open');
-            navbarStaticSide.addClass('open-secondary-nav');
-            bodyElement.addClass('nav-open');
+              $this.addClass('open hover-open');
+              navbarStaticSide.addClass('open-secondary-nav');
+              bodyElement.addClass('nav-open');
+            }
             $this.removeData('navHoverTimeout');
           }, hoverDelay));
         }
       }
     });
 
-    navbarSideLi.on("mouseleave.sidenav", function() {
+    navbarSideLi.on("mouseleave.hover-enhance", function() {
       const $this = $(this);
       if ($this.data('navHoverTimeout')) {
         clearTimeout($this.data('navHoverTimeout'));
         $this.removeData('navHoverTimeout');
       } else if (!$this.data('navUnHoverTimeout')) {
         $this.data('navUnHoverTimeout', setTimeout(function() {
-          $this.removeClass('open');
-          if (navbarSide.find('li.open').length < 1) {
-            navbarStaticSide.removeClass('open-secondary-nav');
-            bodyElement.removeClass('nav-open').css('padding-right', '');
-            navbarFixedTop.css('right', '');
+          // Only remove if it was opened by hover
+          if ($this.hasClass('hover-open')) {
+            $this.removeClass('open hover-open');
+            if (navbarSide.find('li.open').length < 1) {
+              navbarStaticSide.removeClass('open-secondary-nav');
+              bodyElement.removeClass('nav-open').css('padding-right', '');
+              navbarFixedTop.css('right', '');
+            }
           }
           $this.removeData('navUnHoverTimeout');
         }, hideDelay));
       }
     });
   } else {
-    navbarSideLi.off(".sidenav");
+    // Remove hover handlers on mobile
+    navbarSideLi.off(".hover-enhance");
   }
 }
 

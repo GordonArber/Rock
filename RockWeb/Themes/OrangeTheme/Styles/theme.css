@@ -32871,6 +32871,9 @@ body.navbar-side-open {
 .rock-top-header .contextsetter a {
   color: var(--color-interface-strong);
 }
+.rock-top-header .navbar-toggle-side-left {
+  display: block !important;
+}
 .nav-open .rock-top-header .navbar-toggle-side-left {
   background-color: var(--navbarside-background-color);
 }
@@ -33308,6 +33311,9 @@ body.navbar-side-open {
     margin-left: var(--spacing-xsmall);
     height: calc(100% - 88px) !important;
     border-radius: 0 0 12px 12px;
+  }
+  .navbar-side-open .navbar-static-side {
+    display: block;
   }
   .navbar-static-side .navbar-side {
     margin-top: 32px;

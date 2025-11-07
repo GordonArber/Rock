@@ -26,6 +26,10 @@ main {
 body.nav-open,
 body.navbar-side-open {
   overflow: hidden;
+
+  @media (min-width: $screen-small) {
+    overflow: auto; // Allow scrolling on desktop even with sidebar open
+  }
 }
 
 .full-work-surface {
@@ -183,7 +187,12 @@ body.navbar-side-open {
   }
 
   @media (min-width: $screen-small) {
-      margin-left: 88px;
+    margin-left: 0; // No margin by default
+    transition: margin-left 0.3s ease;
+
+    .navbar-side-open & {
+      margin-left: 88px; // Add margin when sidebar is open
+    }
   }
 }
 
@@ -309,6 +318,7 @@ body.navbar-side-open {
   }
 
   .navbar-toggle-side-left {
+    display: block !important;
 
     .nav-open & {
       background-color: var(--navbarside-background-color);
@@ -654,12 +664,21 @@ body.navbar-side-open {
       }
 
       @media (min-width: $screen-small) {
-        height: $navbar-top-height;
-        justify-content: center;
-        font-size: 26px;
-        padding: 24px 12px;
+        --nav-childpages-bg: var(--color-interface-strong);
+        display: none !important; // Hidden by default
+        height: calc(100% - $navbar-top-height) !important;
+        width: $navbarside-width;
+        top: $navbar-top-height;
+        margin-left: var(--spacing-xsmall);
+        height: calc(100% - 88px) !important;
+        border-radius: 0 0 12px 12px;
+
+        // Show when open
+        &.in,
+        .navbar-side-open & {
+          display: block !important;
+        }
       }
-    }
   }
 
   .navbar-side-open & {
@@ -826,6 +845,10 @@ body.navbar-side-open {
     margin-left:    var(--spacing-xsmall);
     height:         calc(100% - 88px) !important;
     border-radius: 0 0 12px 12px;
+
+    .navbar-side-open & {
+      display: block;
+    }
 
     & .navbar-side {
       margin-top: 32px;
