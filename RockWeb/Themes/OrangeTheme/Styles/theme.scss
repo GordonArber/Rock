@@ -2,12 +2,8 @@
 @import "../../../Styles/styles-v2/sass-variable";
 @import "../../../Styles/styles-v2/core";
 
-// @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
-// @import "../../../Styles/style-v2/icons/fontawesome-regular.css";
-// @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
-// @import "../../../Styles/style-v2/icons/tabler-icon.css";
 :root {
-  --panel-body-padding: 16px; // This is for communication block use by EmailEditor.css
+  --panel-body-padding: 16px;
 }
 
 @-ms-viewport {
@@ -15,7 +11,7 @@
 }
 
 html {
-  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbar being on TOP of the content
+  -ms-overflow-style: scrollbar;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -45,7 +41,6 @@ body.navbar-side-open {
 
   .page-title-display {
     color: var(--color-interface-stronger);
-    // Maybe a good idea to hardcode so that when people change the spacing it will not break the header
     margin-left: var(--spacing-huge);
     margin-right: var(--spacing-large);
     min-width: 100px;
@@ -152,7 +147,6 @@ body.navbar-side-open {
     }
   }
 
-
   @media (min-width: $screen-medium) {
     padding: 0;
   }
@@ -175,6 +169,8 @@ body.navbar-side-open {
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
 
   .main-content {
     flex: 1;
@@ -187,11 +183,9 @@ body.navbar-side-open {
   }
 
   @media (min-width: $screen-small) {
-    margin-left: 0; // No margin by default
-    transition: margin-left 0.3s ease;
-
+    // Only add margin when sidebar is open on desktop
     .navbar-side-open & {
-      margin-left: 88px; // Add margin when sidebar is open
+      margin-left: 88px;
     }
   }
 }
@@ -203,7 +197,6 @@ body.navbar-side-open {
 @media (max-width: ($screen-small - 1)) {
 
   #page-content {
-    // Don't add overflow hidden because it breaks sticky positioning
     > .row {
       margin-left: 0;
       margin-right: 0;
@@ -263,7 +256,7 @@ body.navbar-side-open {
       flex-wrap: wrap;
       align-items: center;
 
-      .smart-search { // TEST if break
+      .smart-search {
         flex: 1 1 100%;
       }
 
@@ -290,7 +283,6 @@ body.navbar-side-open {
         float: right;
       }
     }
-
   }
 
   .navbar-toggle {
@@ -318,7 +310,7 @@ body.navbar-side-open {
   }
 
   .navbar-toggle-side-left {
-    display: block !important;
+    display: block; // Always show the hamburger button
 
     .nav-open & {
       background-color: var(--navbarside-background-color);
@@ -341,10 +333,6 @@ body.navbar-side-open {
       width: 48px;
       height: 48px;
       margin: 10px;
-    }
-
-    @media (min-width: $screen-small) {
-      display: block;
     }
   }
 
@@ -505,7 +493,6 @@ body.navbar-side-open {
       left: auto;
     }
   }
-
 }
 
 // Top Nav
@@ -580,7 +567,7 @@ body.navbar-side-open {
   }
 }
 
-// Side Nav
+// Side Nav - Fixed version
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
   position: fixed;
@@ -588,11 +575,18 @@ body.navbar-side-open {
   bottom: 0;
   left: 0;
   z-index: 1025;
-  display: none;
   width: 100%;
   height: 100%;
-  color: #FFF; /* Hard coded because in dark mode it looks weird with dark color. */
+  color: #FFF;
   background-color: var(--color-primary);
+
+  // Hidden by default on ALL screen sizes
+  display: none;
+
+  // Show when body has navbar-side-open class
+  .navbar-side-open & {
+    display: block;
+  }
 
   .zone-navigation {
     position: absolute;
@@ -611,7 +605,7 @@ body.navbar-side-open {
   }
 
   .navbar-side {
-    margin-bottom: 84px; // adds space for the admin tool bar and the static top menu item on mobile
+    margin-bottom: 84px;
 
     .nav-item-top {
       display: flex;
@@ -627,7 +621,6 @@ body.navbar-side-open {
       transition: box-shadow .1s linear;
       border-top: 1px solid #ffffff30;
 
-      // TODO: This is split into a separate selector because it feels buggy when toggled open
       &.open {
         .nav-childpages {
           display: inline-block;
@@ -664,25 +657,12 @@ body.navbar-side-open {
       }
 
       @media (min-width: $screen-small) {
-        --nav-childpages-bg: var(--color-interface-strong);
-        display: none !important; // Hidden by default
-        height: calc(100% - $navbar-top-height) !important;
-        width: $navbarside-width;
-        top: $navbar-top-height;
-        margin-left: var(--spacing-xsmall);
-        height: calc(100% - 88px) !important;
-        border-radius: 0 0 12px 12px;
-
-        // Show when open
-        &.in,
-        .navbar-side-open & {
-          display: block !important;
-        }
+        height: $navbar-top-height;
+        justify-content: center;
+        font-size: 26px;
+        padding: 24px 12px;
       }
-  }
-
-  .navbar-side-open & {
-    display: block;
+    }
   }
 
   .nav-childpages {
@@ -767,9 +747,6 @@ body.navbar-side-open {
         justify-content: flex-start;
         gap: var(--spacing-small);
         padding: 19px 0;
-        //margin: 0 -20px;
-        //font-size: @font-size-h1;
-        // padding: 24px 20px 27px;
         font-size: 18px;
         font-weight: var(--font-weight-light);
         line-height: 1;
@@ -803,10 +780,6 @@ body.navbar-side-open {
           margin-top: 0;
         }
       }
-
-      // &:last-child {
-        // margin-bottom: 72px; // don't know the margin button is here in the first place why???????
-      // }
     }
 
     &::-webkit-scrollbar {
@@ -836,19 +809,14 @@ body.navbar-side-open {
     display: none !important;
   }
 
+  // Desktop-specific styles
   @media (min-width: $screen-small) {
     --nav-childpages-bg: var(--color-interface-strong);
-    display: block;
-    height: calc(100% - $navbar-top-height) !important; // Overrides collapse if window is resized
     width: $navbarside-width;
     top: $navbar-top-height;
-    margin-left:    var(--spacing-xsmall);
-    height:         calc(100% - 88px) !important;
+    margin-left: var(--spacing-xsmall);
+    height: calc(100% - 88px);
     border-radius: 0 0 12px 12px;
-
-    .navbar-side-open & {
-      display: block;
-    }
 
     & .navbar-side {
       margin-top: 32px;
@@ -860,11 +828,11 @@ body.navbar-side-open {
     }
 
     .navbar-side:first-child {
-      margin-bottom: 0; // Remove the extra margin that's needed for mobile.
+      margin-bottom: 0;
     }
 
     .navbar-side .nav-item-top:nth-child(2) {
-      margin-top: 0px; // Remove the extra margin on the second list item (the first real menu item) down so it's not covered by the navbar-logo
+      margin-top: 0px;
     }
 
     .navbar-side .nav-item-top {
@@ -880,7 +848,7 @@ body.navbar-side-open {
 
       &.current {
         background-color: #ffffff30;
-        border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
+        border-radius: var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
         border: 0;
         &:hover {
           background-color: transparent;
@@ -900,7 +868,7 @@ body.navbar-side-open {
         left:0;
         height: 100%;
         width: calc($navbarside-width - 8px);
-        border-radius:    var(--rounded-medium) 0 0 var(--rounded-medium);
+        border-radius: var(--rounded-medium) 0 0 var(--rounded-medium);
       }
     }
 
@@ -909,8 +877,8 @@ body.navbar-side-open {
       left: calc($navbarside-width + 8px);
       width: 280px;
       border-radius: 0 14px 14px 0;
-      margin-top:     var(--spacing-xsmall);
-      margin-bottom:  var(--spacing-xsmall);
+      margin-top: var(--spacing-xsmall);
+      margin-bottom: var(--spacing-xsmall);
 
       .title {
         padding-top: var(--spacing-large);
@@ -918,7 +886,6 @@ body.navbar-side-open {
 
         .item-title {
           color: var(--color-interface-strong);
-          // display: inline-block;
           font-size: var(--font-size-h5);
 
           &:after {
@@ -1013,7 +980,6 @@ $hamburger-spacing: 4px;
   padding: 8px 8px;
 }
 
-
 .header + .nav-item {
   margin-top: var(--spacing-tiny);
 }
@@ -1027,8 +993,8 @@ $hamburger-spacing: 4px;
 }
 
 .list-group-item {
-  padding-right:  var(--spacing-medium);
-  padding-left:   var(--spacing-medium);
+  padding-right: var(--spacing-medium);
+  padding-left: var(--spacing-medium);
 }
 
 .list-group-item:hover {
@@ -1234,24 +1200,6 @@ $hamburger-spacing: 4px;
   }
 }
 
-// .tooltip {
-//   &.top {
-//     margin-bottom: 1px;
-//     .tooltip-arrow {
-//       bottom: 1px;
-//       border-width: 0 1px 1px 0;
-//     }
-//   }
-
-//   &.bottom {
-//     margin-top: 1px;
-//     .tooltip-arrow {
-//       top: 1px;
-//       border-width: 1px 0 0 1px;
-//     }
-//   }
-// }
-
 .nav-pills > li + li {
   margin-left: 12px;
   @media screen and (max-width: $screen-medium) {
@@ -1268,7 +1216,7 @@ $hamburger-spacing: 4px;
 }
 
 .tooltip {
-  font-size:  var(--font-size-small);
+  font-size: var(--font-size-small);
 }
 
 .tooltip-inner {
@@ -1309,7 +1257,6 @@ $hamburger-spacing: 4px;
     border-radius: var(--rounded-large);
     gap: var(--spacing-xlarge);
 
-    // TO change the height or width of the content
     width: 1000px;
     min-height: 500px;
 
@@ -1389,7 +1336,6 @@ $hamburger-spacing: 4px;
   }
 
   .checkbox {
-    // Override the normal check box margin.
     margin-bottom: var(--spacing-medium);
   }
   @media screen and (max-width: $screen-medium) {
@@ -1408,19 +1354,8 @@ $hamburger-spacing: 4px;
     width: 100%;
   }
 }
-// .obsidian-loading {
-//   .login-block {
-//     opacity: 0;
-//   }
-// }
 
-// .login-block {
-//   transition: opacity 1s;
-//   opacity: 1;
-// }
-
-
-.rock-top-header .navbar-zone-header  .zone-content {
+.rock-top-header .navbar-zone-header .zone-content {
   flex-direction: row;
   justify-content: flex-start;
 }
@@ -1428,4 +1363,51 @@ $hamburger-spacing: 4px;
 .borderless-panel {
   border: none;
   border-radius: 0;
+}
+
+// Custom styles for LeftHandMenu.lava
+.navbar-side {
+  .nav-item-top {
+    &.has-children {
+      > .item-title {
+        &:after {
+          content: "\f054"; // FontAwesome right arrow
+          font-family: 'FontAwesome';
+          font-size: 12px;
+          font-weight: 900;
+          margin-left: 12px;
+          transition: transform 0.3s ease;
+        }
+      }
+
+      &.open {
+        > .item-title {
+          &:after {
+            transform: rotate(90deg);
+          }
+        }
+        .nav-childpages {
+          display: block;
+        }
+      }
+    }
+  }
+
+  .nav-childpages {
+    display: none; // Hidden by default
+    padding-left: var(--spacing-large); // Indent child pages
+    background-color: var(--nav-childpages-bg); // Use existing variable
+    border-top: 1px solid rgba(255, 255, 255, 0.1); // Subtle separator
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); // Subtle separator
+
+    .nav-link {
+      color: var(--color-interface-softest); // Lighter color for child links
+      padding: var(--spacing-xsmall) var(--spacing-medium);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1); // Highlight on hover
+        border-radius: var(--rounded-medium);
+      }
+    }
+  }
 }

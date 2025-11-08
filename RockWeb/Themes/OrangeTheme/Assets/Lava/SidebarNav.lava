@@ -1,0 +1,62 @@
+<ul class="navbar-side">
+    <li class="nav-item-top has-children">
+        <a href="#" class="item-title">
+            <span>Get Involved</span>
+        </a>
+        <ul class="nav-childpages">
+            <li><a href="/locations" class="nav-link">Visit Elevation</a></li>
+            <li><a href="/streaming" class="nav-link">Live Streams</a></li>
+            <li><a href="/egroups" class="nav-link">Groups</a></li>
+            <li><a href="/giving" class="nav-link">Giving</a></li>
+            <li><a href="/eteams" class="nav-link">Volunteer</a></li>
+            <li><a href="/events" class="nav-link">Events</a></li>
+            <li><a href="/salvation" class="nav-link">Salvation</a></li>
+            <li><a href="/baptism" class="nav-link">Baptism</a></li>
+            <li><a href="/contact?scrollto=request-form" class="nav-link">Need Prayer?</a></li>
+        </ul>
+    </li>
+    <li class="nav-item-top has-children">
+        <a href="#" class="item-title">
+            <span>Discover</span>
+        </a>
+        <ul class="nav-childpages">
+            <li><a href="/sermons" class="nav-link">Sermons</a></li>
+            <li><a href="/studies" class="nav-link">Study Guides</a></li>
+            <li><a href="https://store.elevationchurch.org/" class="nav-link">Store</a></li>
+        </ul>
+    </li>
+    <li class="nav-item-top has-children">
+        <a href="#" class="item-title">
+            <span>Ministries</span>
+        </a>
+        <ul class="nav-childpages">
+            <li><a href="/outreach" class="nav-link">Outreach</a></li>
+            <li><a href="/nextgen" class="nav-link">NextGen</a></li>
+            <li><a href="/young-adults" class="nav-link">Young Adults</a></li>
+        </ul>
+    </li>
+    <li class="nav-item-top has-children">
+        <a href="#" class="item-title">
+            <span>Opportunities</span>
+        </a>
+        <ul class="nav-childpages">
+            <li><a href="/jobs/about" class="nav-link">Jobs</a></li>
+            <li><a href="/apprenticeships" class="nav-link">Apprenticeships</a></li>
+            <li><a href="/internship" class="nav-link">Internship</a></li>
+        </ul>
+    </li>
+    <li class="nav-item-top has-children">
+        <a href="#" class="item-title">
+            <span>About</span>
+        </a>
+        <ul class="nav-childpages">
+            <li><a href="/about" class="nav-link">Elevation Church</a></li>
+            <li><a href="/beliefs-values" class="nav-link">Beliefs & Values</a></li>
+        </ul>
+    </li>
+    <li class="nav-item-top">
+        <a href="https://myelevation.elevationchurch.org/" class="item-title">
+            <span>MyElevation</span>
+        </a>
+    </li>
+</ul>
