@@ -216,8 +216,7 @@ body.navbar-side-open {
 }
 
 // Nav
-
-$navbarsidebar-width: 280px;
+$navbarsidebar-width: 320px;
 
 .rock-top-header {
   display: flex;
@@ -554,14 +553,14 @@ $navbarsidebar-width: 280px;
   }
 }
 
-// Side Nav - Fixed version
+// Side Nav
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
   position: fixed;
-  top: var(--top-header-height);
+  top: 0;
   bottom: 0;
   left: 0;
-  z-index: 1025;
+  z-index: 1035;
   width: 100%;
   height: 100%;
   color: #FFF;
@@ -787,10 +786,6 @@ $navbarsidebar-width: 280px;
   @media (min-width: $screen-small) {
     --nav-childpages-bg: var(--color-interface-strong);
     width: $navbarsidebar-width;
-    top: $navbar-top-height;
-    margin-left: var(--spacing-xsmall);
-    height: calc(100% - 88px);
-    border-radius: 0 0 12px 12px;
 
     & .navbar-side {
       margin-top: 32px;

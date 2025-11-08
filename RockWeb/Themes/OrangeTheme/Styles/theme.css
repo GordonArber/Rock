@@ -32894,7 +32894,7 @@ body.navbar-side-open {
   background-image: var(--logo-image);
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 134.4px;
+  background-size: 153.6px;
 }
 .rock-top-header .navbar-toggle-side-left .logo {
   width: 48px;
@@ -33087,10 +33087,10 @@ body.navbar-side-open {
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
   position: fixed;
-  top: var(--top-header-height);
+  top: 0;
   bottom: 0;
   left: 0;
-  z-index: 1025;
+  z-index: 1035;
   width: 100%;
   height: 100%;
   color: #FFF;
@@ -33280,11 +33280,7 @@ body.navbar-side-open {
 @media (min-width: 768px) {
   .navbar-static-side {
     --nav-childpages-bg: var(--color-interface-strong);
-    width: 280px;
-    top: 80px;
-    margin-left: var(--spacing-xsmall);
-    height: calc(100% - 88px);
-    border-radius: 0 0 12px 12px;
+    width: 320px;
   }
   .navbar-static-side .navbar-side {
     margin-top: 32px;
@@ -33328,12 +33324,12 @@ body.navbar-side-open {
     top: 0;
     left: 0;
     height: 100%;
-    width: 272px;
+    width: 312px;
     border-radius: var(--rounded-medium) 0 0 var(--rounded-medium);
   }
   .navbar-static-side .nav-childpages {
     top: 0;
-    left: 288px;
+    left: 328px;
     width: 280px;
     border-radius: 0 14px 14px 0;
     margin-top: var(--spacing-xsmall);

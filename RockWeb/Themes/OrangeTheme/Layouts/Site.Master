@@ -96,7 +96,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 </div>
             </nav>
 
-            <!-- Sidebare Navigation Zone -->
+            <!-- Sidebar Navigation Zone -->
             <nav class="navbar-default navbar-static-side" role="navigation">
                 <Rock:Zone Name="SidebarNavigation" CssClass="zone-navigation" runat="server" />
             </nav>
