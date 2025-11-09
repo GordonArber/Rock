@@ -32632,6 +32632,31 @@ body.navbar-side-open {
   }
 }
 
+.sidebar-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1034;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.sidebar-modal-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/*
+@supports (backdrop-filter: blur(5px)) {
+  .sidebar-modal-overlay {
+    backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+*/
 .full-work-surface {
   height: 100%;
   padding: var(--spacing-medium);
@@ -33094,11 +33119,12 @@ body.navbar-side-open {
   width: 100%;
   height: 100%;
   color: #FFF;
-  background-color: var(--color-primary);
-  display: none;
+  background-color: var(--color-interface-softest);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 }
 .navbar-side-open .navbar-static-side {
-  display: block;
+  transform: translateX(0);
 }
 .navbar-static-side .zone-navigation {
   position: absolute;
@@ -33281,6 +33307,9 @@ body.navbar-side-open {
   .navbar-static-side {
     --nav-childpages-bg: var(--color-interface-strong);
     width: 320px;
+  }
+  .navbar-side-open .navbar-static-side {
+    transform: translateX(0);
   }
   .navbar-static-side .navbar-side {
     margin-top: 32px;

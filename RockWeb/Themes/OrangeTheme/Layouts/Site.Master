@@ -101,6 +101,9 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 <Rock:Zone Name="SidebarNavigation" CssClass="zone-navigation" runat="server" />
             </nav>
 
+            <!-- Modal backdrop -->
+            <div class="sidebar-modal-overlay"></div>
+
             <div id="content-wrapper">
                 <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 

@@ -28,6 +28,35 @@ body.navbar-side-open {
   }
 }
 
+// Modal Overlay
+.sidebar-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); // Gray semi-transparent overlay
+  z-index: 1034; // Just below the sidebar
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  &.active {
+    display: block;
+    opacity: 1;
+  }
+}
+
+// Backdrop-filter for modern blur effect (if supported)
+/*
+@supports (backdrop-filter: blur(5px)) {
+  .sidebar-modal-overlay {
+    backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+*/
+
 .full-work-surface {
   height: 100%;
   padding: var(--spacing-medium);
@@ -553,7 +582,7 @@ $navbarsidebar-width: 320px;
   }
 }
 
-// Side Nav
+// Side Nav - UPDATED WITH ANIMATION
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
   position: fixed;
@@ -564,14 +593,15 @@ $navbarsidebar-width: 320px;
   width: 100%;
   height: 100%;
   color: #FFF;
-  background-color: var(--color-primary);
+  background-color: var(--color-interface-softest);
 
-  // Hidden by default on ALL screen sizes
-  display: none;
+  // Transform for slide effect
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 
-  // Show when body has navbar-side-open class
+  // Show and slide in when body has navbar-side-open class
   .navbar-side-open & {
-    display: block;
+    transform: translateX(0);
   }
 
   .zone-navigation {
@@ -786,6 +816,11 @@ $navbarsidebar-width: 320px;
   @media (min-width: $screen-small) {
     --nav-childpages-bg: var(--color-interface-strong);
     width: $navbarsidebar-width;
+
+    // Keep the slide animation for desktop too
+    .navbar-side-open & {
+      transform: translateX(0);
+    }
 
     & .navbar-side {
       margin-top: 32px;

@@ -1,6 +1,7 @@
 function BindNavEvents() {
   $(document).ready(function() {
     const bodyElement = $('body');
+    const modalOverlay = $('.sidebar-modal-overlay');
 
     // Initialize state - sidebar closed by default
     bodyElement.addClass('navbar-side-close').removeClass('navbar-side-open');
@@ -12,9 +13,26 @@ function BindNavEvents() {
 
       if (bodyElement.hasClass('navbar-side-open')) {
         bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
+        modalOverlay.removeClass('active');
       } else {
         bodyElement.removeClass('navbar-side-close').addClass('navbar-side-open');
+        modalOverlay.addClass('active');
       }
+    });
+
+    // Close menu when clicking overlay
+    modalOverlay.off('click').on('click', function(e) {
+      e.preventDefault();
+      bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
+      modalOverlay.removeClass('active');
+    });
+
+    // Close menu with Escape key
+    $(document).on('keyup', function(e) {
+    if (e.key === "Escape" && bodyElement.hasClass('navbar-side-open')) {
+        bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
+        modalOverlay.removeClass('active');
+    }
     });
 
     // Menu item clicks - handles sub-navigation
