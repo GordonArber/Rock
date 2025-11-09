@@ -582,7 +582,7 @@ $navbarsidebar-width: 320px;
   }
 }
 
-// Side Nav - UPDATED WITH ANIMATION
+// Side Nav
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
   position: fixed;
@@ -593,7 +593,7 @@ $navbarsidebar-width: 320px;
   width: 100%;
   height: 100%;
   color: #FFF;
-  background-color: var(--color-interface-softest);
+  background-color: var(--base-interface-strong);
 
   // Transform for slide effect
   transform: translateX(-100%);
