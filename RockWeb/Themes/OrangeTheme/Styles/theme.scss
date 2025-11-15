@@ -6,6 +6,55 @@
   --panel-body-padding: 16px;
 }
 
+body :is(.py-6) {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+body :is(.px-4) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+body :is(.px-3) {
+    padding-left: .75rem;
+    padding-right: .75rem;
+}
+body :is(.mb-4) {
+    margin-bottom: 1rem;
+}
+
+body :is(.p-0){
+    padding: 0;
+}
+
+ol, ul {
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.mui-1ialerq {
+    display: flex;
+    flex-direction: row;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+}
+
+.mui-h08o7i {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.334;
+}
+
+@media (min-width: $screen-small) {
+    .mui-h08o7i {
+        font-size: 1.3118rem;
+    }
+}
+
 @-ms-viewport {
   width: device-width;
 }
@@ -584,15 +633,13 @@ $navbarsidebar-width: 320px;
 
 // Side Nav
 .navbar-static-side {
-  --nav-childpages-bg: var(--navbarside-background-color);
+  //--nav-childpages-bg: var(--navbarside-background-color);
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: 1035;
-  width: 100%;
   height: 100%;
-  color: #FFF;
   background-color: var(--base-interface-strong);
 
   // Transform for slide effect
@@ -617,67 +664,6 @@ $navbarsidebar-width: 320px;
       width: 6px;
       background-color: rgba(0,0,0,0.2);
       border-radius: 10px
-    }
-  }
-
-  .navbar-side {
-    margin-bottom: 84px;
-
-    .nav-item-top {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 18px 12px;
-      font-size: 18px;
-      margin-top: 0;
-      text-align: center;
-      line-height: 1;
-      cursor: pointer;
-      gap: 12px;
-      transition: box-shadow .1s linear;
-      border-top: 1px solid #ffffff30;
-
-      &.open {
-        .nav-childpages {
-          display: inline-block;
-          box-shadow: var(--popup-box-shadow);
-        }
-        @media (min-width: $screen-xsmall) {
-          .item-title {
-            color: var(--color-interface-stronger);
-          }
-        }
-      }
-
-      .item-title {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex: 1 1 auto;
-        font-size: 24px;
-        font-weight: var(--font-weight-semibold);
-        line-height: 1;
-        color: var(--color-interface-softer);
-
-        &:after {
-          content: "\f054";
-          font-family: FontAwesome;
-          font-size: 12px;
-          font-weight: 900;
-          margin-left: 12px;
-        }
-      }
-
-      &:nth-child(2) {
-        margin-top: 48px;
-      }
-
-      @media (min-width: $screen-small) {
-        height: $navbar-top-height;
-        justify-content: center;
-        font-size: 26px;
-        padding: 24px 12px;
-      }
     }
   }
 
@@ -823,7 +809,7 @@ $navbarsidebar-width: 320px;
     }
 
     & .navbar-side {
-      margin-top: 32px;
+      //margin-top: 32px;
     }
 
     .nav-open & {
@@ -863,22 +849,10 @@ $navbarsidebar-width: 320px;
       > .item-title {
         display: none;
       }
-
-      &:hover::before {
-        position: absolute;
-        content:"";
-        background-color: #ffffff30;
-        top:0;
-        left:0;
-        height: 100%;
-        width: calc($navbarsidebar-width - 8px);
-        border-radius: var(--rounded-medium) 0 0 var(--rounded-medium);
-      }
     }
 
     .nav-childpages {
       top: 0;
-      left: calc($navbarsidebar-width + 8px);
       width: 280px;
       border-radius: 0 14px 14px 0;
       margin-top: var(--spacing-xsmall);
@@ -986,7 +960,7 @@ $hamburger-spacing: 4px;
 }
 
 .drawer-content {
-  padding: var(--spacing-medium);
+  //padding: var(--spacing-medium);
 }
 
 .group-detail .panel-block > .panel-heading .panel-title i {
@@ -995,7 +969,7 @@ $hamburger-spacing: 4px;
 
 .list-group-item {
   padding-right: var(--spacing-medium);
-  padding-left: var(--spacing-medium);
+  //padding-left: var(--spacing-medium);
 }
 
 .list-group-item:hover {

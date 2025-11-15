@@ -4,7 +4,8 @@ function BindNavEvents() {
     const modalOverlay = $('.sidebar-modal-overlay');
 
     // Initialize state - sidebar closed by default
-    bodyElement.addClass('navbar-side-close').removeClass('navbar-side-open');
+    //bodyElement.addClass('navbar-side-close').removeClass('navbar-side-open');
+    bodyElement.removeClass('navbar-side-close').addClass('navbar-side-open');
 
     // Simple hamburger toggle - just toggle classes
     $('.navbar-toggle-side-left').off('click').on('click', function(e) {
@@ -12,7 +13,7 @@ function BindNavEvents() {
       e.stopPropagation();
 
       if (bodyElement.hasClass('navbar-side-open')) {
-        bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
+        //bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
         modalOverlay.removeClass('active');
       } else {
         bodyElement.removeClass('navbar-side-close').addClass('navbar-side-open');
@@ -23,8 +24,8 @@ function BindNavEvents() {
     // Close menu when clicking overlay
     modalOverlay.off('click').on('click', function(e) {
       e.preventDefault();
-      bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
-      modalOverlay.removeClass('active');
+      //bodyElement.removeClass('navbar-side-open').addClass('navbar-side-close');
+      //modalOverlay.removeClass('active');
     });
 
     // Close menu with Escape key

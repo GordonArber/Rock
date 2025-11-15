@@ -107,7 +107,7 @@
                     "name": "Interface Color Strong",
                     "variable": "base-interface-strong",
                     "description": "A strong color used throughout the UI",
-                    "default": "#3d444d"
+                    "default": "#363636"
                 },
                 {
                     "type": "color",
