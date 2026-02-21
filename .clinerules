@@ -15,6 +15,18 @@ in every language, every file, every time.
 ## Mandatory Pre-Code Workflow
 # STOP. Read this before writing a single line of code.
 
+### Required Information Before Starting
+If creating a new plugin and any of the following are missing from the
+request, ask for ALL missing items in a SINGLE question before proceeding:
+
+- **Plugin name** (e.g. `GroupFinder`)
+- **Block name** (e.g. `GroupFinderList`)
+
+Names are ALWAYS PascalCase. Never ask the developer to confirm casing —
+apply PascalCase automatically. Ask once, collect both names, then proceed.
+Never ask for these one at a time across multiple turns.
+Never proceed without both.
+
 1. Output a complete file plan listing every file you will create or modify.
 2. For each file, state its single responsibility in one sentence.
 3. Identify which generated ViewModel types (bags, boxes, enums) will be needed.
@@ -1266,25 +1278,23 @@ dotnet build Common/org.minsol.Common/org.minsol.Common.csproj
 Never copy files from an existing plugin. Always create every file from scratch
 using the canonical templates defined in this rules file.
 
-1. Create the parent folder at the repo root:
+1. Create all required directories using the PowerShell wrapper.
+   Run each as a separate command from the repo root — never chain with &&:
+
    ```bash
-   mkdir [PluginName]
+   powershell.exe -Command "mkdir TestPlugin"
+   ```
+   ```bash
+   powershell.exe -Command "mkdir TestPlugin/org.minsol.TestPlugin"
+   ```
+   ```bash
+   powershell.exe -Command "mkdir TestPlugin/org.minsol.TestPlugin.Obsidian"
+   ```
+   ```bash
+   powershell.exe -Command "mkdir TestPlugin/org.minsol.TestPlugin.Obsidian/src"
    ```
 
-2. Create the C# project subdirectory:
-   ```bash
-   mkdir [PluginName]/org.minsol.[PluginName]
-   ```
-
-3. Create the Obsidian frontend subdirectory:
-   ```bash
-   mkdir [PluginName]/org.minsol.[PluginName].Obsidian
-   ```
-
-4. Create the `src/` directory:
-   ```bash
-   mkdir [PluginName]/org.minsol.[PluginName].Obsidian/src
-   ```
+   Replace `TestPlugin` with the actual plugin name in PascalCase.
 
 5. Create all project files from the Canonical File Templates section above.
    Substitute [PluginName] in PascalCase and [pluginname] in lowercase.
@@ -1335,13 +1345,18 @@ using the canonical templates defined in this rules file.
 
 ## Terminal Command Rules
 
-- NEVER chain commands with `&&`, `||`, or `;` in a standard terminal call.
-- ALWAYS use the PowerShell wrapper for any command requiring a specific directory:
+- NEVER chain commands with `&&`, `||`, or `;` — this causes "syntax incorrect"
+  errors on Windows CMD. Every command is its own separate terminal call.
+- ALWAYS use the PowerShell wrapper for ALL terminal commands including mkdir:
   ```bash
-  powershell.exe -Command "cd [target-directory]; [command]"
+  powershell.exe -Command "mkdir MyFolder"
+  powershell.exe -Command "cd MyPlugin/org.minsol.MyPlugin.Obsidian; npm install"
   ```
-- Execute each command as a separate step and wait for completion before proceeding.
-- Run all PowerShell wrapper commands from the repo root.
+- Execute each command as a completely separate step. Do not combine operations.
+- Run all commands from the repo root.
+- If a command fails with "syntax of the command is incorrect", the cause is
+  almost always `&&` chaining or running a PowerShell command in CMD syntax.
+  Retry using the PowerShell wrapper pattern above.
 
 ---
 
