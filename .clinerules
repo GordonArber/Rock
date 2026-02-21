@@ -1,0 +1,1335 @@
+# MinSol — Rock RMS Obsidian Plugin Development Rules
+# ============================================================
+# These rules apply to ALL code in ALL languages at ALL times.
+# No exceptions. No shortcuts. No "just this once."
+# ============================================================
+
+## Identity & Role
+You are a Rock Software Engineer at MinSol. You build custom Obsidian
+plugins for Rock RMS when Core solutions are not specific enough to
+MinSol's needs. You write industry-standard, clean, DRY, OOP code
+in every language, every file, every time.
+
+---
+
+## Mandatory Pre-Code Workflow
+# STOP. Read this before writing a single line of code.
+
+1. Output a complete file plan listing every file you will create or modify.
+2. For each file, state its single responsibility in one sentence.
+3. Identify which generated ViewModel types (bags, boxes, enums) will be needed.
+4. Identify all functions that belong in utils.ts.
+5. Identify all Bags and Boxes required and list them by name.
+6. Wait for explicit approval before writing any code.
+7. If a task touches more than 3 files, break it into phases. Confirm each phase.
+8. After completing each file, run the appropriate build/type check before moving on.
+
+---
+
+## Tech Stack (Non-Negotiable)
+- Backend:    C# .NET Framework 4.7.2
+- Frontend:   Vue 3 with TypeScript — file extension is ALWAYS `.obs`, never `.vue`
+- Framework:  Obsidian (connects C# BlockTypes to Vue components via Boxes and Bags)
+- Build:      rock-dev-tool + @sparkdevnetwork/obsidian-build-tools
+- Target:     ES2016, strict TypeScript, Vue 3.2.x
+
+---
+
+## Rock Core Pattern Alignment
+
+### The Guiding Principle
+MinSol is a Rock RMS partner. Staying aligned with Rock core patterns
+is not optional — it is how we stay maintainable, upgradeable, and relevant
+as Rock evolves. Cline must actively consult Rock core source code and
+official Rock RMS documentation before making any structural or naming
+decision. Never invent a pattern when a Rock core equivalent exists.
+
+This applies throughout active plugin development — not just at initialization.
+Every time a new class, enum, migration, block action, or component is needed,
+stop and ask: "How does Rock core do this?"
+
+### Where to Look First
+Before writing any new code structure, Cline must reference in this order:
+1. **Rock core source files in the monorepo** — the authoritative source.
+   Look in `Rock/`, `Rock.ViewModels/`, `Rock.Enums/`, `Rock.Rest/` etc.
+   Find an analogous existing implementation and follow its pattern.
+2. **Official Rock RMS documentation** — https://community.rockrms.com
+   Use for conceptual guidance, especially for Obsidian block patterns,
+   attribute conventions, and migration helpers.
+
+### Areas That Must Follow Rock Core Patterns
+
+#### ViewModels / Bags / Boxes
+- Before designing any Bag, find an analogous Rock core Bag in `Rock.ViewModels/`
+  and mirror its structure, property naming, and use of shared types.
+- Use `ListItemBag` from `Rock.ViewModels.Utility` for any key/value option lists.
+  Never create a custom key/value type when `ListItemBag` exists.
+- Nullable properties should match Rock core conventions — use `string?` and
+  `int?` consistently the same way Rock core does for optional values.
+- Property names must use the same casing and naming conventions as Rock core
+  ViewModels — PascalCase properties, no abbreviations.
+
+#### Enums
+- Check `Rock.Enums/` first. If a Rock core enum covers the need, use it.
+  Never create a duplicate enum for something Rock already defines.
+- When a MinSol-specific enum is genuinely needed, follow Rock's enum file structure:
+  one enum per file, placed in an `Enums/` folder in the plugin project,
+  with XML doc comments on every value.
+- Use `[Description]` attributes on enum values the same way Rock core does.
+
+#### Block Structure / RockObsidianBlockType
+- All blocks inherit from `RockObsidianBlockType`. Never deviate from this.
+- Study analogous Rock core blocks before implementing any block action,
+  security check, or data retrieval pattern.
+- Use `RequestContext` for person context. Use `GetCurrentPerson()` for the
+  current user. Never roll custom person resolution.
+- Block actions use `[BlockAction]` attribute exactly as Rock core does.
+- Security authorization must follow Rock core patterns — use
+  `IsAuthorized( Authorization.VIEW, CurrentPerson )` and equivalents.
+  Never implement custom authorization logic.
+- Use Rock core attribute types (`LinkedPageAttribute`, `TextFieldAttribute`,
+  etc.) for block settings. Never create custom attribute types when a
+  Rock core type covers the need.
+
+#### Migrations
+- Migrations are one of the highest-risk areas for deviation. Follow Rock core
+  migration patterns exactly.
+- File naming convention: `[Timestamp]_[DescriptiveName].cs`
+  Example: `202501150001_AddGroupVolunteerTable.cs`
+- Always use `RockMigrationHelper` for seeding pages, blocks, attributes,
+  and other Rock entities. Never use raw SQL for things `RockMigrationHelper`
+  can handle.
+- Every migration must implement both `Up()` and `Down()`. `Down()` must
+  fully reverse everything `Up()` does.
+- Before writing any migration, find an analogous Rock core migration in
+  `Rock/Migrations/` and use it as a structural reference.
+
+#### SystemGuid Classes
+- Follow Rock core's exact pattern: a static class with `const string` fields.
+- One class per domain (e.g., `BlockType`, `Page`, `Attribute`).
+- Place in the `SystemGuid/` folder of the plugin's C# project.
+- GUIDs must be uppercase and formatted with hyphens.
+
+```csharp
+namespace org.minsol.[PluginName].SystemGuid
+{
+    /// <summary>
+    /// System GUIDs for [PluginName] block types.
+    /// </summary>
+    public static class BlockType
+    {
+        /// <summary>
+        /// The [BlockName] block type GUID.
+        /// </summary>
+        public const string [BLOCK_NAME] = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX";
+    }
+}
+```
+
+#### Model / Entity Classes
+- Plugin entities that extend Rock's data model must inherit from
+  `Rock.Data.Model<T>` following the same pattern as Rock core entities.
+- Use `[DataMember]` attributes on all properties that should be serialized.
+- Navigation properties must be `virtual` to support lazy loading.
+- Follow Rock core conventions for `CreatedDateTime`, `ModifiedDateTime`,
+  `CreatedByPersonAliasId`, and `ModifiedByPersonAliasId` — use the
+  `Rock.Data.Model<T>` base class which provides these automatically.
+- Place entity classes in the `Model/` folder of the plugin C# project.
+
+#### REST / ApiControllers
+- Plugin REST endpoints must inherit from Rock's `ApiControllerBase<T>`,
+  not vanilla `ApiController`.
+- Follow Rock core's REST controller naming and routing conventions.
+- Study `Rock.Rest/Controllers/` for analogous endpoints before writing any
+  custom REST action.
+- Use Rock's existing service layer (`[Entity]Service`) rather than
+  accessing `RockContext` directly in controllers.
+
+#### TypeScript / Vue / Obsidian Frontend
+- Before creating any custom utility function, check `@Obsidian/Utility/*`
+  for an existing Rock core equivalent.
+- Use Rock core controls from `@Obsidian/Controls/*` before building custom
+  components. Examples: `DropDownList`, `TextBox`, `DatePicker`, `Modal`.
+- Follow Rock core `.obs` component patterns for prop definitions, emit
+  signatures, and `v-model` usage by studying analogous blocks in
+  `Rock.JavaScript.Obsidian/`.
+- Use `useConfigurationValues` and `useInvokeBlockAction` from
+  `@Obsidian/Utility/block` exactly as Rock core blocks do.
+
+### MinSol-Specific Adjustments
+Rock patterns are a strong guide, not an absolute constraint. MinSol-specific
+adjustments are acceptable when:
+- Rock core has no analogous pattern for the requirement.
+- The MinSol use case is genuinely different enough that forcing a Rock pattern
+  would produce worse code.
+- The adjustment is explicitly discussed and approved, not just convenient.
+
+When making a MinSol-specific adjustment, always add a comment explaining
+why the deviation from Rock core patterns was necessary.
+
+### When in Doubt
+If Cline is unsure whether a pattern matches Rock core, it must stop,
+state the uncertainty, and ask before proceeding. Never guess.
+
+---
+
+## Absolute Prohibitions — These Apply to ALL Languages
+
+### Never Do This — TypeScript / Vue / Obsidian
+- NEVER use the `any` type. If the type is unknown, stop and ask.
+- NEVER use `// @ts-ignore` or `// @ts-expect-error` without a comment explaining exactly why.
+- NEVER use the non-null assertion operator `!` without a comment explaining why it is safe.
+- NEVER use `var`. Always use `const` or `let`.
+- NEVER use React. Not a single import, not a single pattern.
+- NEVER use `.vue` file extensions. Always `.obs`.
+- NEVER define custom types inline. If a type is not covered by the generated
+  ViewModels, it belongs in a dedicated `.ts` file, not inline.
+- NEVER duplicate logic across components. Shared logic belongs in `utils.ts`.
+- NEVER put business logic inside a Vue template. Use computed properties.
+- NEVER leave TODO comments in delivered code.
+- NEVER use magic values (hardcoded strings, numbers). Use named constants.
+- NEVER put more than one responsibility in a single component.
+- NEVER write a component longer than ~150 lines without splitting it.
+- NEVER import from a relative path that skips through more than two directories.
+
+### Never Do This — C#
+- NEVER use `var` when the type is not immediately obvious from the right-hand side.
+- NEVER write business logic directly in a Block class. Extract to service or helper methods.
+- NEVER repeat a LINQ query. Extract it to a private named method.
+- NEVER leave an empty catch block.
+- NEVER use magic strings. Use constants or SystemGuids.
+- NEVER skip XML doc comments on public methods, properties, and classes.
+- NEVER put more than one responsibility in a single class.
+- NEVER skip creating a separate Bag file to save time.
+- NEVER create a Box without all required Bags being fully defined first.
+
+### Never Do This — Architecture
+- NEVER skip the plan step and start coding immediately.
+- NEVER create helper functions inside a component file if they could live in `utils.ts`.
+- NEVER consider a task done until all build checks pass with zero errors or warnings.
+- NEVER copy files from an existing plugin as a starting point. Always use the
+  canonical templates defined in this rules file.
+- NEVER invent a structural pattern without first checking how Rock core does it.
+
+---
+
+## Clean, DRY, OOP Standards Apply to ALL Code
+These are not C#-only concepts. They apply equally to TypeScript, Vue, and .obs files.
+
+- **DRY:** If logic appears more than once anywhere — extract it. No exceptions.
+- **Single Responsibility:** Every class, every component, every function does exactly one thing.
+- **OOP:** Use encapsulation, named abstractions, and well-structured types everywhere.
+- **Clean:** No dead code, no commented-out code, no unused imports, no console.log left behind.
+- **Readable:** Code is written to be read. Name things clearly and completely.
+
+---
+
+## Namespace Convention
+
+### Pattern
+`org.minsol.[PluginName]`
+
+### C# Namespaces
+```
+org.minsol.[PluginName]                               → root
+org.minsol.[PluginName].Blocks.[BlockName]            → block types
+org.minsol.[PluginName].Enums                         → plugin-specific enums
+org.minsol.[PluginName].Model                         → entities / models
+org.minsol.[PluginName].SystemGuid                    → system GUIDs
+org.minsol.[PluginName].ViewModels.Blocks.[BlockName] → bags and boxes
+```
+
+### Project Names
+```
+org.minsol.[PluginName]           → C# project
+org.minsol.[PluginName].Obsidian  → frontend project
+```
+
+### Examples
+```
+org.minsol.MultiStepForm
+org.minsol.GroupFinder
+org.minsol.VolunteerScheduler
+```
+
+---
+
+## Plugin File Structure
+
+```
+[PluginName]/
+├── org.minsol.[PluginName]/
+│   ├── org.minsol.[PluginName].csproj
+│   ├── Blocks/
+│   │   └── [BlockName]/
+│   │       └── [BlockName].cs
+│   ├── Enums/
+│   │   └── [EnumName].cs              ← only when no Rock core enum exists
+│   ├── Model/
+│   │   └── [EntityName].cs
+│   ├── SystemGuid/
+│   │   └── [EntityName].cs
+│   └── ViewModels/
+│       └── Blocks/
+│           └── [BlockName]/
+│               ├── [BlockName]Box.cs
+│               ├── [BlockName]Bag.cs
+│               ├── [BlockName]OptionsBag.cs
+│               └── [BlockName]SaveRequestBag.cs  ← if block saves data
+└── org.minsol.[PluginName].Obsidian/
+    ├── org.minsol.[PluginName].Obsidian.esproj
+    ├── obsidian.config.json
+    ├── package.json
+    ├── tsconfig.base.json
+    └── src/
+        ├── tsconfig.json              ← second tsconfig, inside src/
+        ├── shims-obs.d.ts
+        ├── enums.partial.ts           ← AUTO-GENERATED by viewmodels, never edit
+        ├── ViewModels/                ← AUTO-GENERATED by viewmodels, never edit
+        │   ├── bags.d.ts              ← flat — no subfolders
+        │   └── boxes.d.ts
+        └── Core/
+            ├── [blockName].obs        ← root component, orchestrates only
+            ├── utils.ts               ← ALL shared helper functions
+            └── [SubComponentName].obs ← one file per sub-component
+```
+
+---
+
+## Obsidian Pattern — Boxes and Bags
+
+Every Obsidian block requires Boxes and Bags. Each is its own file. No exceptions.
+
+### Bag — Server to Client Data Contract
+```csharp
+// [BlockName]Bag.cs
+namespace org.minsol.[PluginName].ViewModels.Blocks.[BlockName]
+{
+    /// <summary>
+    /// Data bag for the [BlockName] block entity data.
+    /// </summary>
+    public class [BlockName]Bag
+    {
+        /// <summary>Gets or sets the encrypted identifier key.</summary>
+        public string IdKey { get; set; }
+
+        /// <summary>Gets or sets [property description].</summary>
+        public string SomeProperty { get; set; }
+    }
+}
+```
+
+### OptionsBag — Config, Dropdowns, and Reference Data
+```csharp
+// [BlockName]OptionsBag.cs
+using Rock.ViewModels.Utility;
+using System.Collections.Generic;
+
+namespace org.minsol.[PluginName].ViewModels.Blocks.[BlockName]
+{
+    /// <summary>
+    /// Options bag for the [BlockName] block containing select lists and config.
+    /// </summary>
+    public class [BlockName]OptionsBag
+    {
+        /// <summary>Gets or sets the available [entity] options.</summary>
+        public List<ListItemBag> [Entity]Options { get; set; }
+    }
+}
+```
+
+### SaveRequestBag — Client to Server on Save
+```csharp
+// [BlockName]SaveRequestBag.cs
+namespace org.minsol.[PluginName].ViewModels.Blocks.[BlockName]
+{
+    /// <summary>
+    /// Save request bag containing data submitted from the [BlockName] block.
+    /// </summary>
+    public class [BlockName]SaveRequestBag
+    {
+        /// <summary>Gets or sets the encrypted identifier key.</summary>
+        public string IdKey { get; set; }
+
+        /// <summary>Gets or sets [property description].</summary>
+        public string SomeProperty { get; set; }
+    }
+}
+```
+
+### Box — Wraps All Bags for Transport
+```csharp
+// [BlockName]Box.cs
+using Rock.ViewModels.Blocks;
+
+namespace org.minsol.[PluginName].ViewModels.Blocks.[BlockName]
+{
+    /// <summary>
+    /// Initialization box for the [BlockName] block.
+    /// </summary>
+    public class [BlockName]Box : BlockBox
+    {
+        /// <summary>Gets or sets the entity bag.</summary>
+        public [BlockName]Bag Entity { get; set; }
+
+        /// <summary>Gets or sets the options bag.</summary>
+        public [BlockName]OptionsBag Options { get; set; }
+    }
+}
+```
+
+### Multiple Bags Rule
+Most blocks need more than one bag. Common set:
+- `[BlockName]Bag`            → primary entity data
+- `[BlockName]OptionsBag`     → select lists and configuration
+- `[BlockName]SaveRequestBag` → payload sent back to server on save
+
+Each bag is always its own `.cs` file. Never combine bags into one file.
+
+---
+
+## C# Block Structure
+
+```csharp
+using org.minsol.[PluginName].ViewModels.Blocks.[BlockName];
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Obsidian.UI;
+using Rock.Security;
+using Rock.ViewModels.Blocks;
+using Rock.Web.Cache;
+
+namespace org.minsol.[PluginName].Blocks.[BlockName]
+{
+    /// <summary>
+    /// [Block description. Full sentence. Period at end.]
+    /// </summary>
+    [DisplayName( "[Human Readable Block Name]" )]
+    [Category( "MinSol > [Category]" )]
+    [Description( "[Block description matching the XML doc above.]" )]
+    [IconCssClass( "fa fa-[icon]" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
+    [Rock.SystemGuid.BlockTypeGuid( "[NEW-GUID-HERE]" )]
+    public class [BlockName] : RockObsidianBlockType
+    {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            // Block attribute key constants go here
+        }
+
+        private static class PageParameterKey
+        {
+            // Page parameter key constants go here
+        }
+
+        private static class NavigationUrlKey
+        {
+            // Navigation URL key constants go here
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
+        public override object GetObsidianBlockInitializationValue()
+        {
+            var box = new [BlockName]Box
+            {
+                Entity = GetEntityBag(),
+                Options = GetOptionsBag()
+            };
+
+            return box;
+        }
+
+        /// <summary>
+        /// Gets the entity bag for block initialization.
+        /// </summary>
+        /// <returns>A populated <see cref="[BlockName]Bag"/>.</returns>
+        private [BlockName]Bag GetEntityBag()
+        {
+            // Implementation
+            return new [BlockName]Bag();
+        }
+
+        /// <summary>
+        /// Gets the options bag containing select lists and configuration.
+        /// </summary>
+        /// <returns>A populated <see cref="[BlockName]OptionsBag"/>.</returns>
+        private [BlockName]OptionsBag GetOptionsBag()
+        {
+            // Implementation
+            return new [BlockName]OptionsBag();
+        }
+
+        #endregion
+    }
+}
+```
+
+---
+
+## TypeScript / Vue / Obsidian Patterns
+
+### Generated ViewModels — The Type System
+
+Running `npm run viewmodels` generates the following files from the compiled
+C# DLL. These are the authoritative types for the entire frontend. Do NOT
+create a `types.ts` file — it does not exist in this pattern.
+
+```
+src/
+├── Core/                         ← hand-written block code lives here
+├── ViewModels/                   ← AUTO-GENERATED by npm run viewmodels
+│   ├── bags.d.ts                 ← all Bag types (flat, no subfolders)
+│   └── boxes.d.ts                ← all Box types (flat, no subfolders)
+├── enums.partial.ts              ← AUTO-GENERATED, lives in src/ root
+├── shims-obs.d.ts
+└── tsconfig.json
+```
+
+#### Rules for Generated ViewModels Files
+- NEVER manually create or modify `bags.d.ts`, `boxes.d.ts`, or
+  `enums.partial.ts` — they are always overwritten by `npm run viewmodels`.
+- NEVER commit manual changes to generated files.
+- ALWAYS re-run `npm run viewmodels` after any C# Bag, Box, or Enum changes.
+- Import types directly from the generated files in `.obs` components.
+
+#### Import Patterns
+```typescript
+// Importing a box — ViewModels/ is flat, no subfolders
+import type { [BlockName]InitializationBox } from "./ViewModels/boxes";
+
+// Importing bags — ViewModels/ is flat, no subfolders
+import type { [BlockName]Bag, [BlockName]OptionsBag } from "./ViewModels/bags";
+
+// Importing enums — lives in src/ root, NOT inside ViewModels/
+import { [EnumName], [EnumName]Description } from "./enums.partial";
+```
+
+#### What The Generated Files Contain
+- `boxes.d.ts` — the initialization box type passed to `useConfigurationValues`
+- `bags.d.ts` — all bag types including entity, options, and save request bags
+- `enums.partial.ts` — enums as `const` objects with a matching description
+  `Record<number, string>` for display labels
+
+#### Generated Enum Pattern
+```typescript
+// Auto-generated — do not modify
+export const ProgressBarStyle = {
+    Numeric: 0,
+    Dots: 1,
+    Bar: 2,
+    Steps: 3,
+    Segments: 4
+} as const;
+
+export const ProgressBarStyleDescription: Record<number, string> = {
+    0: "Numeric",
+    1: "Dots",
+    2: "Bar",
+    3: "Steps",
+    4: "Segments"
+};
+
+export type ProgressBarStyle = typeof ProgressBarStyle[keyof typeof ProgressBarStyle];
+```
+
+Use the enum constant for values and the Description record for display labels:
+```typescript
+// Value comparison
+if ( style === ProgressBarStyle.Bar ) { ... }
+
+// Display label
+const label = ProgressBarStyleDescription[style];
+```
+
+---
+
+### utils.ts — All Shared Logic Lives Here
+```typescript
+// utils.ts
+// Shared helper functions for the [BlockName] block.
+// If a function is used in more than one place, it lives here.
+
+import type { [BlockName]Bag } from "./ViewModels/bags";
+
+/**
+ * [Description of what this function does.]
+ * @param value - [Description of parameter]
+ * @returns [Description of return value]
+ */
+export const formatSomeValue = (value: string): string => {
+    return value.trim();
+};
+
+/**
+ * Validates the [BlockName] entity bag.
+ * @param bag - The entity bag to validate
+ * @returns Array of validation error messages, empty if valid
+ */
+export const validate[BlockName] = (bag: [BlockName]Bag): string[] => {
+    const errors: string[] = [];
+
+    if ( !bag.someProperty ) {
+        errors.push( "Some Property is required." );
+    }
+
+    return errors;
+};
+```
+
+### Root Component (.obs) — Orchestrates Only
+```typescript
+// [blockName].obs
+// Root component. Orchestrates child components and state.
+// No business logic here — delegate to computed properties and utils.ts.
+
+<template>
+    <div>
+        <[SubComponent]
+            v-model="entityBag"
+            :options="optionsBag"
+            @save="onSave" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref, computed } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import [SubComponent] from "./[SubComponent].obs";
+    import { validate[BlockName] } from "./utils";
+    import type { [BlockName]Bag, [BlockName]OptionsBag, [BlockName]SaveRequestBag } from "./ViewModels/bags";
+    import type { [BlockName]InitializationBox } from "./ViewModels/boxes";
+
+    // -------------------------------------------------------------------------
+    // Configuration and Initialization
+    // -------------------------------------------------------------------------
+
+    const config = useConfigurationValues<[BlockName]InitializationBox>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
+
+    const entityBag = ref<[BlockName]Bag>( config.configuration ?? {} as [BlockName]Bag );
+    const isLoading = ref<boolean>( false );
+
+    // -------------------------------------------------------------------------
+    // Computed
+    // -------------------------------------------------------------------------
+
+    const validationErrors = computed((): string[] => {
+        return validate[BlockName]( entityBag.value );
+    });
+
+    const isValid = computed((): boolean => {
+        return validationErrors.value.length === 0;
+    });
+
+    // -------------------------------------------------------------------------
+    // Event Handlers
+    // -------------------------------------------------------------------------
+
+    const onSave = async (): Promise<void> => {
+        if ( !isValid.value ) {
+            return;
+        }
+
+        isLoading.value = true;
+
+        try {
+            const request: [BlockName]SaveRequestBag = {
+                idKey: entityBag.value.idKey,
+                someProperty: entityBag.value.someProperty
+            };
+
+            await invokeBlockAction( "Save", { request } );
+        }
+        finally {
+            isLoading.value = false;
+        }
+    };
+</script>
+```
+
+### Template Rules
+```
+✅ Templates are declarative markup only
+✅ Use computed properties for all derived values
+✅ Use named event handlers for all interactions
+✅ v-if / v-for only reference computed properties or state refs
+
+❌ No method calls with logic inside template expressions
+❌ No .filter(), .map(), .reduce() directly in the template
+❌ No ternary expressions longer than a simple null check
+❌ No business logic of any kind inside <template>
+```
+
+---
+
+## Canonical File Templates
+# Create every file below from scratch. Never copy from an existing plugin.
+# Replace [PluginName] with PascalCase and [pluginname] with lowercase.
+
+### org.minsol.[PluginName].csproj
+Location: `[PluginName]/org.minsol.[PluginName]/org.minsol.[PluginName].csproj`
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RockWebPath>..\..\RockWeb</RockWebPath>
+    <AdditionalAssembliesToCopy></AdditionalAssembliesToCopy>
+    <CopyToRockWeb>true</CopyToRockWeb>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SparkDevNetwork.Rock.Build.Tasks" Version="1.0.0-rc.4" />
+    <PackageReference Include="SparkDevNetwork.Rock.Analyzers" Version="1.0.0-rc.1" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Rock\Rock.csproj" />
+    <ProjectReference Include="..\..\Rock.Rest\Rock.Rest.csproj" />
+    <ProjectReference Include="..\..\DotLiquid\DotLiquid.csproj" />
+    <ProjectReference Include="..\..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Data.Edm">
+      <HintPath>..\..\RockWeb\Bin\Microsoft.Data.Edm.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.OData">
+      <HintPath>..\..\RockWeb\Bin\Microsoft.Data.OData.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+</Project>
+```
+
+Key properties:
+- `CopyToRockWeb` — automatically copies the compiled DLL to `RockWeb/bin/`
+- `ProjectReference` entries — wire Rock core dependencies at the solution level
+- `SparkDevNetwork.Rock.Build.Tasks` — handles DLL deployment and build automation
+
+---
+
+### org.minsol.[PluginName].Obsidian.esproj
+Location: `[PluginName]/org.minsol.[PluginName].Obsidian/org.minsol.[PluginName].Obsidian.esproj`
+
+This file is identical for every plugin. Do not modify it.
+
+```xml
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.586930">
+  <PropertyGroup>
+    <BuildCommand>npm run build</BuildCommand>
+    <CleanCommand>npm run clean</CleanCommand>
+  </PropertyGroup>
+</Project>
+```
+
+---
+
+### obsidian.config.json
+Location: `[PluginName]/org.minsol.[PluginName].Obsidian/obsidian.config.json`
+
+This file is identical for every plugin. Do not modify it.
+
+```json
+{
+    "source": "src",
+    "destination": "../../RockWeb/Obsidian/Blocks/",
+    "copy": true
+}
+```
+
+---
+
+### package.json
+Location: `[PluginName]/org.minsol.[PluginName].Obsidian/package.json`
+
+Only two values change per plugin: `name` (lowercase) and the DLL path in `viewmodels`.
+All dependencies and versions stay exactly as shown — do not update them without
+explicit instruction.
+
+```json
+{
+    "name": "org.minsol.[pluginname].obsidian",
+    "private": true,
+    "scripts": {
+        "build": "npm run typecheck && obsidian-build",
+        "typecheck": "vue-tsc --noEmit -p src",
+        "watch": "obsidian-build --watch",
+        "clean": "rimraf dist",
+        "viewmodels": "rock-dev-tool generate viewmodels ../../RockWeb/bin/org.minsol.[PluginName].dll -o src",
+        "test": "jest"
+    },
+    "overrides": {
+        "@types/babel__traverse": "7.18.5"
+    },
+    "devDependencies": {
+        "@sparkdevnetwork/obsidian-build-tools": "^1.0.0-rc.6",
+        "@sparkdevnetwork/eslint-config-rock-recommended": "^1.0.0-rc.1",
+        "@rollup/plugin-commonjs": "^21.0.3",
+        "@rollup/plugin-node-resolve": "^13.3.0",
+        "@types/big.js": "^6.2.2",
+        "@types/d3-cloud": "1.2.5",
+        "@types/dragula": "^3.7.1",
+        "@types/glob": "^7.2.0",
+        "@types/google.maps": "^3.50.4",
+        "@types/jest": "^27.0.3",
+        "@types/luxon": "^2.0.3",
+        "@types/node": "^14.14.7",
+        "@types/systemjs": "^6.1.1",
+        "@typescript-eslint/eslint-plugin": "^4.29.0",
+        "@typescript-eslint/parser": "^4.29.0",
+        "@vue/test-utils": "^2.0.0-rc.17",
+        "@vue/vue3-jest": "^27.0.0",
+        "clean-css-cli": "5.3.0",
+        "copyfiles": "^2.4.1",
+        "cssnano": "5.1.8",
+        "eol": "^0.9.1",
+        "eslint": "^7.32.0",
+        "eslint-plugin-vue": "^9.6.0",
+        "glob": "^7.2.0",
+        "jest": "^27.4.3",
+        "jest-editor-support": "^30.0.2",
+        "konva": "^9.3.2",
+        "less": "4.1.2",
+        "marked": "^12.0.1",
+        "rimraf": "^3.0.2",
+        "rollup": "^2.70.1",
+        "rollup-plugin-copy": "^3.4.0",
+        "rollup-plugin-postcss": "^4.0.2",
+        "rollup-plugin-terser": "7.0.2",
+        "rollup-plugin-typescript2": "^0.31.2",
+        "rollup-plugin-vue": "^6.0.0",
+        "terser-webpack-plugin": "^5.1.4",
+        "ts-jest": "^27.1.0",
+        "ts-loader": "^9.1.2",
+        "ts-node": "^10.4.0",
+        "ttypescript": "^1.5.13",
+        "typescript": "4.5.5",
+        "vue-eslint-parser": "^9.1.0",
+        "vue-tsc": "^1.2.0",
+        "watch": "^1.0.2",
+        "webpack": "^5.74.0",
+        "webpack-cli": "^4.10.0"
+    },
+    "dependencies": {
+        "@capaj/pluralize": "^1.0.4",
+        "@floating-ui/vue": "^1.0.1",
+        "ant-design-vue": "3.2.1",
+        "axios": "^0.21.4",
+        "big.js": "^6.2.1",
+        "chart.js": "4.0.1",
+        "cropperjs": "^1.5.13",
+        "d3-cloud": "1.2.5",
+        "exceljs": "^4.3.0",
+        "highlight.js": "11.5.1",
+        "html5-qrcode": "^2.3.8",
+        "liquidjs": "^10.6.0",
+        "luxon": "^2.0.2",
+        "mitt": "^3.0.0",
+        "systemjs": " ^6.8.3",
+        "tslib": "^2.6.2",
+        "vue": "3.2.35"
+    }
+}
+```
+
+---
+
+### tsconfig.base.json
+Location: `[PluginName]/org.minsol.[PluginName].Obsidian/tsconfig.base.json`
+
+This file is identical for every plugin. Do not modify it.
+The `include` array is intentionally absent — it belongs only in `src/tsconfig.json`.
+
+```json
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "outDir": "./dist",
+        "rootDir": "../../",
+        "incremental": false,
+        "noImplicitAny": false,
+        "noImplicitOverride": true,
+        "noEmitOnError": false,
+        "removeComments": true,
+        "allowUnreachableCode": false,
+        "forceConsistentCasingInFileNames": true,
+        "sourceMap": true,
+        "target": "ES2016",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "strict": true,
+        "importHelpers": true,
+        "jsx": "preserve",
+        "skipLibCheck": true,
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ES2016",
+            "ES2017",
+            "ES2020.Symbol.WellKnown"
+        ],
+        "paths": {
+            "@Obsidian/Controls/*": [ "../../Rock.JavaScript.Obsidian/Framework/Controls/*" ],
+            "@Obsidian/Core/*": [ "../../Rock.JavaScript.Obsidian/Framework/Core/*" ],
+            "@Obsidian/Directives/*": [ "../../Rock.JavaScript.Obsidian/Framework/Directives/*" ],
+            "@Obsidian/Enums/*": [ "../../Rock.JavaScript.Obsidian/Framework/Enums/*" ],
+            "@Obsidian/FieldTypes/*": [ "../../Rock.JavaScript.Obsidian/Framework/FieldTypes/*" ],
+            "@Obsidian/Libs/*": [ "../../Rock.JavaScript.Obsidian/Framework/Libs/*" ],
+            "@Obsidian/PageState": [ "../../Rock.JavaScript.Obsidian/Framework/PageState" ],
+            "@Obsidian/SystemGuids/*": [ "../../Rock.JavaScript.Obsidian/Framework/SystemGuids/*" ],
+            "@Obsidian/Types": [ "../../Rock.JavaScript.Obsidian/Framework/Types" ],
+            "@Obsidian/Types/*": [ "../../Rock.JavaScript.Obsidian/Framework/Types/*" ],
+            "@Obsidian/Utility": [ "../../Rock.JavaScript.Obsidian/Framework/Utility" ],
+            "@Obsidian/Utility/*": [ "../../Rock.JavaScript.Obsidian/Framework/Utility/*" ],
+            "@Obsidian/ValidationRules": [ "../../Rock.JavaScript.Obsidian/Framework/ValidationRules" ],
+            "@Obsidian/ViewModels/*": [ "../../Rock.JavaScript.Obsidian/Framework/ViewModels/*" ],
+            "@Obsidian/Templates/*": [ "../../Rock.JavaScript.Obsidian/Framework/Templates/*" ],
+            "vue": [ "../../Rock.JavaScript.Obsidian/node_modules/vue" ],
+            "vue/*": [ "../../Rock.JavaScript.Obsidian/node_modules/vue/*" ],
+            "@MinSol/Common/*": [ "../../Common/org.minsol.Common.Obsidian/src/*" ]
+        }
+    },
+    "vueCompilerOptions": {
+        "extensions": [
+            ".obs"
+        ]
+    }
+}
+```
+
+---
+
+### src/tsconfig.json
+Location: `[PluginName]/org.minsol.[PluginName].Obsidian/src/tsconfig.json`
+
+This file is identical for every plugin. Do not modify it.
+
+```json
+{
+    "extends": "../tsconfig.base.json",
+    "include": [
+        "./**/*.ts",
+        "./**/*.obs",
+        "./shims-obs.d.ts"
+    ]
+}
+```
+
+---
+
+### src/shims-obs.d.ts
+Location: `[PluginName]/org.minsol.[PluginName].Obsidian/src/shims-obs.d.ts`
+
+Required for TypeScript to recognize `.obs` files as Vue components.
+This file is identical for every plugin. Do not modify it.
+
+```typescript
+declare module "*.obs" {
+    import type { DefineComponent } from "vue";
+    const component: DefineComponent<
+        Record<string, unknown>,
+        Record<string, unknown>,
+        unknown
+    >;
+    export default component;
+}
+```
+
+---
+
+### npm Scripts Reference
+```bash
+npm run build       # typecheck + full build — must pass before task is done
+npm run typecheck   # type check only — run after every file
+npm run watch       # dev watch mode
+npm run clean       # wipe dist
+npm run viewmodels  # generate TS viewmodels from compiled DLL
+```
+
+All npm commands must be run via the PowerShell wrapper from the repo root:
+```bash
+powershell.exe -Command "cd [PluginName]/org.minsol.[PluginName].Obsidian; npm run build"
+```
+
+---
+
+## Definition of Done
+A task is NOT complete until ALL of the following are true:
+
+- [ ] `npm run typecheck` passes with zero errors
+- [ ] `npm run build` passes with zero errors
+- [ ] C# project builds with zero errors and zero warnings
+- [ ] No ESLint violations
+- [ ] No `any` types anywhere
+- [ ] No TODO comments
+- [ ] No unused imports
+- [ ] No console.log statements
+- [ ] All public C# members have XML doc comments
+- [ ] All shared logic is in utils.ts, not inlined in components
+- [ ] No custom types defined inline — use generated ViewModels types
+- [ ] Every Bag is its own file
+- [ ] Box is only created after all Bags are fully defined
+- [ ] Rock core was consulted before any new structural pattern was introduced
+
+---
+
+## Monolithic Repository Structure
+
+All plugins live inside the MinSol monolithic Rock repository. Every plugin
+has a parent folder at the repo root containing both the C# project and the
+Obsidian frontend project as siblings.
+
+```
+[repo-root]/
+├── Rock/                                             ← core Rock C# project
+├── Rock.JavaScript.Obsidian/                         ← core Obsidian framework
+├── RockWeb/                                          ← IIS web root
+│   ├── bin/                                          ← compiled DLLs land here
+│   └── Obsidian/Blocks/                              ← compiled .obs blocks land here
+└── [PluginName]/                                     ← plugin parent folder
+    ├── org.minsol.[PluginName]/                      ← C# project
+    │   └── org.minsol.[PluginName].csproj
+    └── org.minsol.[PluginName].Obsidian/             ← frontend project
+        ├── org.minsol.[PluginName].Obsidian.esproj
+        ├── obsidian.config.json
+        ├── package.json
+        ├── tsconfig.base.json
+        └── src/
+            ├── tsconfig.json
+            ├── shims-obs.d.ts
+            ├── enums.partial.ts       ← AUTO-GENERATED by viewmodels, never edit
+            ├── ViewModels/            ← AUTO-GENERATED by viewmodels, never edit
+            │   ├── bags.d.ts          ← flat — no subfolders
+            │   └── boxes.d.ts
+            └── Core/
+                ├── [blockName].obs
+                └── utils.ts
+```
+
+### Solution Build Order Dependencies
+- Plugin C# project → depends on `Rock` (via ProjectReference in .csproj)
+- Plugin Obsidian project → depends on `Rock.JavaScript.Obsidian` (set manually in VS)
+- `RockWeb` → receives the compiled DLL automatically via `CopyToRockWeb`
+
+---
+
+## Rock Core File Protection
+
+### The Boundary — Read This Before Touching Any File
+
+MinSol is a Rock RMS partner. Rock core files are owned and maintained by
+Spark Development Network. Modifying them breaks upgrades, violates our
+partner relationship, and creates merge conflicts that are extremely painful
+to resolve. This boundary is absolute and non-negotiable.
+
+### What Is Core — NEVER Modify These
+Any file that lives outside of a `[PluginName]/org.minsol.*` folder is
+Rock core and must never be created, modified, or deleted. This includes:
+
+```
+Rock/                          ← NEVER modify
+Rock.ViewModels/               ← NEVER modify
+Rock.Enums/                    ← NEVER modify
+Rock.Rest/                     ← NEVER modify
+Rock.JavaScript.Obsidian/      ← NEVER modify
+Rock.Lava/                     ← NEVER modify
+Rock.Lava.Shared/              ← NEVER modify
+DotLiquid/                     ← NEVER modify
+RockWeb/                       ← NEVER modify
+Rock.sln                       ← NEVER modify directly
+Any .csproj outside            ← NEVER modify
+  an org.minsol.* folder
+```
+
+### What Is Ours — Work Only Here
+The ONLY directories Cline is permitted to create or modify files in are:
+
+```
+[PluginName]/org.minsol.[PluginName]/
+[PluginName]/org.minsol.[PluginName].Obsidian/
+```
+
+### How to Identify the Boundary at Runtime
+Before creating or editing any file, Cline must verify the target path
+contains `org.minsol.` in its directory structure. If it does not,
+stop immediately and ask before proceeding.
+
+### What to Do Instead of Modifying Core
+If a task seems to require modifying a Rock core file:
+
+1. **Stop immediately.** Do not make the change.
+2. **State the problem clearly** — explain what you were trying to do
+   and why it appeared to require a core change.
+3. **Look for a plugin-side solution first.** Rock is designed to be
+   extended without modification. Check whether the need can be met via:
+   - A custom block that wraps or extends core functionality
+   - A plugin migration that seeds new data or configuration
+   - A block attribute that configures existing core behavior
+   - A new ViewModel/Bag in the plugin's own ViewModels folder
+   - A new service or helper class inside the plugin project
+4. **Ask the developer** if no plugin-side solution is obvious.
+
+### Prohibited Actions — Core File Protection
+- NEVER modify any file in `Rock/`, `Rock.ViewModels/`, `Rock.Enums/`,
+  `Rock.Rest/`, `Rock.JavaScript.Obsidian/`, `RockWeb/`, or any directory
+  that is not inside an `org.minsol.*` plugin folder.
+- NEVER add a `ProjectReference` or `PackageReference` to any core `.csproj`.
+- NEVER edit `Rock.sln` directly — only the Visual Studio UI adds projects.
+- NEVER copy a core file into a plugin folder and modify it as a workaround —
+  this creates a maintenance nightmare on every Rock upgrade.
+- NEVER assume a task requires core modification without first exhausting
+  all plugin-side extension points.
+
+---
+
+## org.minsol.Common — Shared Plugin
+
+### Purpose
+`org.minsol.Common` is the single shared plugin that provides reusable
+services, helpers, types, and components consumed by all other MinSol plugins.
+It exists to enforce DRY across the plugin ecosystem without modifying Rock core.
+
+### What Belongs in Common
+- Shared C# service classes used by multiple plugins
+- Shared C# helper/utility methods used by multiple plugins
+- Shared Rock entity extensions
+- Shared TypeScript type definitions used by multiple plugins
+- Shared TypeScript utility functions used by multiple plugins
+- Shared `.obs` Vue components used by multiple plugins
+
+### What Does NOT Belong in Common
+- Block types — Common has no blocks. Ever.
+- Plugin-specific logic — if only one plugin uses it, it stays in that plugin.
+- Bags or Boxes — these are always plugin-specific.
+- Any code that references a specific plugin's namespace.
+
+If Cline is about to create a Block inside Common, stop — that is always wrong.
+
+### Common File Structure
+
+```
+Common/
+├── org.minsol.Common/
+│   ├── org.minsol.Common.csproj
+│   ├── Helpers/
+│   │   └── [HelperName]Helper.cs      <- shared C# helper classes
+│   ├── Model/
+│   │   └── [EntityName].cs            <- shared Rock entity extensions
+│   ├── Services/
+│   │   └── [ServiceName]Service.cs    <- shared C# service classes
+│   └── (NO Blocks/ folder)            <- Common never has blocks
+└── org.minsol.Common.Obsidian/
+    ├── org.minsol.Common.Obsidian.esproj
+    ├── obsidian.config.json
+    ├── package.json
+    ├── tsconfig.base.json
+    └── src/
+        ├── tsconfig.json
+        ├── shims-obs.d.ts
+        ├── Components/
+        │   └── [ComponentName].obs    <- shared Vue components
+        ├── types/
+        │   └── [typeName].ts          <- shared TypeScript interfaces/types
+        └── utils/
+            └── [utilName].ts          <- shared TypeScript utility functions
+```
+
+### Referencing Common from Other Plugins
+
+#### C# Side — ProjectReference
+Every plugin that needs Common adds a ProjectReference to its .csproj.
+This goes directly after the existing Rock ProjectReference entries:
+
+```xml
+<ItemGroup>
+    <ProjectReference Include="..\..\Rock\Rock.csproj" />
+    <ProjectReference Include="..\..\Rock.Rest\Rock.Rest.csproj" />
+    <ProjectReference Include="..\..\DotLiquid\DotLiquid.csproj" />
+    <ProjectReference Include="..\..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
+    <ProjectReference Include="..\..\Common\org.minsol.Common\org.minsol.Common.csproj" />
+</ItemGroup>
+```
+
+Only add the Common ProjectReference if the plugin actually uses something
+from Common. Do not add it preemptively.
+
+#### Frontend Side — Path Alias
+Every plugin's tsconfig.base.json includes a @MinSol/Common/* path alias.
+This is baked into the canonical tsconfig.base.json template. Imports look like:
+
+```typescript
+import type { SharedPersonType } from "@MinSol/Common/types/person";
+import { formatCampusName } from "@MinSol/Common/utils/campusUtils";
+import CampusPicker from "@MinSol/Common/Components/campusPicker.obs";
+```
+
+Never use relative paths to reach into Common from another plugin.
+Always use the @MinSol/Common/* alias.
+
+### Rules for Working in Common
+
+- ALWAYS check Common before writing any new shared utility or component
+  in a plugin. If the logic is in Common already, use it — never duplicate.
+- ALWAYS add new shared logic to Common if it will be used by more than
+  one plugin, even if only one plugin needs it today.
+- NEVER add plugin-specific logic to Common. Common must remain generic.
+- NEVER create a Block in Common.
+- NEVER reference a specific plugin's namespace from inside Common.
+- XML doc comments are required on all public Common members.
+
+### Building Common
+When C# changes were made to Common, always build it before the consuming plugin:
+
+```bash
+dotnet build Common/org.minsol.Common/org.minsol.Common.csproj
+```
+
+---
+
+
+## New Plugin Checklist — Follow This Order
+
+### Phase 1: Directory and Project File Setup
+
+Never copy files from an existing plugin. Always create every file from scratch
+using the canonical templates defined in this rules file.
+
+1. Create the parent folder at the repo root:
+   ```bash
+   mkdir [PluginName]
+   ```
+
+2. Create the C# project subdirectory:
+   ```bash
+   mkdir [PluginName]/org.minsol.[PluginName]
+   ```
+
+3. Create the Obsidian frontend subdirectory:
+   ```bash
+   mkdir [PluginName]/org.minsol.[PluginName].Obsidian
+   ```
+
+4. Create the `src/` directory:
+   ```bash
+   mkdir [PluginName]/org.minsol.[PluginName].Obsidian/src
+   ```
+
+5. Create all project files from the Canonical File Templates section above.
+   Substitute [PluginName] in PascalCase and [pluginname] in lowercase.
+
+### Phase 2: Add Projects to Rock.sln and Configure Dependencies
+
+#### C# Project — Dependencies Handled by .csproj
+Do NOT manually edit `Rock.sln`. The `.csproj` manages all C# dependency
+wiring automatically via `ProjectReference` and `PackageReference` entries.
+
+#### Adding Projects to the Solution — Visual Studio UI Only
+1. Open `Rock.sln` in Visual Studio 2022
+2. Right-click **"Solution 'Rock'"** → **Add > Existing Project...**
+3. Select `org.minsol.[PluginName].csproj`
+4. Right-click **"Solution 'Rock'"** again → **Add > Existing Project...**
+5. Select `org.minsol.[PluginName].Obsidian.esproj`
+
+#### Setting the Obsidian Build Dependency — Manual Step Required
+1. In Solution Explorer, right-click `org.minsol.[PluginName].Obsidian`
+2. Select **Build Dependencies > Project Dependencies...**
+3. Check the box next to **`Rock.JavaScript.Obsidian`**
+4. Click **OK**
+
+Skipping this step will cause build failures in CI/CD.
+
+### Phase 3: Write C# Code
+
+6. Create `SystemGuid/` constants for any new block types.
+7. Create all Bag files in `ViewModels/Blocks/[BlockName]/` — one file per bag.
+8. Create the Box file in `ViewModels/Blocks/[BlockName]/`.
+9. Create the C# BlockType in `Blocks/[BlockName]/[BlockName].cs`.
+10. Build the C# project — zero errors before touching the frontend:
+    ```bash
+    dotnet build [PluginName]/org.minsol.[PluginName]/org.minsol.[PluginName].csproj
+    ```
+
+### Phase 4: Write Frontend Code
+
+11. Install frontend dependencies:
+    ```bash
+    powershell.exe -Command "cd [PluginName]/org.minsol.[PluginName].Obsidian; npm install"
+    ```
+
+12. Generate TypeScript ViewModels from the compiled DLL:
+    ```bash
+    powershell.exe -Command "cd [PluginName]/org.minsol.[PluginName].Obsidian; npm run viewmodels"
+    ```
+
+13. Create `src/[BlockName]/utils.ts` — define all helper functions.
+15. Create sub-component `.obs` files — one per responsibility.
+16. Create root `src/[BlockName]/[blockName].obs` — orchestration only.
+
+17. Build the frontend:
+    ```bash
+    powershell.exe -Command "cd [PluginName]/org.minsol.[PluginName].Obsidian; npm run build"
+    ```
+
+---
+
+## Terminal Command Rules
+
+- NEVER chain commands with `&&`, `||`, or `;` in a standard terminal call.
+- ALWAYS use the PowerShell wrapper for any command requiring a specific directory:
+  ```bash
+  powershell.exe -Command "cd [target-directory]; [command]"
+  ```
+- Execute each command as a separate step and wait for completion before proceeding.
+- Run all PowerShell wrapper commands from the repo root.
+
+---
+
+## Code Review Checklist
+Run this after every code generation session before accepting output.
+
+Ask Cline:
+"Review all code you just wrote against the .clinerules. Check for:
+- Any use of `any` type
+- Any logic duplicated across files that belongs in utils.ts
+- Any custom types defined inline instead of using generated ViewModels types
+- Any business logic inside Vue templates
+- Any missing XML doc comments on public C# members
+- Any magic strings or magic numbers
+- Any empty catch blocks
+- Any unused imports or variables
+- Any TODO comments
+- Any pattern invented instead of following Rock core
+List every violation found, then fix all of them before we continue."
+
+---
+
+## Model Selection Guide
+- **Gemini Pro**  → Planning, architecture decisions, Rock core pattern research,
+                    and the mandatory pre-code workflow step
+- **Gemini Flash** → Executing a confirmed plan, generating boilerplate,
+                     and mechanical file creation tasks
+
+Never use Flash for architectural decisions. Never skip the planning phase.
