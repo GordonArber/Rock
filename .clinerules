@@ -16,16 +16,22 @@ in every language, every file, every time.
 # STOP. Read this before writing a single line of code.
 
 ### Required Information Before Starting
-If creating a new plugin and any of the following are missing from the
-request, ask for ALL missing items in a SINGLE question before proceeding:
+When asked to create a new plugin, the ONLY things Cline needs to ask for
+are the plugin name and block name if they were not provided. Ask for both
+in a single question:
 
-- **Plugin name** (e.g. `GroupFinder`)
-- **Block name** (e.g. `GroupFinderList`)
+"What is the plugin name and initial block name? (e.g. GroupFinder, GroupFinderList)"
 
-Names are ALWAYS PascalCase. Never ask the developer to confirm casing —
-apply PascalCase automatically. Ask once, collect both names, then proceed.
-Never ask for these one at a time across multiple turns.
-Never proceed without both.
+Names are ALWAYS PascalCase — apply it automatically, never ask to confirm.
+
+DO NOT ask:
+- What kind of plugin it is
+- What it should do
+- What features it needs
+- Any other clarifying questions
+
+All structural decisions are already defined in these rules. Once the two
+names are known, begin scaffolding immediately.
 
 1. Output a complete file plan listing every file you will create or modify.
 2. For each file, state its single responsibility in one sentence.
