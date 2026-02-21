@@ -20,9 +20,12 @@ in every language, every file, every time.
 3. Identify which generated ViewModel types (bags, boxes, enums) will be needed.
 4. Identify all functions that belong in utils.ts.
 5. Identify all Bags and Boxes required and list them by name.
-6. Wait for explicit approval before writing any code.
-7. If a task touches more than 3 files, break it into phases. Confirm each phase.
-8. After completing each file, run the appropriate build/type check before moving on.
+6. If anything is unclear, ask before starting — do not assume.
+7. Once the plan is output, execute it in full without stopping between files.
+8. Only pause if a genuine blocker is hit — a build error, an ambiguity that
+   cannot be resolved without input, or a significant architectural decision.
+   Everything else — keep building without asking.
+9. Run the appropriate build/type checks after all files are complete.
 
 ---
 
@@ -677,6 +680,52 @@ export const validate[BlockName] = (bag: [BlockName]Bag): string[] => {
 # Create every file below from scratch. Never copy from an existing plugin.
 # Replace [PluginName] with PascalCase and [pluginname] with lowercase.
 
+### org.minsol.[PluginName].sln
+Location: `[PluginName]/org.minsol.[PluginName].sln`
+
+Every plugin has its own `.sln` file containing only the C# project.
+This is completely independent of `Rock.sln` — never add plugin projects
+to `Rock.sln`. The Obsidian frontend project is NOT included in the `.sln`
+since it is built independently via `npm run build`.
+
+Generate a new GUID for the plugin project using PowerShell:
+```bash
+powershell.exe -Command "[System.Guid]::NewGuid().ToString().ToUpper()"
+```
+
+```
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.minsol.[PluginName]", "org.minsol.[PluginName]\org.minsol.[PluginName].csproj", "{YOUR-NEW-GUID}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{YOUR-NEW-GUID}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{YOUR-NEW-GUID}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{YOUR-NEW-GUID}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{YOUR-NEW-GUID}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {YOUR-SECOND-NEW-GUID}
+	EndGlobalSection
+EndGlobal
+```
+
+Replace `{YOUR-NEW-GUID}` with the generated GUID (appears 5 times).
+Replace `{YOUR-SECOND-NEW-GUID}` with a second newly generated GUID
+for the SolutionGuid — these must be different from each other.
+
+---
+
 ### org.minsol.[PluginName].csproj
 Location: `[PluginName]/org.minsol.[PluginName]/org.minsol.[PluginName].csproj`
 
@@ -1097,7 +1146,7 @@ If a task seems to require modifying a Rock core file:
   `Rock.Rest/`, `Rock.JavaScript.Obsidian/`, `RockWeb/`, or any directory
   that is not inside an `org.minsol.*` plugin folder.
 - NEVER add a `ProjectReference` or `PackageReference` to any core `.csproj`.
-- NEVER edit `Rock.sln` directly — only the Visual Studio UI adds projects.
+- NEVER touch `Rock.sln` — plugins use their own `.sln` file, not the core solution.
 - NEVER copy a core file into a plugin folder and modify it as a workaround —
   this creates a maintenance nightmare on every Rock upgrade.
 - NEVER assume a task requires core modification without first exhausting
@@ -1242,24 +1291,7 @@ using the canonical templates defined in this rules file.
 
 ### Phase 2: Add Projects to Rock.sln and Configure Dependencies
 
-#### C# Project — Dependencies Handled by .csproj
-Do NOT manually edit `Rock.sln`. The `.csproj` manages all C# dependency
-wiring automatically via `ProjectReference` and `PackageReference` entries.
 
-#### Adding Projects to the Solution — Visual Studio UI Only
-1. Open `Rock.sln` in Visual Studio 2022
-2. Right-click **"Solution 'Rock'"** → **Add > Existing Project...**
-3. Select `org.minsol.[PluginName].csproj`
-4. Right-click **"Solution 'Rock'"** again → **Add > Existing Project...**
-5. Select `org.minsol.[PluginName].Obsidian.esproj`
-
-#### Setting the Obsidian Build Dependency — Manual Step Required
-1. In Solution Explorer, right-click `org.minsol.[PluginName].Obsidian`
-2. Select **Build Dependencies > Project Dependencies...**
-3. Check the box next to **`Rock.JavaScript.Obsidian`**
-4. Click **OK**
-
-Skipping this step will cause build failures in CI/CD.
 
 ### Phase 3: Write C# Code
 
@@ -1267,10 +1299,16 @@ Skipping this step will cause build failures in CI/CD.
 7. Create all Bag files in `ViewModels/Blocks/[BlockName]/` — one file per bag.
 8. Create the Box file in `ViewModels/Blocks/[BlockName]/`.
 9. Create the C# BlockType in `Blocks/[BlockName]/[BlockName].cs`.
-10. Build the C# project — zero errors before touching the frontend:
+10. Build the C# project using dotnet build on the plugin .csproj directly.
+    The ProjectReference entries resolve Rock core assemblies by relative path —
+    no Rock.sln or Visual Studio required.
+
     ```bash
     dotnet build [PluginName]/org.minsol.[PluginName]/org.minsol.[PluginName].csproj
     ```
+
+    CopyToRockWeb in the .csproj automatically copies the compiled DLL to
+    RockWeb/bin/ on a successful build.
 
 ### Phase 4: Write Frontend Code
 
