@@ -174,6 +174,7 @@ namespace Rock.Blocks.Finance
         private static class PageParameterKey
         {
             public const string BenevolenceRequestId = "BenevolenceRequestId";
+            public const string PersonId = "PersonId";
         }
 
         /// <summary>
@@ -352,6 +353,18 @@ namespace Rock.Blocks.Finance
         private bool ValidateBenevolenceRequest( BenevolenceRequest benevolenceRequest, out string errorMessage )
         {
             errorMessage = null;
+
+            var benevolenceType = benevolenceRequest.BenevolenceType ?? new BenevolenceTypeService( RockContext ).Get( benevolenceRequest.BenevolenceTypeId );
+            if ( benevolenceType != null )
+            {
+                var maximumDocuments = benevolenceType.AdditionalSettingsJson.FromJsonOrNull<BenevolenceType.AdditionalSettings>()?.MaximumNumberOfDocuments ?? 6;
+
+                if ( benevolenceRequest.Documents.Count > maximumDocuments )
+                {
+                    errorMessage = $"The number of attached documents exceeds the maximum allowed limit of {maximumDocuments} for this request type.";
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -650,6 +663,7 @@ namespace Rock.Blocks.Finance
                                 if ( benevolenceDocumentToRemove != null )
                                 {
                                     BenevolenceRequestDocumentService.Delete( benevolenceDocumentToRemove );
+                                    entity.Documents.Remove( benevolenceDocumentToRemove );
                                     binaryFile.IsTemporary = true;
                                 }
                             }
@@ -802,6 +816,17 @@ namespace Rock.Blocks.Finance
             }
 
             var bag = GetCommonEntityBag( entity );
+
+            // Handle PersonID incase request is created from Person's Profile Page
+            var potentialPerson = new PersonService( RockContext ).Get(
+                RequestContext.GetPageParameter( PageParameterKey.PersonId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            );
+
+            if ( potentialPerson != null && entity.Id == 0 )
+            {
+                bag.Requester = BuildPersonBag( entity, potentialPerson.PrimaryAlias.Id, entity.GovernmentId, true );
+            }
 
             if ( entity.Attributes == null )
             {

@@ -46,11 +46,10 @@
     import { AddressControlGetConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlGetConfigurationOptionsBag";
     import { AddressControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlConfigurationBag";
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
-    import { post } from "@Obsidian/Utility/http";
+    import { useHttp } from "@Obsidian/Utility/http";
     import Loading from "./loading.obs";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
     import { containsRequiredRule, rulesPropType } from "@Obsidian/ValidationRules";
-
 
     type FullAddress = Required<{
         [Property in keyof AddressControlBag]: NonNullable<AddressControlBag[Property]>
@@ -115,6 +114,8 @@
     const emit = defineEmits<{
         (e: "update:modelValue", value: AddressControlBag): void
     }>();
+
+    const http = useHttp();
 
     const internalValue = reactive<FullAddress>({
         city: props.modelValue.city ?? "",
@@ -183,7 +184,7 @@
         isVisible: true,
         label: "County",
         rules: RequirementLevel.Unspecified,
-        autocomplete: "address-level2"
+        autocomplete: "address-level3"
     });
     const state = reactive<FieldConfig>({
         isVisible: true,
@@ -258,7 +259,7 @@
         };
 
         // TODO: At some point, we should find some way to cache this
-        const result = await post<AddressControlConfigurationBag>("/api/v2/Controls/AddressControlGetConfiguration", undefined, options);
+        const result = await http.post<AddressControlConfigurationBag>("/api/v2/Controls/AddressControlGetConfiguration", undefined, options);
 
         if (result.isSuccess && result.data) {
             const data = result.data;
@@ -290,7 +291,7 @@
             city.isVisible = data.cityRequirement !== RequirementLevel.Unavailable;
             city.rules = data.cityRequirement;
             city.label = data.cityLabel ?? city.label;
-            city.autocomplete = county.isVisible ? "address-level3" : "address-level2";
+            city.autocomplete = "address-level2";
 
             state.isVisible = data.stateRequirement !== RequirementLevel.Unavailable;
             state.rules = data.stateRequirement;

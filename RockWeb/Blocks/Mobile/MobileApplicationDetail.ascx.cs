@@ -533,6 +533,7 @@ namespace RockWeb.Blocks.Mobile
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
             ppEditInteractiveExperiencePage.SetValue( additionalSettings.InteractiveExperiencePageId );
             ppEditChatPage.SetValue( additionalSettings.ChatPageId );
+            ppEditOutreachToolboxTouchpointPage.SetValue( additionalSettings.OutreachToolboxTouchpointPageId );
 
             ppCommunicationViewPage.SetValue( additionalSettings.CommunicationViewPageId );
             ppEditSmsConversationPage.SetValue( additionalSettings.SmsConversationPageId );
@@ -799,7 +800,7 @@ namespace RockWeb.Blocks.Mobile
                     p.Id,
                     p.InternalName,
                     LayoutName = p.Layout.Name,
-                    DisplayInNavWhen = p.DisplayInNavWhen.GetDescription() ?? p.DisplayInNavWhen.ToStringSafe()
+                    DisplayInNavWhen = p.DisplayInNavWhen.GetDisplayName()
                 } )
                 .ToList();
 
@@ -1025,6 +1026,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.InteractiveExperiencePageId = ppEditInteractiveExperiencePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
             additionalSettings.SmsConversationPageId = ppEditSmsConversationPage.PageId;
+            additionalSettings.OutreachToolboxTouchpointPageId = ppEditOutreachToolboxTouchpointPage.PageId;
             additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.IsDeepLinkingEnabled = cbEnableDeepLinking.Checked;
@@ -1058,6 +1060,11 @@ namespace RockWeb.Blocks.Mobile
             if ( site.ThumbnailBinaryFileId.HasValue )
             {
                 binaryFileService.Get( site.ThumbnailBinaryFileId.Value ).IsTemporary = false;
+            }
+
+            if (additionalSettings.DarkFavIconBinaryFileId.HasValue )
+            {
+                binaryFileService.Get( additionalSettings.DarkFavIconBinaryFileId.Value ).IsTemporary = false;
             }
 
             // This is a new site.
@@ -1235,6 +1242,11 @@ namespace RockWeb.Blocks.Mobile
                 if ( site.FavIconBinaryFileId.HasValue )
                 {
                     binaryFileService.Get( site.FavIconBinaryFileId.Value ).IsTemporary = false;
+                }
+
+                if ( additionalSettings.DarkFavIconBinaryFileId.HasValue )
+                {
+                    binaryFileService.Get( additionalSettings.DarkFavIconBinaryFileId.Value ).IsTemporary = false;
                 }
 
                 rockContext.SaveChanges();

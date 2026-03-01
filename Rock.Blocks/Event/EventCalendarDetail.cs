@@ -29,6 +29,7 @@ using Rock.UniversalSearch;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventCalendarDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -41,15 +42,16 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given Event Calendar." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b033f86d-c166-4642-b999-0677f2ca2daf" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2dc334ac-c2c2-4031-9e1c-6a5b6fbcae9c" )]
-    public class EventCalendarDetail : RockEntityDetailBlockType<EventCalendar, EventCalendarBag>
+    // was [Rock.SystemGuid.BlockTypeGuid( "2dc334ac-c2c2-4031-9e1c-6a5b6fbcae9c" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0320DFB9-7A5A-4DAC-8234-3D504E496D71" )]
+    public class EventCalendarDetail : RockEntityDetailBlockType<EventCalendar, EventCalendarBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -291,6 +293,29 @@ namespace Rock.Blocks.Event
             };
         }
 
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.EventCalendarId );
+            var pageParameters = new Dictionary<string, string>();
+
+            string name = new EventCalendarService( RockContext )
+                .GetSelect( key, c => c.Name );
+
+            if ( name != null )
+            {
+                pageParameters.Add( PageParameterKey.EventCalendarId, key );
+            }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "New Event Calendar", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+            };
+        }
+
         // <inheritdoc/>
         protected override bool TryGetEntityForEditAction( string idKey, out EventCalendar entity, out BlockActionResult error )
         {
@@ -348,10 +373,18 @@ namespace Rock.Blocks.Event
             }
 
             // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int order = 0;
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                if ( attr != null )
+                {
+                    attr.Order = order++;
+                }
             }
+
+            RockContext.SaveChanges();
         }
 
         /// <summary>
@@ -564,30 +597,6 @@ namespace Rock.Blocks.Event
             attributes.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
 
             return ActionOk( new { editableAttribute, reservedKeyNames } );
-        }
-
-        /// <summary>
-        /// Changes the ordered position of a single item.
-        /// </summary>
-        /// <param name="guid">The identifier of the item that will be moved.</param>
-        /// <param name="beforeGuid">The identifier of the item it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
-        {
-            // Get the queryable and make sure it is ordered correctly.
-            var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
-
-            var attributes = GetEventAttributes( id?.ToString() );
-
-            if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-
-            return ActionOk();
         }
 
         #endregion
