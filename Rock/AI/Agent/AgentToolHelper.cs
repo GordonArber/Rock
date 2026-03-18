@@ -690,7 +690,7 @@ namespace Rock.AI.Agent
                     {
                         var hints = fieldType.GetFieldHints( a.ConfigurationValues );
 
-                        attr.ValueFormat = hints.ValueFormat.ToStringOrDefault( null );
+                        attr.ValueFormat = hints?.ValueFormat.ToStringOrDefault( null );
                     }
 
                     return attr;
@@ -1568,6 +1568,34 @@ namespace Rock.AI.Agent
                 isRequired: false,
                 lowerParameterExpression: lowerParameterExpression,
                 upperParameterExpression: upperParameterExpression );
+        }
+
+        /// <summary>
+        /// Checks all the filter values to see if any were provided. If not then
+        /// an error will be reported.
+        /// </summary>
+        /// <param name="filters">The filter values to be checked.</param>
+        public void RequireAtLeastOneFilter( IEnumerable<object> filters )
+        {
+            foreach ( var filter in filters )
+            {
+                if ( filter is string stringFilter && stringFilter.IsNotNullOrWhiteSpace() )
+                {
+                    return;
+                }
+
+                if ( filter is int )
+                {
+                    return;
+                }
+
+                if ( filter is DateTime )
+                {
+                    return;
+                }
+            }
+
+            AddError( "At least one filter must be provided." );
         }
 
         #endregion
