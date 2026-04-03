@@ -1,36 +1,71 @@
 # Transaction Failure Monitor — Lava Application
 
-A Lava Application dashboard for detecting financial transactions that were charged by the payment gateway but failed to save to the Rock database. Provides a date-filterable view with dismiss/notification capabilities.
+A Lava Application dashboard for detecting financial transactions that were charged by the payment gateway but failed to save to the Rock database. Provides a date-filterable view with dismiss/notification capabilities. Sends email notifications to the giving support team, a configurable leader, and the current PagerDuty on-call engineer.
 
 ---
 
 ## Setup Instructions
 
-### 1. Create a SystemCommunication
+### 1. Create a Defined Type for Recipients
+
+Go to **Admin Tools > General Settings > Defined Types** and create a new Defined Type:
+
+| Field | Value |
+|-------|-------|
+| **Name** | Transaction Failure Notification Recipients |
+| **Description** | Email addresses that receive notifications when financial transactions fail to save to the database. Each Defined Value should be an email address. Manage recipients by adding or removing values here — no code changes needed. |
+| **Category** | Finance |
+
+Add the following **Defined Values**:
+
+| Value | Description |
+|-------|-------------|
+| `giving@life.church` | Giving support team inbox |
+| *(leader's email)* | Finance team leader — update this value when leadership changes |
+
+After saving, **copy the Defined Type's Guid** — you'll need it for the ConfigurationRigging.
+
+### 2. Create a SystemCommunication
 
 Go to **Admin Tools > Communications > System Communications** and create a new communication:
 
 | Field | Value |
 |-------|-------|
 | **Title** | Transaction Failure Notification |
+| **Description** | Sent when financial transactions are charged by the payment gateway but fail to save to the Rock database. Contains a table of affected transactions with person profile links, timestamps, amounts, and transaction GUIDs. |
+| **Category** | Finance |
 | **From** | *(use your org default or specify)* |
 | **Subject** | `Failed to Save Transaction(s) - {{ 'Now' \| Date:'MMMM d, yyyy' }}` |
 | **Body** | *(see [SystemCommunication Email Body](#systemcommunication-email-body) below)* |
 
 After saving, **copy the SystemCommunication's Guid** — you'll need it for the ConfigurationRigging.
 
-### 2. Create the Lava Application
+### 3. Create an Entity Attribute for Dismiss Tracking
+
+Go to **Admin Tools > System Settings > Entity Attributes** and create a new attribute:
+
+| Field | Value |
+|-------|-------|
+| **Entity Type** | Exception Log |
+| **Name** | Is Transaction Failure Dismissed |
+| **Key** | `IsTransactionFailureDismissed` |
+| **Description** | Indicates this exception has been reviewed and dismissed (or emailed) by the Transaction Failure Monitor. Set to True when a failure is dismissed or included in a notification email. |
+| **Field Type** | Boolean |
+| **Default Value** | False |
+
+### 4. Create the Lava Application
 
 Go to **Admin Tools > CMS Configuration > Lava Applications** and create a new application:
 
 | Field | Value |
 |-------|-------|
 | **Name** | Transaction Failure Monitor |
+| **Description** | Monitors ExceptionLog for financial transactions that were charged by the payment gateway but failed to save to the Rock database. Provides a dashboard to review failures and send notification emails to the giving support team, leader, and on-call engineer. |
 | **Slug** | `transaction-failure-monitor` |
 | **Is Active** | Yes |
 | **Configuration Rigging** | *(see [ConfigurationRigging JSON](#configurationrigging-json) below)* |
 
-### 3. Create Endpoints
+### 5. Create Endpoints
 
 On the application detail page, create the following three endpoints:
 
@@ -39,9 +74,13 @@ On the application detail page, create the following three endpoints:
 | Field | Value |
 |-------|-------|
 | **Name** | Check Failures |
+| **Description** | Queries ExceptionLog for "Error recording charge:" entries on the selected date, parses transaction details (Person, Amount, Guid), and renders an HTML table. Excludes previously dismissed entries. |
 | **Slug** | `check-failures` |
 | **HTTP Method** | GET |
 | **Enabled Lava Commands** | Sql |
+| **Security Mode** | Application View |
+| **Enable Cross-Site Forgery Protection** | Unchecked *(read-only GET request)* |
+| **Cacheability Type** | No-Store |
 | **Code Template** | *(see [check-failures Endpoint](#get-check-failures-endpoint) below)* |
 
 #### Endpoint 2: send-notification
@@ -49,9 +88,13 @@ On the application detail page, create the following three endpoints:
 | Field | Value |
 |-------|-------|
 | **Name** | Send Notification |
+| **Description** | Sends a notification email to all configured recipients (from Defined Type) plus the current PagerDuty on-call engineer. Includes all non-dismissed failures for the selected date. Auto-dismisses failures after successful send. |
 | **Slug** | `send-notification` |
 | **HTTP Method** | POST |
-| **Enabled Lava Commands** | Sql,Execute |
+| **Enabled Lava Commands** | Sql,Execute,WebRequest |
+| **Security Mode** | Application Edit |
+| **Enable Cross-Site Forgery Protection** | Checked |
+| **Cacheability Type** | No-Store |
 | **Code Template** | *(see [send-notification Endpoint](#post-send-notification-endpoint) below)* |
 
 #### Endpoint 3: dismiss-failures
@@ -59,37 +102,25 @@ On the application detail page, create the following three endpoints:
 | Field | Value |
 |-------|-------|
 | **Name** | Dismiss Failures |
+| **Description** | Marks selected ExceptionLog entries as dismissed so they no longer appear in the failure list. Used when a failure has been manually resolved or is a known issue that does not need a notification email. |
 | **Slug** | `dismiss-failures` |
 | **HTTP Method** | POST |
 | **Enabled Lava Commands** | Sql |
+| **Security Mode** | Application Edit |
+| **Enable Cross-Site Forgery Protection** | Checked |
+| **Cacheability Type** | No-Store |
 | **Code Template** | *(see [dismiss-failures Endpoint](#post-dismiss-failures-endpoint) below)* |
 
-### 4. Create the Dismiss Tracking Table
-
-Run this SQL in **Admin Tools > Power Tools > SQL Command**:
-
-```sql
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TransactionFailureDismissal')
-BEGIN
-    CREATE TABLE [dbo].[TransactionFailureDismissal] (
-        [Id] INT IDENTITY(1,1) PRIMARY KEY,
-        [ExceptionLogId] INT NOT NULL,
-        [DismissedByPersonAliasId] INT NULL,
-        [DismissedDateTime] DATETIME NOT NULL DEFAULT GETDATE(),
-        [WasNotificationSent] BIT NOT NULL DEFAULT 0
-    );
-    CREATE INDEX [IX_ExceptionLogId] ON [dbo].[TransactionFailureDismissal]([ExceptionLogId]);
-END
-```
-
-### 5. Create a Page
+### 6. Create a Page
 
 1. Go to **Admin Tools > CMS Configuration > Pages**
 2. Create a new page under an appropriate section (e.g., Finance):
    - **Name:** Transaction Failure Monitor
+   - **Description:** Dashboard for reviewing financial transactions that failed to save to the database after being charged by the payment gateway. Allows sending notification emails and dismissing resolved failures.
    - **Route:** `finance/transaction-failure-monitor`
 3. Add a **Lava Application Content** block to the page
 4. Configure the block:
+   - **Name:** Transaction Failure Monitor Content
    - **Application:** Transaction Failure Monitor
    - **Lava Template:** *(see [Content Block Template](#content-block-template) below)*
 
@@ -101,12 +132,19 @@ Update these values for your environment before pasting into the Lava Applicatio
 
 ```json
 {
-    "GivingSupportEmail": "giving@life.church",
-    "LeaderEmail": "",
-    "RockBaseUrl": "https://your-rock-instance.com",
-    "SystemCommunicationGuid": "REPLACE-WITH-YOUR-SYSTEM-COMMUNICATION-GUID"
+    "SystemCommunicationGuid": "REPLACE-WITH-YOUR-SYSTEM-COMMUNICATION-GUID",
+    "RecipientDefinedTypeGuid": "REPLACE-WITH-YOUR-DEFINED-TYPE-GUID",
+    "PagerDutyApiToken": "",
+    "PagerDutyScheduleId": ""
 }
 ```
+
+| Key | Description |
+|-----|-------------|
+| `SystemCommunicationGuid` | The Guid of the SystemCommunication template created in step 2. |
+| `RecipientDefinedTypeGuid` | The Guid of the "Transaction Failure Notification Recipients" Defined Type created in step 1. |
+| `PagerDutyApiToken` | API token from PagerDuty (Account Settings > API Access Keys). Leave empty to skip PagerDuty integration. |
+| `PagerDutyScheduleId` | The PagerDuty schedule ID to look up the current on-call engineer. Leave empty to skip. |
 
 ---
 
@@ -121,6 +159,10 @@ Paste this into the **Lava Template** field of the LavaApplicationContent block:
             <h1 class="panel-title"><i class="fa fa-exclamation-triangle"></i> Transaction Failure Monitor</h1>
         </div>
         <div class="panel-body">
+            <p class="text-muted mb-3">
+                Review financial transactions that were charged by the payment gateway but failed to save to the database.
+                Use the date filter to check specific days. Dismiss resolved items or send a notification email to the team.
+            </p>
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="filterDate">Date</label>
@@ -182,12 +224,18 @@ SELECT
     el.[CreatedDateTime],
     el.[Description]
 FROM [ExceptionLog] el
-LEFT JOIN [TransactionFailureDismissal] tfd ON tfd.[ExceptionLogId] = el.[Id]
+LEFT JOIN [Attribute] a
+    ON a.[Key] = 'IsTransactionFailureDismissed'
+    AND a.[EntityTypeId] = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.ExceptionLog')
+LEFT JOIN [AttributeValue] av
+    ON av.[AttributeId] = a.[Id]
+    AND av.[EntityId] = el.[Id]
+    AND av.[Value] = 'True'
 WHERE el.[Description] LIKE 'Error recording charge:%'
     AND el.[ExceptionType] = 'System.Exception'
     AND el.[CreatedDateTime] >= '{{ filterDate }}'
     AND el.[CreatedDateTime] < '{{ nextDate }}'
-    AND tfd.[Id] IS NULL
+    AND av.[Id] IS NULL
 ORDER BY el.[Id] DESC
 {% endsql %}
 
@@ -265,7 +313,7 @@ ORDER BY el.[Id] DESC
                     </td>
                     <td>
                         {% if person %}
-                            <a href="{{ ConfigurationRigging.RockBaseUrl }}/person/{{ person.Id }}" target="_blank">
+                            <a href="{{ 'Global' | Attribute:'InternalApplicationRoot' }}person/{{ person.Id }}" target="_blank">
                                 {{ person.NickName }} {{ person.LastName }}
                             </a>
                         {% elseif personId != '' %}
@@ -324,12 +372,18 @@ SELECT
     el.[CreatedDateTime],
     el.[Description]
 FROM [ExceptionLog] el
-LEFT JOIN [TransactionFailureDismissal] tfd ON tfd.[ExceptionLogId] = el.[Id]
+LEFT JOIN [Attribute] a
+    ON a.[Key] = 'IsTransactionFailureDismissed'
+    AND a.[EntityTypeId] = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.ExceptionLog')
+LEFT JOIN [AttributeValue] av
+    ON av.[AttributeId] = a.[Id]
+    AND av.[EntityId] = el.[Id]
+    AND av.[Value] = 'True'
 WHERE el.[Description] LIKE 'Error recording charge:%'
     AND el.[ExceptionType] = 'System.Exception'
     AND el.[CreatedDateTime] >= '{{ filterDate }}'
     AND el.[CreatedDateTime] < '{{ nextDate }}'
-    AND tfd.[Id] IS NULL
+    AND av.[Id] IS NULL
 ORDER BY el.[Id] DESC
 {% endsql %}
 
@@ -341,7 +395,9 @@ ORDER BY el.[Id] DESC
 </div>
 {% else %}
 
-{% comment %} Build a pipe-delimited data string for each failure to pass into execute block {% endcomment %}
+{% comment %} ============================================= {% endcomment %}
+{% comment %} Build failure data for the execute block       {% endcomment %}
+{% comment %} ============================================= {% endcomment %}
 {% assign failureData = '' %}
 {% assign exceptionIdList = '' %}
 {% for row in results %}
@@ -398,13 +454,62 @@ ORDER BY el.[Id] DESC
     {% endif %}
 {% endfor %}
 
+{% comment %} ============================================= {% endcomment %}
+{% comment %} Fetch PagerDuty on-call engineer email         {% endcomment %}
+{% comment %} ============================================= {% endcomment %}
+{% assign pagerDutyEmail = '' %}
+{% assign pdToken = ConfigurationRigging.PagerDutyApiToken %}
+{% assign pdScheduleId = ConfigurationRigging.PagerDutyScheduleId %}
+
+{% if pdToken != '' and pdScheduleId != '' %}
+    {% webrequest url:'https://api.pagerduty.com/oncalls?schedule_ids[]={{ pdScheduleId }}' headers:'Authorization: Token token={{ pdToken }},Accept: application/vnd.pagerduty+json;version=2,Content-Type: application/json' return:'pdResponse' responsecontenttype:'json' %}
+    {% endwebrequest %}
+
+    {% if pdResponse.oncalls and pdResponse.oncalls.size > 0 %}
+        {% assign pagerDutyEmail = pdResponse.oncalls[0].user.email %}
+    {% endif %}
+{% endif %}
+
+{% comment %} ============================================= {% endcomment %}
+{% comment %} Fetch static recipient emails from Defined Type {% endcomment %}
+{% comment %} ============================================= {% endcomment %}
+{% assign recipientEmails = '' %}
+{% sql recipientResults %}
+SELECT dv.[Value]
+FROM [DefinedValue] dv
+INNER JOIN [DefinedType] dt ON dt.[Id] = dv.[DefinedTypeId]
+WHERE dt.[Guid] = '{{ ConfigurationRigging.RecipientDefinedTypeGuid }}'
+    AND dv.[IsActive] = 1
+ORDER BY dv.[Order]
+{% endsql %}
+
+{% for recipient in recipientResults %}
+    {% if recipientEmails != '' %}
+        {% assign recipientEmails = recipientEmails | Append:',' | Append:recipient.Value %}
+    {% else %}
+        {% assign recipientEmails = recipient.Value %}
+    {% endif %}
+{% endfor %}
+
+{% comment %} Add PagerDuty on-call email if found {% endcomment %}
+{% if pagerDutyEmail != '' %}
+    {% if recipientEmails != '' %}
+        {% assign recipientEmails = recipientEmails | Append:',' | Append:pagerDutyEmail %}
+    {% else %}
+        {% assign recipientEmails = pagerDutyEmail %}
+    {% endif %}
+{% endif %}
+
+{% comment %} ============================================= {% endcomment %}
+{% comment %} Send the notification email                    {% endcomment %}
+{% comment %} ============================================= {% endcomment %}
 {% execute import:'Rock.Communication,Rock.Data,Rock.Model,System.Collections.Generic' %}
     var systemCommGuidStr = "{{ ConfigurationRigging.SystemCommunicationGuid }}";
-    var givingSupportEmail = "{{ ConfigurationRigging.GivingSupportEmail }}";
-    var leaderEmail = "{{ ConfigurationRigging.LeaderEmail }}";
-    var rockBaseUrl = "{{ ConfigurationRigging.RockBaseUrl }}";
+    var recipientEmailsStr = "{{ recipientEmails }}";
     var failureDataStr = "{{ failureData }}";
+    var internalAppRoot = "{{ 'Global' | Attribute:'InternalApplicationRoot' }}";
 
+    // Parse failure data
     var failures = new List<Dictionary<string, string>>();
     var entries = failureDataStr.Split( new string[] { "~~" }, StringSplitOptions.RemoveEmptyEntries );
 
@@ -424,34 +529,38 @@ ORDER BY el.[Id] DESC
         }
     }
 
+    // Validate SystemCommunication Guid
     var systemCommGuid = systemCommGuidStr.AsGuidOrNull();
     if ( systemCommGuid == null )
     {
         return "ERROR: Invalid SystemCommunication Guid in ConfigurationRigging.";
     }
 
+    // Build merge fields
     var mergeFields = new Dictionary<string, object>();
     mergeFields.Add( "FailedTransactions", failures );
-    mergeFields.Add( "RockBaseUrl", rockBaseUrl );
     mergeFields.Add( "FailureCount", failures.Count );
+    mergeFields.Add( "InternalApplicationRoot", internalAppRoot );
 
+    // Build recipient list
     var recipients = new List<RockEmailMessageRecipient>();
+    var emails = recipientEmailsStr.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-    if ( !string.IsNullOrWhiteSpace( givingSupportEmail ) )
+    foreach ( var email in emails )
     {
-        recipients.Add( RockEmailMessageRecipient.CreateAnonymous( givingSupportEmail.Trim(), mergeFields ) );
-    }
-
-    if ( !string.IsNullOrWhiteSpace( leaderEmail ) )
-    {
-        recipients.Add( RockEmailMessageRecipient.CreateAnonymous( leaderEmail.Trim(), mergeFields ) );
+        var trimmedEmail = email.Trim();
+        if ( !string.IsNullOrWhiteSpace( trimmedEmail ) )
+        {
+            recipients.Add( RockEmailMessageRecipient.CreateAnonymous( trimmedEmail, mergeFields ) );
+        }
     }
 
     if ( recipients.Count == 0 )
     {
-        return "ERROR: No recipient emails configured in ConfigurationRigging.";
+        return "ERROR: No recipient emails found. Check the Defined Type and PagerDuty configuration.";
     }
 
+    // Send email
     var emailMessage = new RockEmailMessage( systemCommGuid.Value );
     emailMessage.SetRecipients( recipients );
     emailMessage.CreateCommunicationRecord = false;
@@ -467,19 +576,38 @@ ORDER BY el.[Id] DESC
     return "OK";
 {% endexecute %}
 
-{% comment %} Auto-dismiss failures that were sent {% endcomment %}
+{% comment %} ============================================= {% endcomment %}
+{% comment %} Auto-dismiss failures that were sent           {% endcomment %}
+{% comment %} ============================================= {% endcomment %}
 {% sql statement:'command' %}
-    INSERT INTO [TransactionFailureDismissal] ([ExceptionLogId], [DismissedDateTime], [WasNotificationSent])
-    SELECT el.[Id], GETDATE(), 1
-    FROM [ExceptionLog] el
-    WHERE el.[Id] IN ({{ exceptionIdList }})
-    AND NOT EXISTS (
-        SELECT 1 FROM [TransactionFailureDismissal] tfd WHERE tfd.[ExceptionLogId] = el.[Id]
+    DECLARE @AttributeId INT = (
+        SELECT TOP 1 a.[Id]
+        FROM [Attribute] a
+        INNER JOIN [EntityType] et ON et.[Id] = a.[EntityTypeId]
+        WHERE a.[Key] = 'IsTransactionFailureDismissed'
+            AND et.[Name] = 'Rock.Model.ExceptionLog'
     )
+
+    IF @AttributeId IS NOT NULL
+    BEGIN
+        INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+        SELECT 0, @AttributeId, el.[Id], 'True', NEWID()
+        FROM [ExceptionLog] el
+        WHERE el.[Id] IN ({{ exceptionIdList }})
+            AND NOT EXISTS (
+                SELECT 1
+                FROM [AttributeValue] av
+                WHERE av.[AttributeId] = @AttributeId
+                    AND av.[EntityId] = el.[Id]
+            )
+    END
 {% endsql %}
 
 <div class="alert alert-success">
     <i class="fa fa-check-circle"></i> Notification email sent successfully for <strong>{{ failureCount }}</strong> transaction(s).
+    {% if pagerDutyEmail != '' %}
+        <br /><small>PagerDuty on-call: {{ pagerDutyEmail }}</small>
+    {% endif %}
 </div>
 
 {% endif %}
@@ -505,10 +633,22 @@ Paste this into the **Code Template** field of the `dismiss-failures` endpoint:
 {% assign idArray = selectedIds | Split:',' %}
 {% for id in idArray %}
     {% sql statement:'command' %}
-        IF NOT EXISTS (SELECT 1 FROM [TransactionFailureDismissal] WHERE [ExceptionLogId] = {{ id }})
+        DECLARE @AttributeId INT = (
+            SELECT TOP 1 a.[Id]
+            FROM [Attribute] a
+            INNER JOIN [EntityType] et ON et.[Id] = a.[EntityTypeId]
+            WHERE a.[Key] = 'IsTransactionFailureDismissed'
+                AND et.[Name] = 'Rock.Model.ExceptionLog'
+        )
+
+        IF @AttributeId IS NOT NULL
+        AND NOT EXISTS (
+            SELECT 1 FROM [AttributeValue]
+            WHERE [AttributeId] = @AttributeId AND [EntityId] = {{ id }}
+        )
         BEGIN
-            INSERT INTO [TransactionFailureDismissal] ([ExceptionLogId], [DismissedDateTime], [WasNotificationSent])
-            VALUES ({{ id }}, GETDATE(), 0)
+            INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
+            VALUES (0, @AttributeId, {{ id }}, 'True', NEWID())
         END
     {% endsql %}
 {% endfor %}
@@ -531,12 +671,18 @@ SELECT
     el.[CreatedDateTime],
     el.[Description]
 FROM [ExceptionLog] el
-LEFT JOIN [TransactionFailureDismissal] tfd ON tfd.[ExceptionLogId] = el.[Id]
+LEFT JOIN [Attribute] a
+    ON a.[Key] = 'IsTransactionFailureDismissed'
+    AND a.[EntityTypeId] = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.ExceptionLog')
+LEFT JOIN [AttributeValue] av
+    ON av.[AttributeId] = a.[Id]
+    AND av.[EntityId] = el.[Id]
+    AND av.[Value] = 'True'
 WHERE el.[Description] LIKE 'Error recording charge:%'
     AND el.[ExceptionType] = 'System.Exception'
     AND el.[CreatedDateTime] >= '{{ filterDate }}'
     AND el.[CreatedDateTime] < '{{ nextDate }}'
-    AND tfd.[Id] IS NULL
+    AND av.[Id] IS NULL
 ORDER BY el.[Id] DESC
 {% endsql %}
 
@@ -610,7 +756,7 @@ ORDER BY el.[Id] DESC
                     </td>
                     <td>
                         {% if person %}
-                            <a href="{{ ConfigurationRigging.RockBaseUrl }}/person/{{ person.Id }}" target="_blank">
+                            <a href="{{ 'Global' | Attribute:'InternalApplicationRoot' }}person/{{ person.Id }}" target="_blank">
                                 {{ person.NickName }} {{ person.LastName }}
                             </a>
                         {% elseif personId != '' %}
@@ -678,7 +824,7 @@ Paste this into the **Body** field of the SystemCommunication template:
         <tr>
             <td style="border: 1px solid #ddd; padding: 10px;">
                 {% if txn.PersonId != '' %}
-                    <a href="{{ RockBaseUrl }}/person/{{ txn.PersonId }}">{{ txn.PersonName }}</a>
+                    <a href="{{ InternalApplicationRoot }}person/{{ txn.PersonId }}">{{ txn.PersonName }}</a>
                 {% else %}
                     {{ txn.PersonName }}
                 {% endif %}
@@ -700,7 +846,9 @@ Paste this into the **Body** field of the SystemCommunication template:
 
 ## Notes
 
-- **Security:** Ensure only appropriate staff have Execute access to this Lava Application. The SQL queries and execute blocks have powerful permissions.
-- **Dismiss tracking:** Uses a custom `TransactionFailureDismissal` table rather than modifying the ExceptionLog table directly. This keeps the ExceptionLog clean and avoids any issues with Rock's built-in exception handling.
-- **Recipient configuration:** Update `GivingSupportEmail` and `LeaderEmail` in the Lava Application's Configuration Rigging whenever recipients change — no code modification needed.
-- **PagerDuty integration (future):** The `send-notification` endpoint could be extended to use `{% webrequest %}` to call the PagerDuty API (`/oncalls` endpoint) to dynamically fetch the on-call person's email before sending.
+- **Security:** Ensure only appropriate staff have Execute access to this Lava Application. The SQL queries and execute blocks have powerful permissions. POST endpoints require Application Edit security.
+- **Dismiss tracking:** Uses Rock's built-in Entity Attribute system (`AttributeValue` table) rather than a custom table. The `IsTransactionFailureDismissed` boolean attribute on ExceptionLog is set to `True` when an entry is dismissed or included in a notification email.
+- **Recipient management:** Static recipients (giving@life.church, leader) are managed via the "Transaction Failure Notification Recipients" Defined Type. Admins add/remove Defined Values — no code or configuration changes needed.
+- **PagerDuty integration:** The `send-notification` endpoint calls the PagerDuty `/oncalls` API to dynamically fetch the on-call engineer's email. If the PagerDuty token or schedule ID is empty in ConfigurationRigging, this step is silently skipped.
+- **Person profile links:** All links use `{{ 'Global' | Attribute:'InternalApplicationRoot' }}` for the base URL.
+- **Error source:** The exception description format is defined in `Rock/Financial/AutomatedPaymentProcessor.cs:682`. If that format ever changes, the Lava parsing logic in the endpoints will need to be updated.
